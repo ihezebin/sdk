@@ -2,7 +2,9 @@ package httpserver
 
 import (
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 	"log"
 	"net/http"
 	"os"
@@ -12,9 +14,10 @@ import (
 
 type Server interface {
 	Name() (name string)
-	Run(ctx context.Context) (err error)
 	AddMiddlewares(middlewares ...Middleware)
 	GetEngine() (engine *gin.Engine)
+	Run(ctx context.Context) (err error)
+	Shutdown(ctx context.Context)
 	RegisterOnShutdown(f func())
 }
 
@@ -30,11 +33,12 @@ func NewServer(opts ...OptionFunc) Server {
 func NewServerWithOption(option Option) Server {
 	s := &server{option: option}
 	engine := gin.New()
-	// default Use middles
-	// 默认中间件， FlowControlTag，错误恢复
+	// default Use middleware
 	engine.Use()
-	engine.Use(option.Middlewares...) // user set middles
+	// user set middlewares
+	engine.Use(option.Middlewares...)
 	s.Handler = engine
+	s.Addr = fmt.Sprintf(":%d", option.Port)
 	return s
 }
 
@@ -44,35 +48,29 @@ func (s *server) Name() string {
 
 func (s *server) Run(ctx context.Context) error {
 
-	//for _, f := range s.onShutdown { // 注册用户自定义的关闭函数
-	//	srv.RegisterOnShutdown(f)
-	//}
-	//
-	//// check if inside docker, for local debug.
-	//if outsideContainer() { // 如果检测出运行环境不是在容器内部，则替换request.ctx为context.Background()，方便在本地调试
-	//	middles.MutateRequest = changeRequest
-	//}
-	//
-	//// server listenAndServe
-	//go func() {
-	//	if err := srv.ListenAndServe(); err != nil {
-	//		if !errors.Is(err, http.ErrServerClosed) {
-	//			logger.Errorf(ctx, "httpServer ListenAndServe err:%v", err)
-	//		}
-	//		logger.Infof(ctx, "http server is closed")
-	//	}
-	//}()
-
-	// handle signal
+	// server listenAndServe
+	go func() {
+		if err := s.ListenAndServe(); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				log.Printf("httpServer ListenAndServe err:%v\n", err)
+			}
+			log.Println("http server is closed")
+		}
+	}()
+	// handle signal, to elegant closing server
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
-	log.Printf("got signal %v, exit", <-ch)
+	log.Printf("got signal %v, httpServer exit\n", <-ch)
 	s.Shutdown(ctx)
 	return nil
 }
 
 func (s *server) RegisterOnShutdown(f func()) {
 	s.RegisterOnShutdown(f)
+}
+
+func (s *server) Shutdown(ctx context.Context) {
+	s.Shutdown(ctx)
 }
 
 func (s *server) AddMiddlewares(middlewares ...Middleware) {

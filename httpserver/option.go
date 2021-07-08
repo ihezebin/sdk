@@ -2,7 +2,7 @@ package httpserver
 
 type Option struct {
 	Name        string
-	Port        string
+	Port        int
 	Middlewares []Middleware
 }
 
@@ -11,7 +11,7 @@ type OptionFunc func(option *Option)
 func newOption(opts ...OptionFunc) Option {
 	option := Option{
 		Name:        "",
-		Port:        ":8080",
+		Port:        8080,
 		Middlewares: nil,
 	}
 	for _, opt := range opts {
