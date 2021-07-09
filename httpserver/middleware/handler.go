@@ -39,12 +39,24 @@ var (
 )
 
 type Context struct {
-	*gin.Context
+	ctx *gin.Context
 }
 
 func (c Context) GetContext() *gin.Context {
-	return c.Context
+	return c.ctx
 }
+
+//func GetRequest(ctx context.Context) *http.Request {
+//	return ctx.Value(RequestKey).(*http.Request)
+//}
+//
+//func GetResponse(ctx context.Context) *http.Response {
+//	return ctx.Value(ResponseKey).(*http.Response)
+//}
+//
+//func GetGinContext(ctx context.Context) *gin.Context {
+//	return ctx.Value(GinContextKey).(*gin.Context)
+//}
 
 func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 	mV, reqT, respT, err := checkMethod(method)
@@ -70,28 +82,29 @@ func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 		setContext(resp, c)
 
 		results := mV.Call([]reflect.Value{reflect.ValueOf(ctx), req, resp})
-		errValue := results[0].Interface()
+		errValue := results[0]
 		// response contains http_error
-		if errValue != nil {
-			switch v := errValue.(type) {
+		if !errValue.IsNil() {
+			switch v := errValue.Interface().(type) {
 			case *result.HttpError:
 				if v.HttpStatusCode != 0 {
 					c.JSON(v.HttpStatusCode, v)
+					return
 				}
-				return
+				c.JSON(http.StatusOK, v)
 			case error:
 				c.JSON(http.StatusOK, result.Err2HttpError(v, result.CodeFail))
-				return
 			}
+			return
 		}
-		c.PureJSON(http.StatusOK, resp.Interface())
+		c.PureJSON(http.StatusOK, resp.Elem().Interface())
 	}
 }
 
 func setContext(v reflect.Value, c *gin.Context) {
 	contextV := reflect.ValueOf(Context{c})
 	vCtxChild := v.Elem().FieldByName(contextV.Type().Name())
-	if ok := vCtxChild.IsValid(); ok {
+	if ok := vCtxChild.CanSet(); ok {
 		vCtxChild.Set(contextV)
 	}
 }

@@ -1,7 +1,7 @@
 package proto
 
 import (
-	"github.com/whereabouts/web-template/engine/hanlder"
+	"github.com/whereabouts/sdk-go/httpserver/middleware"
 	"mime/multipart"
 )
 
@@ -13,7 +13,7 @@ type SayHelloReq struct {
 type SayHelloResp struct {
 	Code    int    `json:"code" form:"code"`
 	Message string `json:"message" form:"message"`
-	hanlder.Context
+	middleware.Context
 }
 
 type FileHelloReq struct {
@@ -27,7 +27,7 @@ type FileHelloResp struct {
 }
 
 type FilesHelloReq struct {
-	hanlder.Context
+	middleware.Context
 	Name string `json:"name" form:"name"`
 }
 

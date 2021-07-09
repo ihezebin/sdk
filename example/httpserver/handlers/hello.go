@@ -3,9 +3,10 @@ package handlers
 import (
 	"context"
 	"fmt"
+	"github.com/whereabouts/sdk-go/example/httpserver/proto"
+	"github.com/whereabouts/sdk-go/httpserver/middleware"
 	"github.com/whereabouts/sdk-go/httpserver/result"
 	"github.com/whereabouts/web-template/engine/http_error"
-	"github.com/whereabouts/web-template/proto"
 	"net/http"
 	//"mime/multipart"
 )
@@ -15,11 +16,13 @@ import (
 // If the return value is nil, the resp structure is mapped to the response body in JSON format,
 // Otherwise, respond with JSON *http_error.HttpError content
 func SayHello(ctx context.Context, req *proto.SayHelloReq, resp *proto.SayHelloResp) error {
+	value := ctx.Value(middleware.RequestKey).(*http.Request)
+	fmt.Println(value.URL.String())
 	fmt.Println("say hello")
 	resp.Code = http.StatusOK
 	resp.Message = fmt.Sprintf("hello, %s! your age is %d", req.Name, req.Age)
 	resp.GetContext().Header("a", "b")
-	return result.Error(1, "2")
+	return result.Error(false, "123").WithHttpStatusCode(202)
 }
 
 // Upload a single file:
