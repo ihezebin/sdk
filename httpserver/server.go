@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/whereabouts/sdk-go/httpserver/middleware"
 	"log"
 	"net/http"
 	"os"
@@ -14,16 +15,20 @@ import (
 
 type Server interface {
 	Name() (name string)
-	AddMiddlewares(middlewares ...Middleware)
+	AddMiddlewares(middlewares ...middleware.Middleware) Server
 	GetEngine() (engine *gin.Engine)
-	Run(ctx context.Context) (err error)
+	Run(ctx context.Context) error
 	Shutdown(ctx context.Context)
-	RegisterOnShutdown(f func())
+	HandleOnShutdown(f func()) Server
+	HandleBeforeRun(f func()) Server
+	Route(router Router) Server
 }
 
 type server struct {
 	http.Server
-	option Option
+	option     Option
+	beforeRun  []func()
+	onShutdown []func()
 }
 
 func NewServer(opts ...OptionFunc) Server {
@@ -35,10 +40,15 @@ func NewServerWithOption(option Option) Server {
 	engine := gin.New()
 	// default Use middleware
 	engine.Use()
-	// user set middlewares
+	// user set middleware
 	engine.Use(option.Middlewares...)
 	s.Handler = engine
 	s.Addr = fmt.Sprintf(":%d", option.Port)
+	return s
+}
+
+func (s *server) Route(routes Router) Server {
+	routes(s.GetEngine())
 	return s
 }
 
@@ -47,7 +57,14 @@ func (s *server) Name() string {
 }
 
 func (s *server) Run(ctx context.Context) error {
-
+	// register func before run
+	for _, f := range s.beforeRun {
+		f()
+	}
+	// register func on shutdown
+	for _, f := range s.onShutdown {
+		s.RegisterOnShutdown(f)
+	}
 	// server listenAndServe
 	go func() {
 		if err := s.ListenAndServe(); err != nil {
@@ -65,16 +82,23 @@ func (s *server) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s *server) RegisterOnShutdown(f func()) {
-	s.RegisterOnShutdown(f)
+func (s *server) HandleOnShutdown(f func()) Server {
+	s.onShutdown = append(s.onShutdown, f)
+	return s
+}
+
+func (s *server) HandleBeforeRun(f func()) Server {
+	s.beforeRun = append(s.beforeRun, f)
+	return s
 }
 
 func (s *server) Shutdown(ctx context.Context) {
 	s.Shutdown(ctx)
 }
 
-func (s *server) AddMiddlewares(middlewares ...Middleware) {
+func (s *server) AddMiddlewares(middlewares ...middleware.Middleware) Server {
 	s.GetEngine().Use(middlewares...)
+	return s
 }
 
 func (s *server) GetEngine() *gin.Engine {

@@ -2,4 +2,4 @@ package httpserver
 
 import "github.com/gin-gonic/gin"
 
-type Middleware = gin.HandlerFunc
+type Router = func(engine *gin.Engine)

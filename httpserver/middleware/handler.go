@@ -1,10 +1,10 @@
-package hanlder
+package middleware
 
 import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/whereabouts/sdk-go/httpserver/http_error"
+	http_error2 "github.com/whereabouts/sdk-go/httpserver/old/http_error"
 	"github.com/whereabouts/sdk-go/logger"
 	"net/http"
 	"reflect"
@@ -24,7 +24,7 @@ var (
 	errReturnMustError         = errors.New("method must return value which type is *chassis/http_error.HttpError")
 	errReturnMustOneValue      = errors.New("method must return one value")
 
-	returnErrorType = reflect.TypeOf((*http_error.HttpError)(nil))
+	returnErrorType = reflect.TypeOf((*http_error2.HttpError)(nil))
 )
 
 type Context struct {
@@ -44,14 +44,14 @@ func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 		req := reflect.New(reqT)
 		if err := c.ShouldBind(req.Interface()); err != nil {
 			logger.Errorf("req param err: %s", err.Error())
-			c.JSON(http.StatusOK, http_error.Error(http_error.CodeBoolFail, fmt.Sprintf("req param err: %s", err.Error())))
+			c.JSON(http.StatusOK, http_error2.Error(http_error2.CodeBoolFail, fmt.Sprintf("req param err: %s", err.Error())))
 			return
 		}
 		setContext(req, c)
 		resp := reflect.New(respT)
 		setContext(resp, c)
 		results := mV.Call([]reflect.Value{req, resp})
-		respErr, _ := results[0].Interface().(*http_error.HttpError)
+		respErr, _ := results[0].Interface().(*http_error2.HttpError)
 		// response contains http_error
 		if respErr != nil {
 			if respErr.HttpStatusCode != 0 {

@@ -1,6 +1,8 @@
 package server
 
-import "github.com/whereabouts/sdk-go/httpserver/hanlder"
+import (
+	"github.com/whereabouts/sdk-go/httpserver/middleware"
+)
 
 type Router func()
 
@@ -10,7 +12,7 @@ func (s *Server) Router(r Router) *Server {
 }
 
 func Route(method string, path string, function interface{}) {
-	gServer.GetEngine().Handle(method, path, hanlder.CreateHandlerFunc(function))
+	gServer.GetEngine().Handle(method, path, middleware.CreateHandlerFunc(function))
 }
 
 //func setRouter(s *Server, r Router) {

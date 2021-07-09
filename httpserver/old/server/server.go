@@ -3,7 +3,7 @@ package server
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/whereabouts/sdk-go/httpserver/configure"
+	configure2 "github.com/whereabouts/sdk-go/httpserver/old/configure"
 	"github.com/whereabouts/sdk-go/logger"
 	"net/http"
 )
@@ -14,7 +14,7 @@ var gServer *Server
 
 type Server struct {
 	http.Server
-	config *configure.DefaultConfig
+	config *configure2.DefaultConfig
 }
 
 func (s *Server) Run() error {
@@ -51,11 +51,11 @@ func (s *Server) SetEnv(env string) {
 	}
 }
 
-func NewServer(conf configure.IConfig) *Server {
+func NewServer(conf configure2.IConfig) *Server {
 	// Load the configuration file, you can transfer the parameters of path from the command line like this:
 	// "go run main.go -c application.json", default value is "./configure/application.json"
 	// another way is that you can name your configure file as "application.json", and put it in the "%project%/configure" directory
-	dConf, err := configure.Load(conf)
+	dConf, err := configure2.Load(conf)
 	if err != nil {
 		logger.Fatalf("fail to create server, because of err: %+v", err)
 	}
@@ -64,11 +64,11 @@ func NewServer(conf configure.IConfig) *Server {
 }
 
 func DefaultServer() *Server {
-	gServer = createServer(configure.DefaultLoad())
+	gServer = createServer(configure2.DefaultLoad())
 	return gServer
 }
 
-func createServer(dConf *configure.DefaultConfig) *Server {
+func createServer(dConf *configure2.DefaultConfig) *Server {
 	server := &Server{config: dConf}
 	// set environment mode，use before gin.New()
 	server.SetEnv(server.config.Env)
