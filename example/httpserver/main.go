@@ -9,7 +9,14 @@ import (
 	"github.com/whereabouts/web-template/config"
 	"github.com/whereabouts/web-template/engine/server"
 	"github.com/whereabouts/web-template/routes"
+	"net/http"
 )
+
+type Req struct {
+}
+
+type Rsp struct {
+}
 
 func main() {
 	// Quickly create an initial server and start it:
@@ -19,7 +26,7 @@ func main() {
 		logger.Fatalf("server run with http_error: %v", err)
 	}
 	httpserver.NewServer().Route(func(engine *gin.Engine) {
-
+		httpserver.Route(engine, http.MethodGet, "ping", func() {})
 	}).HandleBeforeRun(func() {
 
 	}).HandleOnShutdown(func() {

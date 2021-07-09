@@ -19,9 +19,9 @@ type Server interface {
 	GetEngine() (engine *gin.Engine)
 	Run(ctx context.Context) error
 	Shutdown(ctx context.Context)
-	HandleOnShutdown(f func()) Server
-	HandleBeforeRun(f func()) Server
-	Route(router Router) Server
+	OnShutdown(f func()) Server
+	BeforeRun(f func()) Server
+	Route(routes Router) Server
 }
 
 type server struct {
@@ -82,12 +82,12 @@ func (s *server) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s *server) HandleOnShutdown(f func()) Server {
+func (s *server) OnShutdown(f func()) Server {
 	s.onShutdown = append(s.onShutdown, f)
 	return s
 }
 
-func (s *server) HandleBeforeRun(f func()) Server {
+func (s *server) BeforeRun(f func()) Server {
 	s.beforeRun = append(s.beforeRun, f)
 	return s
 }

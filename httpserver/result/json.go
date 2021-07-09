@@ -1,4 +1,4 @@
-package http_error
+package result
 
 type JSON map[string]interface{}
 
