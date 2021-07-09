@@ -26,13 +26,12 @@ var (
 	errMethodMustHasTwoParam   = errors.New("method must has two func param")
 	errTypeMustFunc            = errors.New("method type must be func")
 	errMethodMustValid         = errors.New("method must be valid")
-	errReturnMustError         = errors.New("method must return value which type is *chassis/http_error.HttpError")
+	errReturnMustError         = errors.New("method return must be result.HttpError or error")
 	errReturnMustOneValue      = errors.New("method must return one value")
 
-	returnErrorType       = reflect.TypeOf((error)(nil))
+	contextType           = reflect.TypeOf((*context.Context)(nil)).Elem()
+	returnErrorType       = reflect.TypeOf((*error)(nil)).Elem()
 	returnResultErrorType = reflect.TypeOf((*result.HttpError)(nil))
-
-	ctxType = reflect.TypeOf(context.Context(nil))
 
 	RequestKey    = requestKey{}
 	ResponseKey   = responseKey{}
@@ -116,7 +115,7 @@ func checkMethod(method interface{}) (mV reflect.Value, reqT, respT reflect.Type
 	}
 
 	ctxT := mT.In(0)
-	if !ctxT.Implements(ctxType) && ctxT != ctxType {
+	if ctxT != contextType {
 		err = errTypeMustContext
 		return
 	}

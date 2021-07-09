@@ -3,12 +3,8 @@ package main
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	"github.com/whereabouts/sdk-go/example/httpserver/handlers"
 	"github.com/whereabouts/sdk-go/httpserver"
-	"github.com/whereabouts/sdk-go/logger"
-	"github.com/whereabouts/web-template/Initiator"
-	"github.com/whereabouts/web-template/config"
-	"github.com/whereabouts/web-template/engine/server"
-	"github.com/whereabouts/web-template/routes"
 	"net/http"
 )
 
@@ -19,17 +15,16 @@ type Rsp struct {
 }
 
 func main() {
-	// Quickly create an initial server and start it:
-	// server.DefaultServer().Router(routes.Routes).Run()
-	// if you need to use the custom configuration, call server.NewServer(conf)
-	if err := server.NewServer(config.GetConfig()).Router(routes.Routes).Init(Initiator.Init).Run(); err != nil {
-		logger.Fatalf("server run with http_error: %v", err)
-	}
-	httpserver.NewServer().Route(func(engine *gin.Engine) {
-		httpserver.Route(engine, http.MethodGet, "ping", func() {})
-	}).HandleBeforeRun(func() {
-
-	}).HandleOnShutdown(func() {
-
+	httpserver.NewServer(
+		httpserver.WithName("app"),
+		httpserver.WithPort(8080),
+		httpserver.WithMode(httpserver.ModeTest),
+		httpserver.WithMiddles(),
+	).Route(func(engine *gin.Engine) {
+		httpserver.Route(engine, http.MethodGet, "ping", handlers.SayHello)
+	}).BeforeRun(func() {
+		// init db
+	}).OnShutdown(func() {
+		// close db
 	}).Run(context.Background())
 }

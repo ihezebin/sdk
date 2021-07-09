@@ -18,7 +18,7 @@ type Server interface {
 	AddMiddlewares(middlewares ...middleware.Middleware) Server
 	GetEngine() (engine *gin.Engine)
 	Run(ctx context.Context) error
-	Shutdown(ctx context.Context)
+	Close(ctx context.Context)
 	OnShutdown(f func()) Server
 	BeforeRun(f func()) Server
 	Route(routes Router) Server
@@ -37,6 +37,7 @@ func NewServer(opts ...OptionFunc) Server {
 
 func NewServerWithOption(option Option) Server {
 	s := &server{option: option}
+	gin.SetMode(option.Mode)
 	engine := gin.New()
 	// default Use middleware
 	engine.Use()
@@ -67,6 +68,7 @@ func (s *server) Run(ctx context.Context) error {
 	}
 	// server listenAndServe
 	go func() {
+		log.Printf("http server:%s is starting in port:%d", s.option.Name, s.option.Port)
 		if err := s.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				log.Printf("httpServer ListenAndServe err:%v\n", err)
@@ -78,7 +80,7 @@ func (s *server) Run(ctx context.Context) error {
 	ch := make(chan os.Signal)
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 	log.Printf("got signal %v, httpServer exit\n", <-ch)
-	s.Shutdown(ctx)
+	s.Close(ctx)
 	return nil
 }
 
@@ -92,7 +94,7 @@ func (s *server) BeforeRun(f func()) Server {
 	return s
 }
 
-func (s *server) Shutdown(ctx context.Context) {
+func (s *server) Close(ctx context.Context) {
 	s.Shutdown(ctx)
 }
 

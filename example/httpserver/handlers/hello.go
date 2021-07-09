@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
+	"github.com/whereabouts/sdk-go/httpserver/result"
 	"github.com/whereabouts/web-template/engine/http_error"
 	"github.com/whereabouts/web-template/proto"
 	"net/http"
@@ -12,12 +14,12 @@ import (
 // request parameters are automatically mapped and bound to req,
 // If the return value is nil, the resp structure is mapped to the response body in JSON format,
 // Otherwise, respond with JSON *http_error.HttpError content
-func SayHello(req *proto.SayHelloReq, resp *proto.SayHelloResp) *http_error.HttpError {
+func SayHello(ctx context.Context, req *proto.SayHelloReq, resp *proto.SayHelloResp) error {
 	fmt.Println("say hello")
 	resp.Code = http.StatusOK
 	resp.Message = fmt.Sprintf("hello, %s! your age is %d", req.Name, req.Age)
 	resp.GetContext().Header("a", "b")
-	return http_error.Error(1, "2")
+	return result.Error(1, "2")
 }
 
 // Upload a single file:
