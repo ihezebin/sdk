@@ -18,7 +18,7 @@ type Server interface {
 	AddMiddlewares(middlewares ...middleware.Middleware) Server
 	GetEngine() (engine *gin.Engine)
 	Run(ctx context.Context) error
-	Close(ctx context.Context)
+	Close(ctx context.Context) error
 	OnShutdown(f func()) Server
 	BeforeRun(f func()) Server
 	Route(routes Router) Server
@@ -67,21 +67,21 @@ func (s *server) Run(ctx context.Context) error {
 		s.RegisterOnShutdown(f)
 	}
 	// server listenAndServe
+	ch := make(chan os.Signal)
 	go func() {
 		log.Printf("http server:%s is starting in port:%d", s.option.Name, s.option.Port)
 		if err := s.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
-				log.Printf("httpServer ListenAndServe err:%v\n", err)
+				log.Printf("http server ListenAndServe err:%v\n", err)
+				ch <- sigerr
 			}
-			log.Println("http server is closed")
+			log.Println("http server closed")
 		}
 	}()
 	// handle signal, to elegant closing server
-	ch := make(chan os.Signal)
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
-	log.Printf("got signal %v, httpServer exit\n", <-ch)
-	s.Close(ctx)
-	return nil
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, sigerr)
+	log.Printf("got signal %v, http server exit\n", <-ch)
+	return s.Close(ctx)
 }
 
 func (s *server) OnShutdown(f func()) Server {
@@ -94,8 +94,9 @@ func (s *server) BeforeRun(f func()) Server {
 	return s
 }
 
-func (s *server) Close(ctx context.Context) {
-	s.Shutdown(ctx)
+func (s *server) Close(ctx context.Context) error {
+	log.Println("http server is closing...")
+	return s.Shutdown(ctx)
 }
 
 func (s *server) AddMiddlewares(middlewares ...middleware.Middleware) Server {
@@ -105,4 +106,15 @@ func (s *server) AddMiddlewares(middlewares ...middleware.Middleware) Server {
 
 func (s *server) GetEngine() *gin.Engine {
 	return s.Handler.(*gin.Engine)
+}
+
+type signalErr string
+
+const sigerr = signalErr("httpserver err signal")
+
+func (s signalErr) Signal() {
+
+}
+func (s signalErr) String() string {
+	return "listen and serve err"
 }

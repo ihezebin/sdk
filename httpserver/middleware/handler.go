@@ -73,7 +73,7 @@ func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 		req := reflect.New(reqT)
 		if err := c.ShouldBind(req.Interface()); err != nil {
 			log.Printf("bind param failed: %s\n", err.Error())
-			c.JSON(http.StatusBadRequest, result.Error(result.CodeFail, fmt.Sprintf("bind param failed: %s", err.Error())))
+			c.JSON(http.StatusBadRequest, result.Error(result.CodeBoolFail, fmt.Sprintf("bind param failed: %s", err.Error())))
 			return
 		}
 		setContext(req, c)
@@ -93,7 +93,7 @@ func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 				}
 				c.JSON(http.StatusOK, v)
 			case error:
-				c.JSON(http.StatusOK, result.Err2HttpError(v, result.CodeFail))
+				c.JSON(http.StatusOK, result.Err2HttpError(v, result.CodeBoolFail))
 			}
 			return
 		}

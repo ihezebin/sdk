@@ -2,36 +2,34 @@ package proto
 
 import (
 	"github.com/whereabouts/sdk-go/httpserver/middleware"
+	"github.com/whereabouts/sdk-go/httpserver/result"
 	"mime/multipart"
 )
 
-type SayHelloReq struct {
-	Name string `json:"name,default=korbin" form:"name,default=korbin"`
-	Age  int    `json:"age" form:"age"`
-}
-
-type SayHelloResp struct {
-	Code    int    `json:"code" form:"code"`
-	Message string `json:"message" form:"message"`
+type HelloStandardHandlerReq struct {
 	middleware.Context
+	Name string `json:"name,default=whereabouts.icu" form:"name,default=whereabouts.icu"`
 }
 
-type FileHelloReq struct {
+type HelloStandardHandlerResp struct {
+	Code    bool   `json:"code"`
+	Message string `json:"message"`
+}
+
+type HelloFileHandlerReq struct {
 	File *multipart.FileHeader `json:"file" form:"file"`
-	Name string                `json:"name,default=hezebin" form:"name,default=hezebin"`
+	Host string                `json:"host,default=whereabouts.icu" form:"host,default=whereabouts.icu"`
 }
 
-type FileHelloResp struct {
-	Code    int    `json:"code" form:"code"`
-	Message string `json:"message" form:"message"`
+type HelloFileHandlerResp struct {
+	Code bool   `json:"code"`
+	Url  string `json:"url"`
 }
 
-type FilesHelloReq struct {
+type HelloMultipleFilesHandlerReq struct {
 	middleware.Context
-	Name string `json:"name" form:"name"`
 }
 
-type FilesHelloResp struct {
-	Code    int    `json:"code" form:"code"`
-	Message string `json:"message" form:"message"`
+type HelloMultipleFilesHandlerResp struct {
+	result.DefaultResp
 }

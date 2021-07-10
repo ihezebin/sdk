@@ -1,25 +1,27 @@
 package routes
 
 import (
-	"github.com/whereabouts/web-template/engine/server"
-	"github.com/whereabouts/web-template/handlers"
-	"github.com/whereabouts/web-template/middleware"
+	"github.com/gin-gonic/gin"
+	"github.com/whereabouts/sdk-go/example/httpserver/handlers"
+	"github.com/whereabouts/sdk-go/example/httpserver/middleware"
+	"github.com/whereabouts/sdk-go/httpserver"
 	"net/http"
 )
 
-func Routes() {
-	// middleware use before route
-	server.PreMiddleware(middleware.HelloPreMiddleware)
-	server.AfterMiddleware(middleware.HelloAfterMiddleware)
-	server.Route(http.MethodGet, "/sayHello", handlers.SayHello)
-	server.Route(http.MethodPost, "/fileHello", handlers.FileHello)
-	server.Route(http.MethodPost, "/filesHello", handlers.FilesHello)
-	// add the child route
-	v1 := server.Group("v1")
+func Routes(engine *gin.Engine) {
+	// use middleware of before and after
+	httpserver.Before(engine, middleware.HelloBeforeMiddleware)
+	httpserver.After(engine, middleware.HelloAfterMiddleware)
+	// route
+	httpserver.Route(engine, http.MethodGet, "/standard", handlers.HelloStandardHandler)
+	httpserver.Route(engine, http.MethodPost, "/file", handlers.HelloFileHandler)
+	httpserver.Route(engine, http.MethodPost, "/multiple", handlers.HelloMultipleFilesHandler)
+	// child route
+	hello := engine.Group("hello")
 	{
-		v1.Route(http.MethodGet, "/sayHello", handlers.SayHello)
-		v1.Route(http.MethodPost, "/fileHello", handlers.FileHello)
-		v1.Route(http.MethodPost, "/filesHello", handlers.FilesHello)
+		httpserver.Route(hello, http.MethodGet, "/standard", handlers.HelloStandardHandler)
+		httpserver.Route(hello, http.MethodPost, "/file", handlers.HelloFileHandler)
+		httpserver.Route(hello, http.MethodPost, "/multiple", handlers.HelloMultipleFilesHandler)
 	}
 
 }

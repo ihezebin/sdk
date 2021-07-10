@@ -1,0 +1,9 @@
+{
+  "env": "prod",
+  "port": 8080,
+  "author": {
+    "name": "hezebin",
+    "en_name": "korbin",
+    "email": "86744316@qq.com"
+  }
+}

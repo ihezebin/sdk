@@ -7,32 +7,30 @@ import (
 )
 
 type Router = func(engine *gin.Engine)
-type HandlerBefore = gin.HandlerFunc
-type HandlerAfter = gin.HandlerFunc
 
 func Route(routes gin.IRoutes, method string, path string, function interface{}) {
 	routes.Handle(method, path, middleware.CreateHandlerFunc(function))
 }
 
-func RouteBefore(routes gin.IRoutes, befores ...HandlerBefore) {
-	routes.Use(befores...)
+func Before(routes gin.IRoutes, before ...middleware.Middleware) {
+	routes.Use(before...)
 }
 
-func RouteAfter(routes gin.IRoutes, afters ...HandlerAfter) {
-	routes.Use(createAfters(afters...)...)
+func After(routes gin.IRoutes, after ...middleware.Middleware) {
+	routes.Use(createAfters(after...)...)
 }
 
-func createAfters(afters ...gin.HandlerFunc) []HandlerAfter {
+func createAfters(after ...gin.HandlerFunc) []middleware.Middleware {
 	afterSlice := make([]gin.HandlerFunc, 0)
-	for _, after := range afters {
-		after := func(c *gin.Context) {
+	for _, a := range after {
+		a := func(c *gin.Context) {
 			c.Next()
-			afterV := reflect.ValueOf(after)
-			if afterV.IsValid() {
-				afterV.Call([]reflect.Value{reflect.ValueOf(c)})
+			aV := reflect.ValueOf(a)
+			if aV.IsValid() {
+				aV.Call([]reflect.Value{reflect.ValueOf(c)})
 			}
 		}
-		afters = append(afters, after)
+		afterSlice = append(afterSlice, a)
 	}
 	return afterSlice
 }

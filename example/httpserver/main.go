@@ -2,29 +2,20 @@ package main
 
 import (
 	"context"
-	"github.com/gin-gonic/gin"
-	"github.com/whereabouts/sdk-go/example/httpserver/handlers"
+	"github.com/whereabouts/sdk-go/example/httpserver/routes"
+	"github.com/whereabouts/sdk-go/example/httpserver/server"
 	"github.com/whereabouts/sdk-go/httpserver"
-	"net/http"
+	"log"
 )
 
-type Req struct {
-}
-
-type Rsp struct {
-}
-
 func main() {
-	httpserver.NewServer(
+	ctx := context.Background()
+	if err := httpserver.NewServer(
 		httpserver.WithName("app"),
 		httpserver.WithPort(8080),
-		httpserver.WithMode(httpserver.ModeTest),
+		httpserver.WithMode(httpserver.ModeDebug),
 		httpserver.WithMiddles(),
-	).Route(func(engine *gin.Engine) {
-		httpserver.Route(engine, http.MethodGet, "ping", handlers.SayHello)
-	}).BeforeRun(func() {
-		// init db
-	}).OnShutdown(func() {
-		// close db
-	}).Run(context.Background())
+	).Route(routes.Routes).BeforeRun(server.Init).OnShutdown(server.Close).Run(ctx); err != nil {
+		log.Printf("server run with error: %v\n", err)
+	}
 }

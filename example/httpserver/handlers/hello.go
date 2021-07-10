@@ -4,55 +4,56 @@ import (
 	"context"
 	"fmt"
 	"github.com/whereabouts/sdk-go/example/httpserver/proto"
-	"github.com/whereabouts/sdk-go/httpserver/middleware"
 	"github.com/whereabouts/sdk-go/httpserver/result"
-	"github.com/whereabouts/web-template/engine/http_error"
-	"net/http"
 	//"mime/multipart"
 )
 
-// normal request：
+// HelloStandardHandler
 // request parameters are automatically mapped and bound to req,
 // If the return value is nil, the resp structure is mapped to the response body in JSON format,
-// Otherwise, respond with JSON *http_error.HttpError content
-func SayHello(ctx context.Context, req *proto.SayHelloReq, resp *proto.SayHelloResp) error {
-	value := ctx.Value(middleware.RequestKey).(*http.Request)
-	fmt.Println(value.URL.String())
-	fmt.Println("say hello")
-	resp.Code = http.StatusOK
-	resp.Message = fmt.Sprintf("hello, %s! your age is %d", req.Name, req.Age)
-	resp.GetContext().Header("a", "b")
-	return result.Error(false, "123").WithHttpStatusCode(202)
-}
-
-// Upload a single file:
-// it can be directly encapsulated into the req structure for parsing *multipart.FileHeader
-func FileHello(req *proto.FileHelloReq, resp *proto.FileHelloResp) *http_error.HttpError {
-	if file := req.File; file == nil {
-		return http_error.Error(http.StatusBadRequest, "fail to find any file")
-	}
-	resp.Code = http.StatusOK
-	fmt.Println(req.Name)
-	resp.Message = fmt.Sprintf("success to upload file : %s", req.File.Filename)
+// Otherwise, respond with JSON *result.HttpError or error content
+func HelloStandardHandler(ctx context.Context, req *proto.HelloStandardHandlerReq, resp *proto.HelloStandardHandlerResp) error {
+	// the first way to get *gin.Context
+	//c := ctx.Value(middleware.GinContextKey).(*gin.Context)
+	// the second way to get *gin.Context is to make req inherit middleware.Context
+	c := req.GetContext()
+	// set response value
+	resp.Code = result.CodeBoolOk
+	resp.Message = fmt.Sprintf("hello, %s! the request uri is %s", req.Name, c.Request.RequestURI)
+	fmt.Println("hello standard")
 	return nil
 }
 
-// Multiple file upload:
-// cannot be resolved by mapping, req needs to be inherited handler.Context Structure,
-// so that it has access *gin.context The ability to obtain multiple files through the native operation of gin
-func FilesHello(req *proto.FilesHelloReq, resp *proto.FilesHelloResp) *http_error.HttpError {
-	fmt.Println(req.GetContext().Request.URL)
-	form, err := req.GetContext().MultipartForm()
-	if err != nil {
-		return http_error.Err2HttpError(err, http.StatusBadRequest)
+// HelloFileHandler
+// Upload a single file:
+// it can be directly encapsulated into the req structure for parsing *multipart.FileHeader
+func HelloFileHandler(ctx context.Context, req *proto.HelloFileHandlerReq, resp *proto.HelloFileHandlerResp) error {
+	file := req.File
+	if file == nil {
+		return result.Error(result.CodeBoolFail, "fail to find any file")
 	}
-	files := form.File["files"]
+	resp.Code = result.CodeBoolOk
+	resp.Url = fmt.Sprintf("http://file.%s/%s", req.Host, file.Filename)
+	fmt.Println("hello file")
+	return nil
+}
+
+// HelloMultipleFilesHandler
+// Multiple file upload:
+// cannot be resolved by mapping, get multiple files through gin native operation
+func HelloMultipleFilesHandler(ctx context.Context, req *proto.HelloMultipleFilesHandlerReq, resp *proto.HelloMultipleFilesHandlerResp) *result.HttpError {
+	multipartForm, err := req.GetContext().MultipartForm()
+	if err != nil {
+		return result.Err2HttpError(err, result.CodeBoolFail)
+	}
+	// get files
+	files := multipartForm.File["files"]
 	var message string
 	for _, file := range files {
 		message = fmt.Sprintf("%s[%s]", message, file.Filename)
 	}
-	resp.Code = http.StatusOK
-	fmt.Println(req.Name)
+	resp.Code = result.CodeBoolOk
 	resp.Message = fmt.Sprintf("success to upload these files : %+v", message)
+	fmt.Println("hello multiple file")
 	return nil
 }

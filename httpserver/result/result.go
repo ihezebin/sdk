@@ -1,4 +1,4 @@
 package result
 
-const CodeOk = true
-const CodeFail = false
+const CodeBoolOk = true
+const CodeBoolFail = false
