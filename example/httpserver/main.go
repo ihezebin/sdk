@@ -11,7 +11,8 @@ import (
 )
 
 func main() {
-	err := configure.LoadJSON("./config/application.json", config.GetConfig())
+	//err := configure.LoadJSON("./config/application.json", config.GetConfig())
+	err := configure.LoadJSONWithCmd(config.GetConfig())
 	if err != nil {
 		log.Printf("load config error: %v\n", err)
 		return
