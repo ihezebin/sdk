@@ -1,0 +1,5 @@
+{
+  "port": 8001,
+  "app_name": "sdk-go-httpserver",
+  "mode": "debug"
+}

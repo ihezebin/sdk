@@ -1,13 +1,10 @@
 package config
 
-// global configure
+// Config global configure
 type Config struct {
-	Port int    `json:"port"`
-	Env  string `json:"env"`
-}
-
-func (c *Config) Set() {
-
+	Port    int    `json:"port"`
+	AppName string `json:"app_name"`
+	Mode    string `json:"mode"`
 }
 
 var gConfig Config

@@ -69,7 +69,7 @@ func (s *server) Run(ctx context.Context) error {
 	// server listenAndServe
 	ch := make(chan os.Signal)
 	go func() {
-		log.Printf("http server:%s is starting in port:%d", s.option.Name, s.option.Port)
+		log.Printf("http server is starting in port:%d", s.option.Port)
 		if err := s.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				log.Printf("http server ListenAndServe err:%v\n", err)
