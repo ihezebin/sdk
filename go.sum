@@ -73,6 +73,7 @@ github.com/whereabouts/chassis v0.1.2/go.mod h1:Io0tkdKW2wd26UzR1PQSSqnvweStnZXV
 github.com/whereabouts/chassis v0.1.9 h1:Gwx0Jg7fl8P4Uh3WEDrewTReG36Kn99s1gF0wCJ5GR8=
 github.com/whereabouts/chassis v0.1.9/go.mod h1:gBb51Sy52umeqBlX+dIJOCNNG3RGWmKKRclKBVZjivw=
 github.com/whereabouts/utils v0.1.8/go.mod h1:Ph6XEw/J7g5mJDK/+bOxNiuslmDXpynt/lw3b/c3Imw=
+github.com/whereabouts/utils v0.1.19 h1:U9qV4qGEEhMLme+An3n4UIohSVhbFAVNgcwwXEM2k+U=
 github.com/whereabouts/utils v0.1.19/go.mod h1:12aLUPc80SyF+oddzhu0q1Qs9CQtb6Lc/u5Q5+RDVJ4=
 github.com/whereabouts/web-template v0.1.12 h1:IdUyM58ihRS+Np9RtTHmU/XLlLcLcNNsYur3G3O1EZ0=
 github.com/whereabouts/web-template v0.1.12/go.mod h1:DVtnqulsY1BBQWLiny1Y+hKi79zhOn1os0+lZCxbmGg=

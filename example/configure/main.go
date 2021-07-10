@@ -1,13 +1,13 @@
-package config
+package main
 
 import (
 	"fmt"
-	configure "github.com/whereabouts/sdk-go/configure"
+	"github.com/whereabouts/sdk-go/configure"
 	"log"
-	"testing"
 )
 
-func TestLoad(t *testing.T) {
+func main() {
+	//err := configure.LoadJSONWithCmd(&gConfig)
 	err := configure.LoadJSON("./application.json", &gConfig)
 	if err != nil {
 		log.Println(err)

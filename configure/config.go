@@ -10,7 +10,7 @@ import (
 	"runtime"
 )
 
-const DefaultConfigPath = "./config/application.json"
+const DefaultConfigPath = "./configure/application.json"
 
 var callerSkip = 1
 
@@ -19,7 +19,7 @@ func LoadJSON(path string, conf interface{}) error {
 	path = filepath.Join(filepath.Dir(currentPath), path)
 	_, err := os.Stat(path)
 	if os.IsNotExist(err) {
-		return errors.Errorf("config file %s not exist", path)
+		return errors.Errorf("configure file %s not exist", path)
 	}
 	fmt.Println(path)
 	data, err := ioutil.ReadFile(path)

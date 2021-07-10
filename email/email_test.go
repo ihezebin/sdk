@@ -2,12 +2,11 @@ package email
 
 import (
 	"fmt"
-	"github.com/whereabouts/utils/mail"
 	"testing"
 )
 
 func TestEmail(t *testing.T) {
-	auth := mail.Auth("86744316@qq.com", "[your authorization code]", mail.HostQQMail, mail.PortQQMail)
+	auth := Auth("86744316@qq.com", "[your authorization code]", HostQQMail, PortQQMail)
 	sender := auth.SetFrom("whereabouts.icu")
 	err := sender.SetSubject("Hello World Plain").Plain([]string{"378129361@qq.com"}, "Hello World！This is a test mail！")
 	if err != nil {

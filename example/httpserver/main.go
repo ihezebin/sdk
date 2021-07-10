@@ -11,10 +11,10 @@ import (
 )
 
 func main() {
-	//err := configure.LoadJSON("./config/application.json", config.GetConfig())
-	err := configure.LoadJSONWithCmd(config.GetConfig()) // go run main.go -c [config file path]
+	//err := configure.LoadJSON("./configure/application.json", configure.GetConfig())
+	err := configure.LoadJSONWithCmd(config.GetConfig()) // go run main.go -c [configure file path]
 	if err != nil {
-		log.Printf("load config error: %v\n", err)
+		log.Printf("load configure error: %v\n", err)
 		return
 	}
 	ctx := context.Background()
