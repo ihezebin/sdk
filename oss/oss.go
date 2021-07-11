@@ -15,7 +15,7 @@ type Client interface {
 	Delete(fileName string) error
 }
 
-func UCloud(config *ucloud.Config) Client {
+func NewUCloudClient(config *ucloud.Config) Client {
 	return &ucloud.Client{
 		Config: &ufsdk.Config{
 			PublicKey:       config.PublicKey,
@@ -28,7 +28,7 @@ func UCloud(config *ucloud.Config) Client {
 	}
 }
 
-func QiNiu(config *qiniu.Config) Client {
+func NewQiNiuClient(config *qiniu.Config) Client {
 	putPolicy := storage.PutPolicy{
 		Scope: config.Bucket,
 	}
