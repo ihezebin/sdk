@@ -14,7 +14,7 @@ func TestEmail(t *testing.T) {
 		Host:     HostQQMail,
 		Port:     PortQQMail,
 	})
-	//msg := NewMessage().SetReceiver("378129361@qq.com").SetBody("Hello World！This is a test mail！")
+	//msg := NewMessage().SetReceiver("378129361@qq.com").SetContentType(ContentTypeText).SetBody("Hello World！This is a test mail！")
 	msg := NewMessage().SetReceiver("378129361@qq.com").
 		SetBody(`
 			<html>
