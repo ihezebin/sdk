@@ -8,7 +8,7 @@ import (
 
 //q1a2
 func TestEmail(t *testing.T) {
-	client := NewClient(Config{
+	emailClient := NewClient(Config{
 		Username: "86744316@qq.com",
 		Password: "hsbpzk***gsjbec**c",
 		Host:     HostQQMail,
@@ -25,7 +25,7 @@ func TestEmail(t *testing.T) {
 			</body>
 			</html>
 		`)
-	err := client.Send(msg)
+	err := emailClient.Send(msg)
 	if err != nil {
 		log.Println("send mail err:", err)
 	}
