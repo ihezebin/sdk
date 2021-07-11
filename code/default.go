@@ -10,7 +10,7 @@ func Default() string {
 	return Generate(DefaultLen, TypeBlend)
 }
 
-func String(length int, codeType int) string {
+func String(length int, codeType CodeType) string {
 	return Generate(length, codeType)
 }
 
@@ -30,19 +30,19 @@ func LetterUpper(length int) string {
 	return Generate(length, TypeLetterUpper)
 }
 
-func Generate(length int, codeType int) (code string) {
+func Generate(length int, codeType CodeType) (code string) {
 	for i := 0; i < length; i++ {
 		switch codeType {
 		case TypeBlend:
-			code = fmt.Sprintf("%s%c", code, characterBlend[rand.Intn(len(characterBlend))])
+			code = fmt.Sprintf("%s%c", code, TemplateBlend[rand.Intn(len(TemplateBlend))])
 		case TypeDigit:
-			code = fmt.Sprintf("%s%c", code, characterDigit[rand.Intn(len(characterDigit))])
+			code = fmt.Sprintf("%s%c", code, TemplateDigit[rand.Intn(len(TemplateDigit))])
 		case TypeLetterLower:
-			code = fmt.Sprintf("%s%c", code, characterLetterLower[rand.Intn(len(characterLetterLower))])
+			code = fmt.Sprintf("%s%c", code, TemplateLetterLower[rand.Intn(len(TemplateLetterLower))])
 		case TypeLetterUpper:
-			code = fmt.Sprintf("%s%c", code, characterLetterUpper[rand.Intn(len(characterLetterUpper))])
+			code = fmt.Sprintf("%s%c", code, TemplateLetterUpper[rand.Intn(len(TemplateLetterUpper))])
 		default:
-			code = fmt.Sprintf("%s%c", code, characterBlend[rand.Intn(len(characterBlend))])
+			code = fmt.Sprintf("%s%c", code, TemplateBlend[rand.Intn(len(TemplateBlend))])
 		}
 	}
 	return code

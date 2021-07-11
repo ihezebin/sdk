@@ -5,11 +5,11 @@ import (
 	"math/rand"
 )
 
-func Custom(template string) string {
+func Custom(template Template) string {
 	return NewCustom(DefaultLen, template)
 }
 
-func NewCustom(length int, template string) (code string) {
+func NewCustom(length int, template Template) (code string) {
 	for i := 0; i < length; i++ {
 		index := rand.Intn(len(template) / 3)
 		for j, v := range template {

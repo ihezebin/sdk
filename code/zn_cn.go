@@ -5,15 +5,15 @@ import (
 )
 
 func PrintCNChar() {
-	for _, v := range zn_cn {
+	for _, v := range TemplateZnCn {
 		fmt.Printf("%c", v)
 	}
 }
 
-func ZN_CN() string {
-	return NewCustom(DefaultLen, zn_cn)
+func ZnCn() string {
+	return NewCustom(DefaultLen, TemplateZnCn)
 }
 
-func NewZN_CN(length int) (code string) {
-	return NewCustom(length, zn_cn)
+func NewZnCn(length int) string {
+	return NewCustom(length, TemplateZnCn)
 }
