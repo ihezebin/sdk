@@ -2,108 +2,57 @@ package email
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk-go/utils/mapper"
-	"github.com/whereabouts/sdk-go/utils/timer"
 	"net/smtp"
-	"strings"
 )
 
 const (
-	contentTypeDefault = "text/plain;charset=UTF-8"
-	contentTypeHtml    = "text/html;charset=UTF-8"
-	HostQQMail         = "smtp.qq.com"
-	PortQQMail         = "25"
+	HostQQMail = "smtp.qq.com"
+	PortQQMail = "25"
 )
 
-type Mail struct {
-	username string
-	password string
-	host     string
-	port     string
-	auth     smtp.Auth
-	message  *Message
+type Client interface {
+	Send(msg *Message) error
 }
 
-type Message struct {
-	From string `json:"From"`
-	To   string `json:"To"`
-	// 抄送
-	CC string `json:"Cc"`
-	// 暗抄送
-	BCC         string `json:"Bcc"`
-	Subject     string `json:"Subject"`
-	ContentType string `json:"Content-Type"`
-	Date        string `json:"Date"`
+type Config struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	// default QQMail host
+	Host string `json:"host"`
+	// default QQMail port
+	Port string `json:"port"`
+	// usually an empty string
+	Identity string `json:"identity"`
 }
 
-// Auth authenticates the identity
-// In particular, the password is the authorization code, not your email password
-func Auth(username, password, host, port string) *Mail {
-	return &Mail{
-		username: username,
-		password: password,
-		host:     host,
-		port:     port,
-		auth:     smtp.PlainAuth("", username, password, host),
-		message:  &Message{From: username},
+func NewClient(config Config) Client {
+	handleConfig(&config)
+	auth := smtp.PlainAuth(config.Identity, config.Username, config.Password, config.Host)
+	return &client{
+		config: config,
+		auth:   auth,
 	}
 }
 
-func (mail *Mail) SetFrom(from string) *Mail {
-	mail.message.From = from
-	return mail
+type client struct {
+	config Config
+	auth   smtp.Auth
 }
 
-func (mail *Mail) SetCC(CC []string) *Mail {
-	mail.message.CC = strings.Join(CC, ";")
-	return mail
-}
-
-func (mail *Mail) SetBCC(BCC []string) *Mail {
-	mail.message.BCC = strings.Join(BCC, ";")
-	return mail
-}
-
-func (mail *Mail) SetSubject(subject string) *Mail {
-	mail.message.Subject = subject
-	return mail
-}
-
-// Plain send email in a plain format
-func (mail *Mail) Plain(to []string, msg string) error {
-	mail.message.ContentType = contentTypeDefault
-	return mail.send(to, msg)
-}
-
-// Html send email in a html format
-func (mail *Mail) Html(to []string, msg string) error {
-	mail.message.ContentType = contentTypeHtml
-	return mail.send(to, msg)
-}
-
-func (mail *Mail) send(to []string, msg string) error {
-	out, err := mail.handleMessage(to, msg)
+func (c *client) Send(message *Message) error {
+	msg, err := handleMessage(c, message)
 	if err != nil {
 		return err
 	}
-	err = smtp.SendMail(fmt.Sprintf("%s:%s", mail.host, mail.port), mail.auth, mail.username, to, []byte(out))
-	if err != nil {
-		return err
-	}
-	return nil
+	addr := fmt.Sprintf("%s:%s", c.config.Host, c.config.Port)
+	return smtp.SendMail(addr, c.auth, c.config.Username, message.To, msg)
 }
 
-func (mail *Mail) handleMessage(to []string, msg string) (s string, err error) {
-	mail.message.To = strings.Join(to, ";")
-	mail.message.Date = timer.Now()
-	msgMap := make(map[string]interface{})
-	msgMap, err = mapper.Struct2Map(mail.message)
-	if err != nil {
-		return "", err
+func handleConfig(config *Config) {
+	if config.Host == "" {
+		config.Host = HostQQMail
 	}
-	for key, value := range msgMap {
-		s = fmt.Sprintf("%s%s:%s\r\n", s, key, value)
+	if config.Port == "" {
+		config.Port = PortQQMail
 	}
-	s = fmt.Sprintf("%s\r\n%s", s, msg)
-	return s, nil
 }
