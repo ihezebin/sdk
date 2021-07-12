@@ -78,7 +78,7 @@ func (message *Message) SetBody(body string) *Message {
 	return message
 }
 
-// Deprecated: Use SetBody instead.
+// Deprecated: Use SetBody to instead.
 func (message *Message) SetContent(content string) *Message {
 	message.Body = content
 	return message
