@@ -2,11 +2,11 @@ package test
 
 import (
 	"github.com/globalsign/mgo/bson"
-	"github.com/whereabouts/sdk-go/model/mongo"
+	"github.com/whereabouts/sdk-go/model/mongoc"
 )
 
 var (
-	userDB = &UserDB{mongo.New("test", "user", User{})}
+	userDB = &UserDB{mongoc.New("test", "user", User{})}
 )
 
 func GetUserDB() *UserDB {
@@ -14,7 +14,7 @@ func GetUserDB() *UserDB {
 }
 
 type UserDB struct {
-	*mongo.MongoDB
+	*mongoc.MongoDB
 }
 
 type User struct {

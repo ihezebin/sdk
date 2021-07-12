@@ -1,6 +1,7 @@
-package mongo
+package mongoc
 
 import (
+	"context"
 	"github.com/globalsign/mgo"
 	"github.com/pkg/errors"
 	"time"
@@ -9,35 +10,11 @@ import (
 type Client interface {
 	GetSession() *mgo.Session
 	Close()
-	Do(model Model, exec func(s *mgo.Collection) error) error
+	DoWithContext(ctx context.Context, model Model, exec func(s *mgo.Collection) error) error
 	GetConfig() Config
 }
 
-var globalClient Client
-
-func Init(config Config) (Client, error) {
-	c, err := NewClient(config)
-	if err != nil {
-		return nil, err
-	}
-	globalClient = c
-	return c, err
-}
-
-func InitFast(url string) (Client, error) {
-	c, err := Dial(url)
-	if err != nil {
-		return nil, err
-	}
-	globalClient = c
-	return c, err
-}
-
-func getGlobalClient() Client {
-	return globalClient
-}
-
-// example: mongodb://myuser:mypass@localhost:27017,otherhost:27017/db
+// example: mongodb://username:password@localhost:27017,otherhost:27017/db
 func Dial(url string) (Client, error) {
 	info, err := mgo.ParseURL(url)
 	if err != nil {
@@ -49,11 +26,14 @@ func Dial(url string) (Client, error) {
 	if info.MaxIdleTimeMS == 0 {
 		info.MaxIdleTimeMS = int(defaultMaxIdleTime / time.Millisecond)
 	}
-	session, err1 := mgo.DialWithInfo(info)
-	session.SetMode(mgo.PrimaryPreferred, true)
-	if err1 != nil {
-		return nil, errors.Wrap(err1, "failed to connect mongodb")
+	if info.Source == "" {
+		info.Source = "admin"
 	}
+	session, err := mgo.DialWithInfo(info)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to connect mongodb")
+	}
+	session.SetMode(mgo.PrimaryPreferred, true)
 	config := Config{
 		Addrs:          info.Addrs,
 		Database:       info.Database,
@@ -69,7 +49,9 @@ func Dial(url string) (Client, error) {
 		InsertTimeAuto: true,
 		UpdateTimeAuto: true,
 	}
-	return &client{session: session, config: config}, nil
+	c := &client{session: session, config: config}
+	gClient = c
+	return c, nil
 }
 
 func NewClient(config Config) (Client, error) {
@@ -83,12 +65,17 @@ func NewClient(config Config) (Client, error) {
 		maxIdleTime = config.MaxIdleTime * time.Second
 	}
 
+	source := defaultSource
+	if config.Source != "" {
+		source = config.Source
+	}
+
 	session, err := mgo.DialWithInfo(&mgo.DialInfo{
 		Addrs:          config.Addrs,
 		Database:       config.Database,
 		Username:       config.Username,
 		Password:       config.Password,
-		Source:         config.Source,
+		Source:         source,
 		ReplicaSetName: config.ReplicaSetName,
 		Timeout:        config.Timeout * time.Second,
 		PoolLimit:      poolLimit,
@@ -104,7 +91,7 @@ func NewClient(config Config) (Client, error) {
 	}
 	session.SetMode(config.Mode, true)
 	c := &client{session: session, config: config}
-	globalClient = c
+	gClient = c
 	return c, nil
 }
 
@@ -113,6 +100,7 @@ type client struct {
 	config  Config
 }
 
+//Deprecated: Use DoWithSession instead.
 func (c *client) GetSession() *mgo.Session {
 	return c.session.Copy()
 }
@@ -121,12 +109,24 @@ func (c *client) Close() {
 	c.session.Close()
 }
 
-func (c *client) Do(model Model, exec func(s *mgo.Collection) error) error {
+func (c *client) DoWithContext(ctx context.Context, model Model, exec func(c *mgo.Collection) error) error {
 	s := c.GetSession()
 	defer s.Close()
 	return exec(s.DB(model.Database()).C(model.Collection()))
 }
 
+func (c *client) DoWithSession(do func(session *mgo.Session) error) error {
+	session := c.GetSession()
+	defer session.Close()
+	return do(session)
+}
+
 func (c *client) GetConfig() Config {
 	return c.config
+}
+
+var gClient *client
+
+func getGlobalClient() Client {
+	return gClient
 }
