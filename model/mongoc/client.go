@@ -49,9 +49,16 @@ func Dial(url string) (Client, error) {
 		InsertTimeAuto: true,
 		UpdateTimeAuto: true,
 	}
-	c := &client{session: session, config: config}
+	return &client{session: session, config: config}, nil
+}
+
+func NewGlobalClient(config Config) (Client, error) {
+	c, err := NewClient(config)
+	if err != nil {
+		return nil, err
+	}
 	gClient = c
-	return c, nil
+	return c, err
 }
 
 func NewClient(config Config) (Client, error) {
@@ -90,9 +97,7 @@ func NewClient(config Config) (Client, error) {
 		config.Mode = mgo.PrimaryPreferred
 	}
 	session.SetMode(config.Mode, true)
-	c := &client{session: session, config: config}
-	gClient = c
-	return c, nil
+	return &client{session: session, config: config}, nil
 }
 
 type client struct {
@@ -125,8 +130,8 @@ func (c *client) GetConfig() Config {
 	return c.config
 }
 
-var gClient *client
+var gClient Client
 
-func getGlobalClient() Client {
+func GetGlobalClient() Client {
 	return gClient
 }
