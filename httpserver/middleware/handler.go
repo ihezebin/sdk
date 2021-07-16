@@ -46,17 +46,29 @@ func (c Context) GetContext() *gin.Context {
 	return c.ctx
 }
 
-//func GetRequest(ctx context.Context) *http.Request {
-//	return ctx.Value(RequestKey).(*http.Request)
-//}
-//
-//func GetResponse(ctx context.Context) *http.Response {
-//	return ctx.Value(ResponseKey).(*http.Response)
-//}
-//
-//func GetGinContext(ctx context.Context) *gin.Context {
-//	return ctx.Value(GinContextKey).(*gin.Context)
-//}
+func GetRequest(ctx context.Context) (*http.Request, error) {
+	request, ok := ctx.Value(RequestKey).(*http.Request)
+	if !ok {
+		return nil, errors.New("context does not contain *http.Request")
+	}
+	return request, nil
+}
+
+func GetResponse(ctx context.Context) (*http.Response, error) {
+	response, ok := ctx.Value(ResponseKey).(*http.Response)
+	if !ok {
+		return nil, errors.New("context does not contain *http.Response")
+	}
+	return response, nil
+}
+
+func GetGinContext(ctx context.Context) (*gin.Context, error) {
+	ginCtx, ok := ctx.Value(GinContextKey).(*gin.Context)
+	if !ok {
+		return nil, errors.New("context does not contain *gin.Context")
+	}
+	return ginCtx, nil
+}
 
 func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 	mV, reqT, respT, err := checkMethod(method)
@@ -76,10 +88,10 @@ func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, result.Error(result.CodeBoolFail, fmt.Sprintf("bind param failed: %s", err.Error())))
 			return
 		}
-		setContext(req, c)
+		inheritGinContext(req, c)
 
 		resp := reflect.New(respT)
-		setContext(resp, c)
+		inheritGinContext(resp, c)
 
 		results := mV.Call([]reflect.Value{reflect.ValueOf(ctx), req, resp})
 		errValue := results[0]
@@ -101,7 +113,7 @@ func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 	}
 }
 
-func setContext(v reflect.Value, c *gin.Context) {
+func inheritGinContext(v reflect.Value, c *gin.Context) {
 	contextV := reflect.ValueOf(Context{c})
 	vCtxChild := v.Elem().FieldByName(contextV.Type().Name())
 	if ok := vCtxChild.CanSet(); ok {
