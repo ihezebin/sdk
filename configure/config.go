@@ -10,7 +10,7 @@ import (
 	"runtime"
 )
 
-const DefaultConfigPath = "./configure/application.json"
+const DefaultConfigPath = "./config/application.json"
 
 var callerSkip = 1
 
