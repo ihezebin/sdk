@@ -14,7 +14,7 @@ type Client interface {
 	GetConfig() Config
 }
 
-// example: mongodb://username:password@localhost:27017,otherhost:27017/db
+// example: mongodb://username:password@localhost:27017,otherhost:27017/db, default auto_time is true
 func Dial(url string) (Client, error) {
 	info, err := mgo.ParseURL(url)
 	if err != nil {
@@ -46,8 +46,7 @@ func Dial(url string) (Client, error) {
 		PoolLimit:      info.PoolLimit,
 		MaxIdleTime:    time.Duration(info.MaxIdleTimeMS) * time.Millisecond,
 		AppName:        info.AppName,
-		InsertTimeAuto: true,
-		UpdateTimeAuto: true,
+		AutoTime:       true,
 	}
 	return &client{session: session, config: config}, nil
 }

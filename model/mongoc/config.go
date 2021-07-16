@@ -30,10 +30,9 @@ type Config struct {
 	Mode      mgo.Mode      `json:"mode"`
 	PoolLimit int           `json:"pool_limit"`
 	// MaxIdleTime The maximum number of seconds to remain idle in the pool, default 20 minutes
-	MaxIdleTime    time.Duration `json:"max_idle_time"`
-	AppName        string        `json:"app_name"`
-	InsertTimeAuto bool          `json:"insert_time_auto"`
-	UpdateTimeAuto bool          `json:"update_time_auto"`
+	MaxIdleTime time.Duration `json:"max_idle_time"`
+	AppName     string        `json:"app_name"`
+	AutoTime    bool          `json:"auto_time"`
 }
 
 type Model interface {
