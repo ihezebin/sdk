@@ -2,7 +2,6 @@ package configure
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
@@ -21,7 +20,6 @@ func LoadJSON(path string, conf interface{}) error {
 	if os.IsNotExist(err) {
 		return errors.Errorf("configure file %s not exist", path)
 	}
-	fmt.Println(path)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return err

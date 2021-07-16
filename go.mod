@@ -1,6 +1,6 @@
 module github.com/whereabouts/sdk-go
 
-go 1.15
+go 1.13
 
 require (
 	github.com/gin-gonic/gin v1.7.2
