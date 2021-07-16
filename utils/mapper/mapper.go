@@ -56,10 +56,13 @@ func Struct2Map(v interface{}) (map[string]interface{}, error) {
 		key := t.Field(i).Tag.Get("bson")
 		if key == "" {
 			key = t.Field(i).Tag.Get("json")
-			if key == "" || key == "-" {
-				//key = t.Field(i).Name
+			if key == "" {
+				key = t.Field(i).Name
+			} else if key == "-" {
 				continue
 			}
+		} else if key == "-" {
+			continue
 		}
 		m[key] = value.Field(i).Interface()
 	}
