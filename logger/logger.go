@@ -1,53 +1,219 @@
 package logger
 
 import (
-	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	"context"
 	"github.com/sirupsen/logrus"
 	"io"
 	"os"
-	"time"
 )
 
 type Logger struct {
-	l logrus.Logger
+	kernel *logrus.Logger
 }
 
 func New() *Logger {
 	return &Logger{
-		logrus.Logger{
-			Out:          os.Stderr,
-			Formatter:    new(logrus.JSONFormatter),
+		&logrus.Logger{
+			Out:          OStdErrWriter(),
 			Hooks:        make(logrus.LevelHooks),
-			Level:        logrus.DebugLevel,
-			ExitFunc:     os.Exit,
+			Formatter:    convertFormatter(JSONFormatter()),
 			ReportCaller: false,
+			Level:        logrus.InfoLevel,
+			ExitFunc:     os.Exit,
 		},
 	}
 }
 
-func NewRotateWriter(fileName string, rotateTime time.Duration, expireTime time.Duration) (writer io.Writer, err error) {
-	return rotatelogs.New(
-		// The pattern used to generate actual log file names.
-		// You should use patterns using the strftime (3) format.
-		// 分割后的文件名称
-		fileName+".%Y%m%d%H%M%S",
-		// Interval between file rotation. By default logs are rotated every 86400 seconds.
-		// Note: Remember to use time.Duration values.
-		// 设置日志切割时间间隔
-		rotatelogs.WithRotationTime(rotateTime),
-		// Path where a symlink for the actual log file is placed.
-		// This allows you to always check at the same location for log files even if the logs were rotated
-		// 生成软链，指向最新日志文件
-		//rotatelogs.WithLinkName("./"),
-		// Time to wait until old logs are purged. By default no logs are purged,
-		// which certainly isn't what you want. Note: Remember to use time.Duration values.
-		// 设置最大保存时间(7天)
-		rotatelogs.WithMaxAge(expireTime),
-		// The number of files should be kept. By default, this option is disabled.
-		// Note: MaxAge should be disabled by specifing WithMaxAge(-1) explicitly.
-		//rotatelogs.WithRotationCount(1),
-		// Ensure a new file is created every time New() is called.
-		// If the base file name already exists, an implicit rotation is performed.
-		rotatelogs.ForceNewFile(),
-	)
+func (logger *Logger) Kernel() *logrus.Logger {
+	return logger.kernel
+}
+
+func (logger *Logger) WithField(key string, value interface{}) *Entry {
+	return &Entry{logger, logger.Kernel().WithField(key, value)}
+}
+
+func (logger *Logger) WithFields(fields Fields) *Entry {
+	return &Entry{logger, logger.Kernel().WithFields(convertFields(fields))}
+}
+
+func (logger *Logger) WithError(err error) *Entry {
+	return &Entry{logger, logger.Kernel().WithError(err)}
+}
+
+func (logger *Logger) WithContext(ctx context.Context) *Entry {
+	return &Entry{logger, logger.Kernel().WithContext(ctx)}
+}
+
+// Logger Printf family functions
+
+func (logger *Logger) Logf(level Level, format string, args ...interface{}) {
+	logger.Kernel().Logf(convertLevel(level), format, args...)
+}
+
+func (logger *Logger) Tracef(format string, args ...interface{}) {
+	logger.Kernel().Tracef(format, args...)
+}
+
+func (logger *Logger) Debugf(format string, args ...interface{}) {
+	logger.Kernel().Debugf(format, args...)
+}
+
+func (logger *Logger) Infof(format string, args ...interface{}) {
+	logger.Kernel().Infof(format, args...)
+}
+
+func (logger *Logger) Printf(format string, args ...interface{}) {
+	logger.Kernel().Printf(format, args...)
+}
+
+func (logger *Logger) Warnf(format string, args ...interface{}) {
+	logger.Kernel().Warnf(format, args...)
+}
+
+func (logger *Logger) Warningf(format string, args ...interface{}) {
+	logger.Kernel().Warningf(format, args...)
+}
+
+func (logger *Logger) Errorf(format string, args ...interface{}) {
+	logger.Kernel().Errorf(format, args...)
+}
+
+func (logger *Logger) Fatalf(format string, args ...interface{}) {
+	logger.Kernel().Fatalf(format, args...)
+}
+
+func (logger *Logger) Panicf(format string, args ...interface{}) {
+	logger.Kernel().Panicf(format, args...)
+}
+
+// Logger Print family functions
+
+func (logger *Logger) Log(level Level, args ...interface{}) {
+	logger.Kernel().Log(convertLevel(level), args...)
+}
+
+func (logger *Logger) Trace(args ...interface{}) {
+	logger.Kernel().Trace(args...)
+}
+
+func (logger *Logger) Debug(args ...interface{}) {
+	logger.Kernel().Debug(args...)
+}
+
+func (logger *Logger) Info(args ...interface{}) {
+	logger.Kernel().Info(args...)
+}
+
+func (logger *Logger) Print(args ...interface{}) {
+	logger.Kernel().Print(args...)
+}
+
+func (logger *Logger) Warn(args ...interface{}) {
+	logger.Kernel().Warn(args...)
+}
+
+func (logger *Logger) Warning(args ...interface{}) {
+	logger.Kernel().Warning(args...)
+}
+
+func (logger *Logger) Error(args ...interface{}) {
+	logger.Kernel().Error(args...)
+}
+
+func (logger *Logger) Fatal(args ...interface{}) {
+	logger.Kernel().Fatal(args...)
+}
+
+func (logger *Logger) Panic(args ...interface{}) {
+	logger.Kernel().Panic(args...)
+}
+
+// Logger Println family functions
+
+func (logger *Logger) Logln(level Level, args ...interface{}) {
+	logger.Kernel().Logln(convertLevel(level), args...)
+}
+
+func (logger *Logger) Traceln(args ...interface{}) {
+	logger.Kernel().Traceln(args...)
+}
+
+func (logger *Logger) Debugln(args ...interface{}) {
+	logger.Kernel().Debugln(args...)
+}
+
+func (logger *Logger) Infoln(args ...interface{}) {
+	logger.Kernel().Infoln(args...)
+}
+
+func (logger *Logger) Println(args ...interface{}) {
+	logger.Kernel().Println(args...)
+}
+
+func (logger *Logger) Warnln(args ...interface{}) {
+	logger.Kernel().Warnln(args...)
+}
+
+func (logger *Logger) Warningln(args ...interface{}) {
+	logger.Kernel().Warningln(args...)
+}
+
+func (logger *Logger) Errorln(args ...interface{}) {
+	logger.Kernel().Errorln(args...)
+}
+
+func (logger *Logger) Fatalln(args ...interface{}) {
+	logger.Kernel().Fatalln(args...)
+}
+
+func (logger *Logger) Panicln(args ...interface{}) {
+	logger.Kernel().Panicln(args...)
+}
+
+// SetLevel sets the logger level.
+func (logger *Logger) SetLevel(level Level) {
+	logger.Kernel().SetLevel(convertLevel(level))
+}
+
+// GetLevel returns the logger level.
+func (logger *Logger) GetLevel() Level {
+	return convertLevelReverse(logger.Kernel().GetLevel())
+}
+
+// AddHook adds a hook to the logger hooks.
+func (logger *Logger) AddHook(hook Hook) {
+	logger.Kernel().AddHook(convertHook(hook))
+}
+
+// IsLevelEnabled checks if the log level of the logger is greater than the level param
+func (logger *Logger) IsLevelEnabled(level Level) bool {
+	return logger.Kernel().IsLevelEnabled(convertLevel(level))
+}
+
+// SetFormatter sets the logger formatter.
+func (logger *Logger) SetFormatter(formatter Formatter) {
+	logger.Kernel().SetFormatter(convertFormatter(formatter))
+}
+
+// SetOutput sets the logger output.
+func (logger *Logger) SetOutput(output io.Writer) {
+	logger.Kernel().SetOutput(output)
+}
+
+// CloseCaller set ReportCaller false
+func (logger *Logger) CloseCaller() {
+	logger.Kernel().SetReportCaller(false)
+}
+
+// ReplaceHooks replaces the logger hooks and returns the old ones
+func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
+	return convertLevelHooksReverse(logger.Kernel().ReplaceHooks(convertLevelHooks(hooks)))
+}
+
+// SetNoLock
+// When file is opened with appending mode, it's safe to
+// write concurrently to a file (within 4k message on Linux).
+// In these cases user can choose to disable the lock.
+func (logger *Logger) SetNoLock() {
+	logger.Kernel().SetNoLock()
 }

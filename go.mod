@@ -13,5 +13,4 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/ufilesdk-dev/ufile-gosdk v1.0.1
 	github.com/whereabouts/chassis v0.1.9 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
