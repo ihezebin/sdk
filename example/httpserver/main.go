@@ -7,6 +7,7 @@ import (
 	"github.com/whereabouts/sdk-go/example/httpserver/routes"
 	"github.com/whereabouts/sdk-go/example/httpserver/server"
 	"github.com/whereabouts/sdk-go/httpserver"
+	"github.com/whereabouts/sdk-go/httpserver/middleware"
 	"log"
 )
 
@@ -22,7 +23,9 @@ func main() {
 		httpserver.WithName(config.GetConfig().AppName),
 		httpserver.WithPort(config.GetConfig().Port),
 		httpserver.WithMode(config.GetConfig().Mode),
-		httpserver.WithMiddles(),
+		httpserver.WithMiddles(
+			middleware.Recovery(),
+		),
 	).Route(routes.Routes).BeforeRun(server.Init).OnShutdown(server.Close).Run(ctx); err != nil {
 		log.Printf("server run with error: %v\n", err)
 	}
