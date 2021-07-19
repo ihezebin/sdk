@@ -2,7 +2,6 @@ package logger
 
 import (
 	"context"
-	"github.com/whereabouts/sdk-go/logger/hooks"
 	"io"
 )
 
@@ -10,34 +9,29 @@ var (
 	standardLogger = New()
 )
 
-func init() {
-
-}
-
 func StandardLogger() *Logger {
-	standardLogger.AddHook(hooks.NewLineHook(""))
 	return standardLogger
 }
 
 // SetOutput sets the standard logger output.
-func SetOutput(out io.Writer) {
-	standardLogger.SetOutput(out)
+func SetOutput(out io.Writer) *Logger {
+	return standardLogger.SetOutput(out)
 }
 
 // SetFormatter sets the standard logger formatter.
-func SetFormatter(formatter Formatter) {
-	standardLogger.SetFormatter(formatter)
+func SetFormatter(formatter Formatter) *Logger {
+	return standardLogger.SetFormatter(formatter)
 }
 
-// CloseCaller sets whether the standard logger will include the calling
+// DisableCaller sets whether the standard logger will include the calling
 // method as a field.
-func CloseCaller() {
-	standardLogger.CloseCaller()
+func DisableCaller() *Logger {
+	return standardLogger.DisableCaller()
 }
 
 // SetLevel sets the standard logger level.
-func SetLevel(level Level) {
-	standardLogger.SetLevel(level)
+func SetLevel(level Level) *Logger {
+	return standardLogger.SetLevel(level)
 }
 
 // GetLevel returns the standard logger level.
@@ -51,8 +45,8 @@ func IsLevelEnabled(level Level) bool {
 }
 
 // AddHook adds a hook to the standard logger hooks.
-func AddHook(hook Hook) {
-	standardLogger.AddHook(hook)
+func AddHook(hook Hook) *Logger {
+	return standardLogger.AddHook(hook)
 }
 
 // WithError creates an entry from the standard logger and adds an error to it, using the value defined in ErrorKey as key.

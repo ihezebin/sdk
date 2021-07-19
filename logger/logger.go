@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	"github.com/sirupsen/logrus"
+	"github.com/whereabouts/sdk-go/logger/hooks"
 	"io"
 	"os"
 )
@@ -12,16 +13,16 @@ type Logger struct {
 }
 
 func New() *Logger {
-	return &Logger{
+	return (&Logger{
 		&logrus.Logger{
 			Out:          OStdErrWriter(),
 			Hooks:        make(logrus.LevelHooks),
-			Formatter:    convertFormatter(JSONFormatter()),
+			Formatter:    JSONFormatter(),
 			ReportCaller: false,
 			Level:        logrus.InfoLevel,
 			ExitFunc:     os.Exit,
 		},
-	}
+	}).AddHook(hooks.NewCallerHook().SetSimplify(true))
 }
 
 func (logger *Logger) Kernel() *logrus.Logger {
@@ -171,8 +172,9 @@ func (logger *Logger) Panicln(args ...interface{}) {
 }
 
 // SetLevel sets the logger level.
-func (logger *Logger) SetLevel(level Level) {
+func (logger *Logger) SetLevel(level Level) *Logger {
 	logger.Kernel().SetLevel(convertLevel(level))
+	return logger
 }
 
 // GetLevel returns the logger level.
@@ -181,8 +183,9 @@ func (logger *Logger) GetLevel() Level {
 }
 
 // AddHook adds a hook to the logger hooks.
-func (logger *Logger) AddHook(hook Hook) {
-	logger.Kernel().AddHook(convertHook(hook))
+func (logger *Logger) AddHook(hook Hook) *Logger {
+	logger.Kernel().AddHook(hook)
+	return logger
 }
 
 // IsLevelEnabled checks if the log level of the logger is greater than the level param
@@ -191,29 +194,33 @@ func (logger *Logger) IsLevelEnabled(level Level) bool {
 }
 
 // SetFormatter sets the logger formatter.
-func (logger *Logger) SetFormatter(formatter Formatter) {
-	logger.Kernel().SetFormatter(convertFormatter(formatter))
+func (logger *Logger) SetFormatter(formatter Formatter) *Logger {
+	logger.Kernel().SetFormatter(formatter)
+	return logger
 }
 
 // SetOutput sets the logger output.
-func (logger *Logger) SetOutput(output io.Writer) {
+func (logger *Logger) SetOutput(output io.Writer) *Logger {
 	logger.Kernel().SetOutput(output)
+	return logger
 }
 
 // CloseCaller set ReportCaller false
-func (logger *Logger) CloseCaller() {
+func (logger *Logger) DisableCaller() *Logger {
 	logger.Kernel().SetReportCaller(false)
+	return logger
 }
 
 // ReplaceHooks replaces the logger hooks and returns the old ones
 func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
-	return convertLevelHooksReverse(logger.Kernel().ReplaceHooks(convertLevelHooks(hooks)))
+	return logger.Kernel().ReplaceHooks(hooks)
 }
 
 // SetNoLock
 // When file is opened with appending mode, it's safe to
 // write concurrently to a file (within 4k message on Linux).
 // In these cases user can choose to disable the lock.
-func (logger *Logger) SetNoLock() {
+func (logger *Logger) SetNoLock() *Logger {
 	logger.Kernel().SetNoLock()
+	return logger
 }
