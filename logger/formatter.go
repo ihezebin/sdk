@@ -24,16 +24,12 @@ func TextFormatter() Formatter {
 	}
 }
 
+// bracketFormatter
+type bracketFormatter struct{}
+
 func BracketFormatter() Formatter {
 	return &bracketFormatter{}
 }
-
-func WebFormatter(app string) Formatter {
-	return &webFormatter{app}
-}
-
-// bracketFormatter
-type bracketFormatter struct{}
 
 func (formatter *bracketFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	data := make(Fields, len(entry.Data)+3)
@@ -74,6 +70,10 @@ const (
 	fieldKeyTimestamp = "timestamp"
 	fieldKeyApp       = "app"
 )
+
+func WebFormatter(app string) Formatter {
+	return &webFormatter{app}
+}
 
 func (formatter *webFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	data := make(Fields, len(entry.Data)+5)

@@ -15,7 +15,7 @@ type Logger struct {
 func New() *Logger {
 	return (&Logger{
 		&logrus.Logger{
-			Out:          OStdErrWriter(),
+			Out:          StandardErrOutput(),
 			Hooks:        make(logrus.LevelHooks),
 			Formatter:    JSONFormatter(),
 			ReportCaller: false,

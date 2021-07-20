@@ -1,5 +1,5 @@
 package logger
 
 func WebLogger(app string) *Logger {
-	return New()
+	return New().SetFormatter(WebFormatter(app))
 }
