@@ -2,6 +2,7 @@ package logger
 
 import (
 	"github.com/whereabouts/sdk-go/logger/writer"
+	"io"
 	"os"
 )
 
@@ -13,7 +14,7 @@ func StandardOutput() *os.File {
 	return writer.StandardOutWriter
 }
 
-func FileOutput(filename string) *os.File {
+func FileOutput(filename string) io.Writer {
 	return writer.NewFileWriter(filename)
 }
 

@@ -19,7 +19,7 @@ func New() *Logger {
 			Hooks:        make(logrus.LevelHooks),
 			Formatter:    JSONFormatter(),
 			ReportCaller: false,
-			Level:        logrus.InfoLevel,
+			Level:        convertLevel(InfoLevel),
 			ExitFunc:     os.Exit,
 		},
 	}).AddHook(hook.NewCallerHook().SetSimplify(true))
