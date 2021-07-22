@@ -44,7 +44,7 @@ func IsLevelEnabled(level Level) bool {
 	return standardLogger.IsLevelEnabled(level)
 }
 
-// AddHook adds a hook to the standard logger hooks.
+// AddHook adds a hook to the standard logger hook.
 func AddHook(hook Hook) *Logger {
 	return standardLogger.AddHook(hook)
 }

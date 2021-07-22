@@ -1,4 +1,4 @@
-package hooks
+package hook
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 )
 
 /*
-To create a hooks, you only need to implement two methods of the hooks interface：
+To create a hook, you only need to implement two methods of the hook interface：
 type Hook interface {
 	Levels() []Level
 	Fire(*Entry) error

@@ -3,7 +3,7 @@ package logger
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk-go/logger/hooks"
+	"github.com/whereabouts/sdk-go/logger/hook"
 	"io"
 	"os"
 )
@@ -22,7 +22,7 @@ func New() *Logger {
 			Level:        logrus.InfoLevel,
 			ExitFunc:     os.Exit,
 		},
-	}).AddHook(hooks.NewCallerHook().SetSimplify(true))
+	}).AddHook(hook.NewCallerHook().SetSimplify(true))
 }
 
 func (logger *Logger) Kernel() *logrus.Logger {
@@ -182,7 +182,7 @@ func (logger *Logger) GetLevel() Level {
 	return convertLevelReverse(logger.Kernel().GetLevel())
 }
 
-// AddHook adds a hook to the logger hooks.
+// AddHook adds a hook to the logger hook.
 func (logger *Logger) AddHook(hook Hook) *Logger {
 	logger.Kernel().AddHook(hook)
 	return logger
@@ -211,7 +211,7 @@ func (logger *Logger) DisableCaller() *Logger {
 	return logger
 }
 
-// ReplaceHooks replaces the logger hooks and returns the old ones
+// ReplaceHooks replaces the logger hook and returns the old ones
 func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
 	return logger.Kernel().ReplaceHooks(hooks)
 }

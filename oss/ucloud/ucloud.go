@@ -10,7 +10,7 @@ type Config struct {
 	// 如果只做文件上传和下载用 TOEKN (见 https://console.ucloud.cn/ufile/token)就够了，为了安全，强烈建议只使用 TOKEN 做文件管理",
 	PublicKey  string `json:"public_key"`
 	PrivateKey string `json:"private_key"`
-	// "说明2": "以下两个参数是用来管理文件用的。对应的是 file.go 里面的接口，file_host 是不带 bucket 名字的。
+	// "说明2": "以下两个参数是用来管理文件用的。对应的是 file_writer.go 里面的接口，file_host 是不带 bucket 名字的。
 	// 比如：北京地域的host填cn-bj.ufileos.com，而不是填 bucketname.cn-bj.ufileos.com。若为自定义域名，请直接带上 http 开头的 URL。
 	// 如：http://example.com",
 	BucketName string `json:"bucket_name"`
