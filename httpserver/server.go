@@ -26,25 +26,25 @@ type Server interface {
 
 type server struct {
 	http.Server
-	option     Option
+	config     Config
 	beforeRun  []func()
 	onShutdown []func()
 }
 
-func NewServer(opts ...OptionFunc) Server {
-	return NewServerWithOption(newOption(opts...))
+func NewServer(confs ...ConfigFunc) Server {
+	return NewServerWithConfig(newConfig(confs...))
 }
 
-func NewServerWithOption(option Option) Server {
-	s := &server{option: option}
-	gin.SetMode(option.Mode)
+func NewServerWithConfig(config Config) Server {
+	s := &server{config: config}
+	gin.SetMode(config.Mode)
 	engine := gin.New()
 	// default Use middleware
 	engine.Use()
 	// user set middleware
-	engine.Use(option.Middlewares...)
+	engine.Use(config.Middlewares...)
 	s.Handler = engine
-	s.Addr = fmt.Sprintf(":%d", option.Port)
+	s.Addr = fmt.Sprintf(":%d", config.Port)
 	return s
 }
 
@@ -54,7 +54,7 @@ func (s *server) Route(routes Router) Server {
 }
 
 func (s *server) Name() string {
-	return s.option.Name
+	return s.config.Name
 }
 
 func (s *server) Run(ctx context.Context) error {
@@ -69,7 +69,7 @@ func (s *server) Run(ctx context.Context) error {
 	// server listenAndServe
 	ch := make(chan os.Signal)
 	go func() {
-		log.Printf("http server is starting in port:%d", s.option.Port)
+		log.Printf("http server is starting in port:%d", s.config.Port)
 		if err := s.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				log.Printf("http server ListenAndServe err:%v\n", err)

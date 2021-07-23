@@ -9,57 +9,57 @@ const ModeDebug = gin.DebugMode
 const ModeRelease = gin.ReleaseMode
 const ModeTest = gin.TestMode
 
-type Option struct {
+type Config struct {
 	Mode        string
 	Name        string
 	Port        int
 	Middlewares []middleware.Middleware
 }
 
-type OptionFunc func(option *Option)
+type ConfigFunc func(config *Config)
 
-func newOption(opts ...OptionFunc) Option {
-	option := Option{
+func newConfig(confs ...ConfigFunc) Config {
+	config := Config{
 		Mode:        gin.DebugMode,
 		Name:        "",
 		Port:        8080,
 		Middlewares: nil,
 	}
-	for _, opt := range opts {
-		opt(&option)
+	for _, conf := range confs {
+		conf(&config)
 	}
-	return option
+	return config
 }
 
-func WithMode(mode string) OptionFunc {
-	return func(option *Option) {
+func WithMode(mode string) ConfigFunc {
+	return func(config *Config) {
 		switch mode {
 		case ModeDebug:
-			option.Mode = mode
+			config.Mode = mode
 		case ModeRelease:
-			option.Mode = mode
+			config.Mode = mode
 		case ModeTest:
-			option.Mode = mode
+			config.Mode = mode
 		default:
 			panic("available mode: debug release test")
 		}
 	}
 }
 
-func WithName(name string) OptionFunc {
-	return func(option *Option) {
-		option.Name = name
+func WithName(name string) ConfigFunc {
+	return func(config *Config) {
+		config.Name = name
 	}
 }
 
-func WithPort(port int) OptionFunc {
-	return func(option *Option) {
-		option.Port = port
+func WithPort(port int) ConfigFunc {
+	return func(config *Config) {
+		config.Port = port
 	}
 }
 
-func WithMiddles(middlewares ...middleware.Middleware) OptionFunc {
-	return func(option *Option) {
-		option.Middlewares = middlewares
+func WithMiddles(middlewares ...middleware.Middleware) ConfigFunc {
+	return func(config *Config) {
+		config.Middlewares = middlewares
 	}
 }

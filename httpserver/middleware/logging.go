@@ -16,11 +16,11 @@ const (
 )
 
 func LoggingRequest() Middleware {
-	return LoggingRequestWithLogger(logger.WebLogger(""))
+	return LoggingRequestWithLogger(logger.WebLogger())
 }
 
 func LoggingResponse() Middleware {
-	return LoggingResponseWithLogger(logger.WebLogger(""))
+	return LoggingResponseWithLogger(logger.WebLogger())
 }
 
 func LoggingRequestWithLogger(l *logger.Logger) Middleware {

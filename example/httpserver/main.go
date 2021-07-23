@@ -25,6 +25,8 @@ func main() {
 		httpserver.WithMode(config.GetConfig().Mode),
 		httpserver.WithMiddles(
 			middleware.Recovery(),
+			middleware.LoggingRequest(),
+			middleware.LoggingResponse(),
 		),
 	).Route(routes.Routes).BeforeRun(server.Init).OnShutdown(server.Close).Run(ctx); err != nil {
 		log.Printf("server run with error: %v\n", err)
