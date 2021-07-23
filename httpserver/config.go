@@ -10,23 +10,23 @@ const ModeRelease = gin.ReleaseMode
 const ModeTest = gin.TestMode
 
 type Config struct {
-	Mode        string
-	Name        string
-	Port        int
-	Middlewares []middleware.Middleware
+	Mode        string `json:"mode"`
+	Name        string `json:"name"`
+	Port        int    `json:"port"`
+	middlewares []middleware.Middleware
 }
 
 type ConfigFunc func(config *Config)
 
-func newConfig(confs ...ConfigFunc) Config {
+func newConfig(cfs ...ConfigFunc) Config {
 	config := Config{
 		Mode:        gin.DebugMode,
 		Name:        "",
 		Port:        8080,
-		Middlewares: nil,
+		middlewares: nil,
 	}
-	for _, conf := range confs {
-		conf(&config)
+	for _, setConfig := range cfs {
+		setConfig(&config)
 	}
 	return config
 }
@@ -60,6 +60,6 @@ func WithPort(port int) ConfigFunc {
 
 func WithMiddles(middlewares ...middleware.Middleware) ConfigFunc {
 	return func(config *Config) {
-		config.Middlewares = middlewares
+		config.middlewares = middlewares
 	}
 }

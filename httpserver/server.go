@@ -31,8 +31,8 @@ type server struct {
 	onShutdown []func()
 }
 
-func NewServer(confs ...ConfigFunc) Server {
-	return NewServerWithConfig(newConfig(confs...))
+func NewServer(cfs ...ConfigFunc) Server {
+	return NewServerWithConfig(newConfig(cfs...))
 }
 
 func NewServerWithConfig(config Config) Server {
@@ -42,7 +42,7 @@ func NewServerWithConfig(config Config) Server {
 	// default Use middleware
 	engine.Use()
 	// user set middleware
-	engine.Use(config.Middlewares...)
+	engine.Use(config.middlewares...)
 	s.Handler = engine
 	s.Addr = fmt.Sprintf(":%d", config.Port)
 	return s
