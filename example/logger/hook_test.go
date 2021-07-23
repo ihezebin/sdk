@@ -6,9 +6,9 @@ import (
 	"testing"
 )
 
-func TestLevelHook(t *testing.T) {
+func TestLocalfsHook(t *testing.T) {
 	logger.StandardLogger().AddHook(logger.NewLocalFSHook(logger.WriterMap{
-		logrus.InfoLevel: logger.NewFileWriter("level_hook.log"),
+		logrus.InfoLevel: logger.NewFileWriter("localfs_hook.log"),
 	}, nil))
 	logger.Infoln("info")
 	logger.Errorln("debug")
