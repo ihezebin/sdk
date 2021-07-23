@@ -1,4 +1,4 @@
-package hook
+package logger
 
 import (
 	"errors"
@@ -33,7 +33,7 @@ type callerHook struct {
 	source   bool
 	simplify bool
 	skip     int
-	levels   []logrus.Level
+	levels   []Level
 }
 
 // NewCallerHook Use to create the callerHook
@@ -41,13 +41,13 @@ func NewCallerHook() *callerHook {
 	hook := callerHook{
 		simplify: false,
 		skip:     0,
-		levels:   logrus.AllLevels,
+		levels:   AllLevels,
 	}
 	return &hook
 }
 
 // Levels implement levels
-func (hook *callerHook) Levels() []logrus.Level {
+func (hook *callerHook) Levels() []Level {
 	return hook.levels
 }
 

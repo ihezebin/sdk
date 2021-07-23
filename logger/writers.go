@@ -1,13 +1,42 @@
-package writer
+package logger
 
 import (
 	"fmt"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
+	"io"
+	"os"
+	"path/filepath"
+	"reflect"
 	"time"
 )
 
+var (
+	StandardErrorWriter = os.Stderr
+	StandardOutWriter   = os.Stdout
+)
+
+// NewFileWriter file can be a string, io.Writer
+func NewFileWriter(file interface{}) io.Writer {
+	switch file.(type) {
+	case string:
+		filename := file.(string)
+		dir := filepath.Dir(filename)
+		_ = os.MkdirAll(dir, os.ModePerm)
+		writer, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0666)
+		if err != nil {
+			panic(fmt.Sprintf("create file writer failed: %s", err.Error()))
+		}
+		return writer
+	case io.Writer:
+		return file.(io.Writer)
+	default:
+		panic(fmt.Sprintf("unsupported file type: %v", reflect.TypeOf(file)))
+	}
+}
+
+// For RotateFileWriter
+
 const (
-	defaultRotateFilename   = "logger"
 	defaultRotateTime       = time.Hour * 24
 	defaultRotateExpireTime = time.Hour * 24 * 3
 )
@@ -23,8 +52,8 @@ func (writer *RotateFileWriter) Write(p []byte) (n int, err error) {
 	return writer.kernel.Write(p)
 }
 
-func NewRotateFileWriter() *RotateFileWriter {
-	return createRotateFileWriter(defaultRotateFilename, defaultRotateTime, defaultRotateExpireTime)
+func NewRotateFileWriter(filename string) *RotateFileWriter {
+	return createRotateFileWriter(filename, defaultRotateTime, defaultRotateExpireTime)
 }
 
 /*  createRotateFileWriter
@@ -63,10 +92,6 @@ func createRotateFileWriter(filename string, rotateTime time.Duration, expireTim
 		panic(fmt.Sprintf("create rotate file writer failed: %s", err.Error()))
 	}
 	return &RotateFileWriter{kernel, filename, rotateTime, expireTime}
-}
-
-func (writer *RotateFileWriter) SetFilename(filename string) *RotateFileWriter {
-	return createRotateFileWriter(filename, writer.rotateTime, writer.expireTime)
 }
 
 func (writer *RotateFileWriter) SetRotateTime(rotateTime time.Duration) *RotateFileWriter {

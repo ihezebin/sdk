@@ -17,7 +17,7 @@ func NewEntry(logger *Logger) *Entry {
 	}
 }
 
-func (entry *Entry) convertEntryReserve(logrusEntry *logrus.Entry) *Entry {
+func (entry *Entry) logrusEntry2Entry(logrusEntry *logrus.Entry) *Entry {
 	return &Entry{entry.logger, logrusEntry}
 }
 
@@ -38,22 +38,22 @@ func (entry *Entry) String() (string, error) {
 
 // WithError Add an error as single field (using the key defined in ErrorKey) to the Entry.
 func (entry *Entry) WithError(err error) *Entry {
-	return entry.convertEntryReserve(entry.Kernel().WithError(err))
+	return entry.logrusEntry2Entry(entry.Kernel().WithError(err))
 }
 
 // WithContext Add a context to the Entry.
 func (entry *Entry) WithContext(ctx context.Context) *Entry {
-	return entry.convertEntryReserve(entry.Kernel().WithContext(ctx))
+	return entry.logrusEntry2Entry(entry.Kernel().WithContext(ctx))
 }
 
 // WithField Add a single field to the Entry.
 func (entry *Entry) WithField(key string, value interface{}) *Entry {
-	return entry.convertEntryReserve(entry.Kernel().WithField(key, value))
+	return entry.logrusEntry2Entry(entry.Kernel().WithField(key, value))
 }
 
 // WithFields Add a map of fields to the Entry.
 func (entry *Entry) WithFields(fields Fields) *Entry {
-	return entry.convertEntryReserve(entry.Kernel().WithFields(convertFields(fields)))
+	return entry.logrusEntry2Entry(entry.Kernel().WithFields(fields2LogrusFields(fields)))
 }
 
 func (entry Entry) HasCaller() bool {
@@ -61,7 +61,7 @@ func (entry Entry) HasCaller() bool {
 }
 
 func (entry *Entry) Log(level Level, args ...interface{}) {
-	entry.Kernel().Log(convertLevel(level), args...)
+	entry.Kernel().Log(level, args...)
 }
 
 func (entry *Entry) Trace(args ...interface{}) {
@@ -103,7 +103,7 @@ func (entry *Entry) Panic(args ...interface{}) {
 // Entry Printf family functions
 
 func (entry *Entry) Logf(level Level, format string, args ...interface{}) {
-	entry.Kernel().Logf(convertLevel(level), format, args...)
+	entry.Kernel().Logf(level, format, args...)
 }
 
 func (entry *Entry) Tracef(format string, args ...interface{}) {
@@ -145,7 +145,7 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 // Entry Println family functions
 
 func (entry *Entry) Logln(level Level, args ...interface{}) {
-	entry.Kernel().Logln(convertLevel(level), args...)
+	entry.Kernel().Logln(level, args...)
 }
 
 func (entry *Entry) Traceln(args ...interface{}) {

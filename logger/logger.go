@@ -3,7 +3,6 @@ package logger
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk-go/logger/hook"
 	"io"
 	"os"
 )
@@ -19,10 +18,10 @@ func New() *Logger {
 			Hooks:        make(logrus.LevelHooks),
 			Formatter:    JSONFormatter(),
 			ReportCaller: false,
-			Level:        convertLevel(InfoLevel),
+			Level:        InfoLevel,
 			ExitFunc:     os.Exit,
 		},
-	}).AddHook(hook.NewCallerHook().SetSimplify(true))
+	}).AddHook(NewCallerHook().SetSimplify(true))
 }
 
 func (logger *Logger) Kernel() *logrus.Logger {
@@ -34,7 +33,7 @@ func (logger *Logger) WithField(key string, value interface{}) *Entry {
 }
 
 func (logger *Logger) WithFields(fields Fields) *Entry {
-	return &Entry{logger, logger.Kernel().WithFields(convertFields(fields))}
+	return &Entry{logger, logger.Kernel().WithFields(fields2LogrusFields(fields))}
 }
 
 func (logger *Logger) WithError(err error) *Entry {
@@ -48,7 +47,7 @@ func (logger *Logger) WithContext(ctx context.Context) *Entry {
 // Logger Printf family functions
 
 func (logger *Logger) Logf(level Level, format string, args ...interface{}) {
-	logger.Kernel().Logf(convertLevel(level), format, args...)
+	logger.Kernel().Logf(level, format, args...)
 }
 
 func (logger *Logger) Tracef(format string, args ...interface{}) {
@@ -90,7 +89,7 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 // Logger Print family functions
 
 func (logger *Logger) Log(level Level, args ...interface{}) {
-	logger.Kernel().Log(convertLevel(level), args...)
+	logger.Kernel().Log(level, args...)
 }
 
 func (logger *Logger) Trace(args ...interface{}) {
@@ -132,7 +131,7 @@ func (logger *Logger) Panic(args ...interface{}) {
 // Logger Println family functions
 
 func (logger *Logger) Logln(level Level, args ...interface{}) {
-	logger.Kernel().Logln(convertLevel(level), args...)
+	logger.Kernel().Logln(level, args...)
 }
 
 func (logger *Logger) Traceln(args ...interface{}) {
@@ -173,13 +172,13 @@ func (logger *Logger) Panicln(args ...interface{}) {
 
 // SetLevel sets the logger level.
 func (logger *Logger) SetLevel(level Level) *Logger {
-	logger.Kernel().SetLevel(convertLevel(level))
+	logger.Kernel().SetLevel(level)
 	return logger
 }
 
 // GetLevel returns the logger level.
 func (logger *Logger) GetLevel() Level {
-	return convertLevelReverse(logger.Kernel().GetLevel())
+	return logger.Kernel().GetLevel()
 }
 
 // AddHook adds a hook to the logger hook.
@@ -190,7 +189,7 @@ func (logger *Logger) AddHook(hook Hook) *Logger {
 
 // IsLevelEnabled checks if the log level of the logger is greater than the level param
 func (logger *Logger) IsLevelEnabled(level Level) bool {
-	return logger.Kernel().IsLevelEnabled(convertLevel(level))
+	return logger.Kernel().IsLevelEnabled(level)
 }
 
 // SetFormatter sets the logger formatter.

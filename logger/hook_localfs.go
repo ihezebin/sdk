@@ -1,9 +1,8 @@
-package hook
+package logger
 
 import (
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk-go/utils/timer"
 	"io"
 	"log"
 	"os"
@@ -13,32 +12,30 @@ import (
 )
 
 var (
-	defaultFormatter = &logrus.JSONFormatter{
-		TimestampFormat: timer.DefaultFormatLayout,
-	}
+	defaultFormatter = JSONFormatter()
 )
 
 // WriterMap is map for mapping a log level to an io.Writer.
 // Multiple levels may share a writer, but multiple writers may not be used for one level.
-type WriterMap map[logrus.Level]io.Writer
+type WriterMap map[Level]io.Writer
 
 // levelHook is a hook to handle writing to local log files.
-type levelHook struct {
+type localFSHook struct {
 	writers   WriterMap
-	levels    []logrus.Level
+	levels    []Level
 	lock      *sync.Mutex
-	formatter logrus.Formatter
+	formatter Formatter
 
 	defaultWriter io.Writer
 }
 
-// NewLevelHook returns new LFS hook.
+// NewLocalFSHook returns new LFS hook.
 // Output can be a string, io.Writer or WriterMap.
 // If using io.Writer or WriterMap, user is responsible for closing the used io.Writer.
-func NewLevelHook(output interface{}, formatter logrus.Formatter) *levelHook {
-	hook := &levelHook{
+func NewLocalFSHook(output interface{}, formatter Formatter) *localFSHook {
+	hook := &localFSHook{
 		lock:   new(sync.Mutex),
-		levels: logrus.AllLevels,
+		levels: AllLevels,
 	}
 	hook.SetFormatter(formatter)
 	switch output.(type) {
@@ -65,7 +62,7 @@ func NewLevelHook(output interface{}, formatter logrus.Formatter) *levelHook {
 }
 
 // SetFormatter sets the format that will be used by hook.
-func (hook *levelHook) SetFormatter(formatter logrus.Formatter) {
+func (hook *localFSHook) SetFormatter(formatter Formatter) {
 	hook.lock.Lock()
 	defer hook.lock.Unlock()
 	if formatter == nil {
@@ -75,7 +72,7 @@ func (hook *levelHook) SetFormatter(formatter logrus.Formatter) {
 }
 
 // SetDefaultWriter sets default writer for levels that don't have any defined writer.
-func (hook *levelHook) SetDefaultWriter(defaultWriter io.Writer) {
+func (hook *localFSHook) SetDefaultWriter(defaultWriter io.Writer) {
 	hook.lock.Lock()
 	defer hook.lock.Unlock()
 	hook.defaultWriter = defaultWriter
@@ -83,7 +80,7 @@ func (hook *levelHook) SetDefaultWriter(defaultWriter io.Writer) {
 
 // Fire writes the log file to defined path or using the defined writer.
 // User who run this function needs write permissions to the file or directory if the file does not yet exist.
-func (hook *levelHook) Fire(entry *logrus.Entry) error {
+func (hook *localFSHook) Fire(entry *logrus.Entry) error {
 	hook.lock.Lock()
 	defer hook.lock.Unlock()
 	if hook.writers != nil || hook.defaultWriter != nil {
@@ -93,12 +90,12 @@ func (hook *levelHook) Fire(entry *logrus.Entry) error {
 }
 
 // Levels returns configured log levels.
-func (hook *levelHook) Levels() []logrus.Level {
-	return logrus.AllLevels
+func (hook *localFSHook) Levels() []logrus.Level {
+	return AllLevels
 }
 
 // Write a log line to an io.Writer.
-func (hook *levelHook) write(entry *logrus.Entry) error {
+func (hook *localFSHook) write(entry *logrus.Entry) error {
 	var writer io.Writer
 	if levelWriter, ok := hook.writers[entry.Level]; ok {
 		writer = levelWriter
