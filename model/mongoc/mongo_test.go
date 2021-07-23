@@ -17,8 +17,7 @@ type User struct {
 	UpdateTime string        `json:"update_time"`
 }
 
-func TestMongo(t *testing.T) {
-	ctx := context.Background()
+func newMongoDB() *MongoDB {
 	c, err := NewClient(Config{
 		Addrs:          []string{"127.0.0.1:27017"},
 		Username:       "root",
@@ -27,19 +26,25 @@ func TestMongo(t *testing.T) {
 		ReplicaSetName: "",
 		Timeout:        3,
 		AutoTime:       true,
+		AppName:        "test_mongo",
 	})
 	if err != nil {
 		logger.Fatalln("create mongodb err:", err)
 	}
-	defer c.Close()
-	db := NewMongoDB(c, "test", "user")
+	//return NewMongoDB(GetClient("test_mongo"), "test", "user")
+	return NewMongoDB(c, "test", "user")
+}
+
+func TestMongo(t *testing.T) {
+	ctx := context.Background()
+	db := newMongoDB()
 	users := []interface{}{
 		&User{Name: "korbin", Age: 18},
 		&User{Name: "hezebin", Age: 19},
 		&User{Name: "whereabouts", Age: 20},
 		&User{Name: "nilName", Age: 21},
 	}
-	err = db.Insert(ctx, users...)
+	err := db.Insert(ctx, users...)
 	if err != nil {
 		logger.Errorln("insert user err: ", err)
 		return
@@ -68,21 +73,8 @@ func TestMongo(t *testing.T) {
 
 func TestModifyOne(t *testing.T) {
 	ctx := context.Background()
-	c, err := NewClient(Config{
-		Addrs:          []string{"127.0.0.1:27017"},
-		Username:       "root",
-		Password:       "root",
-		Source:         "admin",
-		ReplicaSetName: "",
-		Timeout:        3,
-		AutoTime:       true,
-	})
-	if err != nil {
-		logger.Fatalln("create mongodb err:", err)
-	}
-	defer c.Close()
-	db := NewMongoDB(c, "test", "user")
-	err = db.ModifyOne(ctx, nil, bson.M{"age": 777})
+	db := newMongoDB()
+	err := db.ModifyOne(ctx, nil, bson.M{"age": 777})
 	if err != nil {
 		logger.Errorln("modify one err:", err)
 		return
@@ -91,21 +83,8 @@ func TestModifyOne(t *testing.T) {
 
 func TestReplaceOne(t *testing.T) {
 	ctx := context.Background()
-	c, err := NewClient(Config{
-		Addrs:          []string{"127.0.0.1:27017"},
-		Username:       "root",
-		Password:       "root",
-		Source:         "admin",
-		ReplicaSetName: "",
-		Timeout:        3,
-		AutoTime:       true,
-	})
-	if err != nil {
-		logger.Fatalln("create mongodb err:", err)
-	}
-	defer c.Close()
-	db := NewMongoDB(c, "test", "user")
-	err = db.ReplaceOne(ctx, nil, nil)
+	db := newMongoDB()
+	err := db.ReplaceOne(ctx, nil, nil)
 	if err != nil {
 		logger.Errorln("modify one err:", err)
 		return
@@ -114,23 +93,10 @@ func TestReplaceOne(t *testing.T) {
 
 func TestFindOne(t *testing.T) {
 	ctx := context.Background()
-	c, err := NewClient(Config{
-		Addrs:          []string{"127.0.0.1:27017"},
-		Username:       "root",
-		Password:       "root",
-		Source:         "admin",
-		ReplicaSetName: "",
-		Timeout:        3,
-		AutoTime:       true,
-	})
-	if err != nil {
-		logger.Fatalln("create mongodb err:", err)
-	}
-	defer c.Close()
-	db := NewMongoDB(c, "test", "user")
+	db := newMongoDB()
 	user := &User{}
 	//err = db.FindOne(ctx, nil, []string{}, user)
-	err = db.FindOne(ctx, nil, nil, user)
+	err := db.FindOne(ctx, nil, nil, user)
 	if err != nil {
 		logger.Errorln("find one err:", err)
 		return

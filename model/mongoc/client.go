@@ -20,20 +20,6 @@ func Dial(url string) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	if info.PoolLimit == 0 {
-		info.PoolLimit = defaultPoolLimit
-	}
-	if info.MaxIdleTimeMS == 0 {
-		info.MaxIdleTimeMS = int(defaultMaxIdleTime / time.Millisecond)
-	}
-	if info.Source == "" {
-		info.Source = "admin"
-	}
-	session, err := mgo.DialWithInfo(info)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to connect mongodb")
-	}
-	session.SetMode(mgo.PrimaryPreferred, true)
 	config := Config{
 		Addrs:          info.Addrs,
 		Database:       info.Database,
@@ -42,25 +28,21 @@ func Dial(url string) (Client, error) {
 		Source:         info.Source,
 		ReplicaSetName: info.ReplicaSetName,
 		Timeout:        info.Timeout,
-		Mode:           session.Mode(),
 		PoolLimit:      info.PoolLimit,
 		MaxIdleTime:    time.Duration(info.MaxIdleTimeMS) * time.Millisecond,
 		AppName:        info.AppName,
 		AutoTime:       true,
 	}
-	return &client{session: session, config: config}, nil
-}
-
-func NewGlobalClient(config Config) (Client, error) {
-	c, err := NewClient(config)
-	if err != nil {
-		return nil, err
-	}
-	gClient = c
-	return c, err
+	return NewClient(config)
 }
 
 func NewClient(config Config) (Client, error) {
+
+	// Determine whether a client with the same alias already exists
+	if HasClient(config.AppName) {
+		return nil, errors.Errorf("there is already a client with alias %s, you can choose to use another alias", config.AppName)
+	}
+
 	poolLimit := defaultPoolLimit
 	if config.PoolLimit != 0 {
 		poolLimit = config.PoolLimit
@@ -96,7 +78,13 @@ func NewClient(config Config) (Client, error) {
 		config.Mode = mgo.PrimaryPreferred
 	}
 	session.SetMode(config.Mode, true)
-	return &client{session: session, config: config}, nil
+
+	c := &client{session: session, config: config}
+
+	// add client to the pool
+	AddClient(c.config.AppName, c)
+
+	return c, nil
 }
 
 type client struct {
@@ -110,6 +98,7 @@ func (c *client) GetSession() *mgo.Session {
 }
 
 func (c *client) Close() {
+	DeleteClient(c.GetConfig().AppName)
 	c.session.Close()
 }
 
@@ -127,6 +116,13 @@ func (c *client) DoWithSession(do func(session *mgo.Session) error) error {
 
 func (c *client) GetConfig() Config {
 	return c.config
+}
+
+// NewGlobalClient If there is only one Mongo, you can select the global client
+func NewGlobalClient(config Config) (Client, error) {
+	var err error
+	gClient, err = NewClient(config)
+	return gClient, err
 }
 
 var gClient Client
