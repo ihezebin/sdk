@@ -18,6 +18,12 @@ func TestResetStandardLogger(t *testing.T) {
 		Level:     logger.InfoLevelString,
 		Format:    logger.FormatJSON,
 	})
+	logger.ResetStandardLogger(
+		logger.WithTimestamp(true),
+		logger.WithAppName("logger"),
+		logger.WithLevel(logger.InfoLevelString),
+		logger.WithFormat(logger.FormatJSON),
+	)
 	logger.Println("hello logger")
 	logger.Debugln("hello logger")
 	logger.StandardLogger().Println("hello StandardLogger")
