@@ -10,10 +10,13 @@ import (
 	"time"
 )
 
-var (
-	StandardErrorWriter = os.Stderr
-	StandardOutWriter   = os.Stdout
-)
+func StandardErrorWriter() io.Writer {
+	return os.Stderr
+}
+
+func StandardOutWriter() io.Writer {
+	return os.Stdout
+}
 
 // NewFileWriter file can be a string, io.Writer
 func NewFileWriter(file interface{}) io.Writer {
@@ -41,19 +44,23 @@ const (
 	defaultRotateExpireTime = time.Hour * 24 * 3
 )
 
-type RotateFileWriter struct {
+type rotateFileWriter struct {
 	kernel     *rotatelogs.RotateLogs
 	filename   string
 	rotateTime time.Duration
 	expireTime time.Duration
 }
 
-func (writer *RotateFileWriter) Write(p []byte) (n int, err error) {
+func (writer *rotateFileWriter) Write(p []byte) (n int, err error) {
 	return writer.kernel.Write(p)
 }
 
-func NewRotateFileWriter(filename string) *RotateFileWriter {
+func DefaultRotateFileWriter(filename string) io.Writer {
 	return createRotateFileWriter(filename, defaultRotateTime, defaultRotateExpireTime)
+}
+
+func NewRotateFileWriter(filename string, rotateTime time.Duration, expireTime time.Duration) io.Writer {
+	return createRotateFileWriter(filename, rotateTime, expireTime)
 }
 
 /*  createRotateFileWriter
@@ -63,7 +70,7 @@ WithMaxAge 和 WithRotationCount二者只能设置一个
   WithMaxAge 设置文件清理前的最长保存时间
   WithRotationCount 设置文件清理前最多保存的个数
 */
-func createRotateFileWriter(filename string, rotateTime time.Duration, expireTime time.Duration) *RotateFileWriter {
+func createRotateFileWriter(filename string, rotateTime time.Duration, expireTime time.Duration) io.Writer {
 	kernel, err := rotatelogs.New(
 		// The pattern used to generate actual log file names.
 		// You should use patterns using the strftime (3) format.
@@ -91,13 +98,5 @@ func createRotateFileWriter(filename string, rotateTime time.Duration, expireTim
 	if err != nil {
 		panic(fmt.Sprintf("create rotate file writer failed: %s", err.Error()))
 	}
-	return &RotateFileWriter{kernel, filename, rotateTime, expireTime}
-}
-
-func (writer *RotateFileWriter) SetRotateTime(rotateTime time.Duration) *RotateFileWriter {
-	return createRotateFileWriter(writer.filename, rotateTime, writer.expireTime)
-}
-
-func (writer *RotateFileWriter) SetExpireTime(expireTime time.Duration) *RotateFileWriter {
-	return createRotateFileWriter(writer.filename, writer.rotateTime, expireTime)
+	return &rotateFileWriter{kernel, filename, rotateTime, expireTime}
 }

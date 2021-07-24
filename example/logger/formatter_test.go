@@ -5,8 +5,8 @@ import (
 	"testing"
 )
 
-func TestWebFormatter(t *testing.T) {
-	logger.SetFormatter(logger.WebFormatter("logger")).Println("hello WebFormatter")
+func TestJSONFormatter(t *testing.T) {
+	logger.SetFormatter(logger.JSONFormatter()).Println("hello WebFormatter")
 }
 
 func TestBracketFormatter(t *testing.T) {

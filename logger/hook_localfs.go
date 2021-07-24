@@ -11,10 +11,6 @@ import (
 	"sync"
 )
 
-var (
-	defaultFormatter = JSONFormatter()
-)
-
 // WriterMap is map for mapping a log level to an io.Writer.
 // Multiple levels may share a writer, but multiple writers may not be used for one level.
 type WriterMap map[Level]io.Writer

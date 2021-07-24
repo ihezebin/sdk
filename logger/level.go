@@ -7,6 +7,8 @@ import (
 // Level type
 type Level = logrus.Level
 
+var defaultLevel = InfoLevel
+
 // AllLevels A constant exposing all logging levels
 var AllLevels = []Level{
 	PanicLevel,
@@ -37,3 +39,21 @@ const (
 	// TraceLevel level. Designates finer-grained informational events than the Debug.
 	TraceLevel
 )
+
+var levelMap = map[string]Level{
+	"panic":   PanicLevel,
+	"fatal":   FatalLevel,
+	"error":   ErrorLevel,
+	"warn":    WarnLevel,
+	"warning": WarnLevel,
+	"info":    InfoLevel,
+	"debug":   DebugLevel,
+	"trace":   TraceLevel,
+}
+
+func string2Level(levelStr string) Level {
+	if level, ok := levelMap[levelStr]; ok {
+		return level
+	}
+	return defaultLevel
+}

@@ -1,5 +1,7 @@
 package logger
 
-func RotateFileLogger(filename string) *Logger {
-	return New().SetOutput(RotateFileOutput(filename))
+import "time"
+
+func RotateFileLogger(filename string, rotateTime time.Duration, expireTime time.Duration) *Logger {
+	return StandardLogger().SetOutput(RotateFileOutput(filename, rotateTime, expireTime))
 }

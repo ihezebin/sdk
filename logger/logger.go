@@ -3,6 +3,7 @@ package logger
 import (
 	"context"
 	"github.com/sirupsen/logrus"
+	"github.com/whereabouts/sdk-go/utils/stringer"
 	"io"
 	"os"
 )
@@ -11,17 +12,51 @@ type Logger struct {
 	kernel *logrus.Logger
 }
 
-func New() *Logger {
+func NewLogger(cfs ...ConfigFunc) *Logger {
+	return NewLoggerWithConfig(newConfig(cfs...))
+}
+
+func NewLoggerWithConfig(config Config) *Logger {
+	l := newLogger()
+
+	l.SetLevel(string2Level(config.Level))
+	l.SetFormatter(string2Formatter(config.Format))
+
+	fields := make(Fields)
+	if stringer.NotEmpty(config.AppName) {
+		fields[fieldKeyApp] = config.AppName
+	}
+	if config.Timestamp {
+		fields[fieldKeyTimestamp] = fieldValueZero
+	}
+	l.AddHook(NewFieldsHook(fields))
+	if stringer.NotEmpty(config.ErrFile) {
+		l.AddHook(NewLocalFSHook(config.ErrFile, string2Formatter(config.Format)))
+	}
+
+	if stringer.NotEmpty(config.File) {
+		l.SetOutput(FileOutput(config.File))
+	}
+	if stringer.NotEmpty(config.RotateFile.File) {
+		l.SetOutput(NewRotateFileWriter(config.RotateFile.File, config.RotateFile.RotateTime, config.RotateFile.ExpireTime))
+	}
+
+	return l
+}
+
+func newLogger() *Logger {
 	return (&Logger{
 		&logrus.Logger{
 			Out:          StandardErrOutput(),
 			Hooks:        make(logrus.LevelHooks),
-			Formatter:    JSONFormatter(),
+			Formatter:    defaultFormatter,
 			ReportCaller: false,
-			Level:        InfoLevel,
+			Level:        defaultLevel,
 			ExitFunc:     os.Exit,
 		},
-	}).AddHook(NewCallerHook().SetSimplify(true))
+	}).AddHook(NewCallerHook().
+		SetSimplify(true),
+	)
 }
 
 func (logger *Logger) Kernel() *logrus.Logger {

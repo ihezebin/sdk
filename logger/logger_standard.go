@@ -6,11 +6,19 @@ import (
 )
 
 var (
-	standardLogger = New()
+	standardLogger = newLogger()
 )
 
 func StandardLogger() *Logger {
 	return standardLogger
+}
+
+func ResetStandardLogger(confs ...ConfigFunc) {
+	ResetStandardLoggerWithConfig(newConfig(confs...))
+}
+
+func ResetStandardLoggerWithConfig(config Config) {
+	standardLogger = NewLoggerWithConfig(config)
 }
 
 // SetOutput sets the standard logger output.
