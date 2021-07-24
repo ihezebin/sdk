@@ -1,4 +1,4 @@
-package slice
+package slicer
 
 import (
 	"reflect"
@@ -9,7 +9,7 @@ import (
 func Delete(s interface{}, elem interface{}, options ...bool) interface{} {
 	sV := reflect.ValueOf(s)
 	if sV.Kind() != reflect.Slice {
-		panic("The first parameter s must be of type slice")
+		panic("The first parameter s must be of type slicer")
 	}
 	sLen := sV.Len()
 	for i := 0; i < sLen; i++ {

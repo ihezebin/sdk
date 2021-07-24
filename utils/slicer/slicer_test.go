@@ -1,4 +1,4 @@
-package slice
+package slicer
 
 import (
 	"fmt"
@@ -18,7 +18,7 @@ func TestSlice(t *testing.T) {
 	s = DeleteInt(s, 1, true)
 	fmt.Println("s delete all 1:", s)
 	stus := []Stu{{"a", 1}, {"b", 2}, {"c", 3}}
-	fmt.Println("struct slice stus:", stus)
+	fmt.Println("struct slicer stus:", stus)
 	stus = Delete(stus, Stu{"a", 1}).([]Stu)
 	fmt.Println("stus delete one Stu{a 1}:", stus)
 }
