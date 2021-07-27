@@ -17,7 +17,7 @@ type User struct {
 	UpdateTime string        `json:"update_time"`
 }
 
-func newMongoDB() *MongoDB {
+func newMongoDB() *Base {
 	c, err := NewClient(Config{
 		Addrs:          []string{"127.0.0.1:27017"},
 		Username:       "root",
@@ -32,7 +32,7 @@ func newMongoDB() *MongoDB {
 		logger.Fatalln("create mongodb err:", err)
 	}
 	//return NewMongoDB(GetClient("test_mongo"), "test", "user")
-	return NewMongoDB(c, "test", "user")
+	return NewBaseModel(c, "test", "user")
 }
 
 func TestMongo(t *testing.T) {
