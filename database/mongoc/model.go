@@ -11,50 +11,56 @@ import (
 	"reflect"
 )
 
-type MongoDB struct {
+type Model interface {
+	Database() string
+	Collection() string
+	Indexes() ([]mgo.Index, error)
+}
+
+type Base struct {
 	database   string
 	collection string
 	ctx        context.Context
 	client     Client
 }
 
-func NewMongoDB(client Client, database string, collection string) *MongoDB {
-	return &MongoDB{client: client, database: database, collection: collection}
+func NewBaseModel(client Client, database string, collection string) *Base {
+	return &Base{client: client, database: database, collection: collection}
 }
 
-func (db *MongoDB) Database() string {
+func (db *Base) Database() string {
 	return db.database
 }
 
-func (db *MongoDB) Indexes() ([]mgo.Index, error) {
+func (db *Base) Indexes() ([]mgo.Index, error) {
 	return db.Client().GetSession().DB(db.Database()).C(db.Collection()).Indexes()
 }
 
-func (db *MongoDB) Collection() string {
+func (db *Base) Collection() string {
 	return db.collection
 }
 
-func (db *MongoDB) Client() Client {
+func (db *Base) Client() Client {
 	return db.client
 }
 
 // DoWithContext it is used for you to use the native mgo interface according to your own needs,
 // Use when you can't find the method you want in this package
-func (db *MongoDB) DoWithContext(ctx context.Context, f func(c *mgo.Collection) error) error {
+func (db *Base) DoWithContext(ctx context.Context, f func(c *mgo.Collection) error) error {
 	return db.Client().DoWithContext(ctx, db, f)
 }
 
-func (db *MongoDB) RemoveOne(ctx context.Context, selector interface{}) error {
+func (db *Base) RemoveOne(ctx context.Context, selector interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		return c.Remove(selector)
 	})
 }
-func (db *MongoDB) RemoveId(ctx context.Context, id interface{}) error {
+func (db *Base) RemoveId(ctx context.Context, id interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		return c.RemoveId(id)
 	})
 }
-func (db *MongoDB) RemoveAll(ctx context.Context, selector interface{}) (changeInfo *mgo.ChangeInfo, err error) {
+func (db *Base) RemoveAll(ctx context.Context, selector interface{}) (changeInfo *mgo.ChangeInfo, err error) {
 	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		changeInfo, err = c.RemoveAll(selector)
 		return err
@@ -62,19 +68,19 @@ func (db *MongoDB) RemoveAll(ctx context.Context, selector interface{}) (changeI
 	return changeInfo, err
 }
 
-func (db *MongoDB) DeleteOne(ctx context.Context, selector interface{}) error {
+func (db *Base) DeleteOne(ctx context.Context, selector interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		return c.Remove(selector)
 	})
 }
 
-func (db *MongoDB) DeleteId(ctx context.Context, id interface{}) error {
+func (db *Base) DeleteId(ctx context.Context, id interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		return c.RemoveId(id)
 	})
 }
 
-func (db *MongoDB) DeleteAll(ctx context.Context, selector interface{}) (changeInfo *mgo.ChangeInfo, err error) {
+func (db *Base) DeleteAll(ctx context.Context, selector interface{}) (changeInfo *mgo.ChangeInfo, err error) {
 	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		changeInfo, err = c.RemoveAll(selector)
 		return err
@@ -82,7 +88,7 @@ func (db *MongoDB) DeleteAll(ctx context.Context, selector interface{}) (changeI
 	return changeInfo, err
 }
 
-func (db *MongoDB) Insert(ctx context.Context, doc ...interface{}) error {
+func (db *Base) Insert(ctx context.Context, doc ...interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		out := make([]interface{}, 0, len(doc))
 		for _, in := range doc {
@@ -98,7 +104,7 @@ func (db *MongoDB) Insert(ctx context.Context, doc ...interface{}) error {
 
 // ReplaceOne replace the original document as a whole,
 // but the value of create_time is the value of the old document
-func (db *MongoDB) ReplaceOne(ctx context.Context, selector, doc interface{}) error {
+func (db *Base) ReplaceOne(ctx context.Context, selector, doc interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		newDoc, err := db.handleTimeAuto(doc, false)
 		if err != nil {
@@ -118,11 +124,11 @@ func (db *MongoDB) ReplaceOne(ctx context.Context, selector, doc interface{}) er
 	})
 }
 
-func (db *MongoDB) ReplaceId(ctx context.Context, id, doc interface{}) error {
+func (db *Base) ReplaceId(ctx context.Context, id, doc interface{}) error {
 	return db.ReplaceOne(ctx, bson.M{"_id": id}, doc)
 }
 
-func (db *MongoDB) ModifyOne(ctx context.Context, selector, update interface{}, deletion ...bool) error {
+func (db *Base) ModifyOne(ctx context.Context, selector, update interface{}, deletion ...bool) error {
 	//if doc == nil {
 	//	return errors.New(fmt.Sprint("doc does not allow nil!"))
 	//}
@@ -140,11 +146,11 @@ func (db *MongoDB) ModifyOne(ctx context.Context, selector, update interface{}, 
 	return err
 }
 
-func (db *MongoDB) ModifyId(ctx context.Context, id, update interface{}, deletion ...bool) error {
+func (db *Base) ModifyId(ctx context.Context, id, update interface{}, deletion ...bool) error {
 	return db.ModifyOne(ctx, bson.M{"_id": id}, update, deletion...)
 }
 
-func (db *MongoDB) ModifyAll(ctx context.Context, selector, update interface{}, deletion ...bool) (changeInfo *mgo.ChangeInfo, err error) {
+func (db *Base) ModifyAll(ctx context.Context, selector, update interface{}, deletion ...bool) (changeInfo *mgo.ChangeInfo, err error) {
 	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		setType := "$set"
 		if len(deletion) > 0 && deletion[0] {
@@ -160,7 +166,7 @@ func (db *MongoDB) ModifyAll(ctx context.Context, selector, update interface{}, 
 	return
 }
 
-func (db *MongoDB) Upsert(ctx context.Context, selector, doc interface{}) (changeInfo *mgo.ChangeInfo, err error) {
+func (db *Base) Upsert(ctx context.Context, selector, doc interface{}) (changeInfo *mgo.ChangeInfo, err error) {
 	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		out, errT := db.handleTimeAuto(doc, true)
 		if errT != nil {
@@ -172,7 +178,7 @@ func (db *MongoDB) Upsert(ctx context.Context, selector, doc interface{}) (chang
 	return
 }
 
-func (db *MongoDB) UpsertId(ctx context.Context, id, doc interface{}) (changeInfo *mgo.ChangeInfo, err error) {
+func (db *Base) UpsertId(ctx context.Context, id, doc interface{}) (changeInfo *mgo.ChangeInfo, err error) {
 	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		out, errT := db.handleTimeAuto(doc, true)
 		if errT != nil {
@@ -185,7 +191,7 @@ func (db *MongoDB) UpsertId(ctx context.Context, id, doc interface{}) (changeInf
 }
 
 // FindOne the param picker([]string) represents the field to return
-func (db *MongoDB) FindOne(ctx context.Context, selector interface{}, picker []string, ret interface{}) error {
+func (db *Base) FindOne(ctx context.Context, selector interface{}, picker []string, ret interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		query := c.Find(selector)
 		if picker != nil {
@@ -196,7 +202,7 @@ func (db *MongoDB) FindOne(ctx context.Context, selector interface{}, picker []s
 	})
 }
 
-func (db *MongoDB) FindId(ctx context.Context, id interface{}, picker []string, ret interface{}) error {
+func (db *Base) FindId(ctx context.Context, id interface{}, picker []string, ret interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		query := c.FindId(id)
 		if picker != nil {
@@ -207,7 +213,7 @@ func (db *MongoDB) FindId(ctx context.Context, id interface{}, picker []string, 
 	})
 }
 
-func (db *MongoDB) FindAll(ctx context.Context, selector interface{}, sort []string, picker []string, skip int, limit int, ret interface{}) error {
+func (db *Base) FindAll(ctx context.Context, selector interface{}, sort []string, picker []string, skip int, limit int, ret interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		query := c.Find(selector)
 		if picker != nil {
@@ -226,7 +232,7 @@ func (db *MongoDB) FindAll(ctx context.Context, selector interface{}, sort []str
 	})
 }
 
-func (db *MongoDB) FindObjectIdHex(ctx context.Context, id string, picker []string, ret interface{}) error {
+func (db *Base) FindObjectIdHex(ctx context.Context, id string, picker []string, ret interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		_id := bson.ObjectIdHex(id)
 		query := c.FindId(_id)
@@ -238,7 +244,7 @@ func (db *MongoDB) FindObjectIdHex(ctx context.Context, id string, picker []stri
 	})
 }
 
-func (db *MongoDB) FindOneWithSort(ctx context.Context, selector interface{}, sort []string, picker []string, ret interface{}) error {
+func (db *Base) FindOneWithSort(ctx context.Context, selector interface{}, sort []string, picker []string, ret interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		query := c.Find(selector)
 		if sort != nil {
@@ -252,7 +258,7 @@ func (db *MongoDB) FindOneWithSort(ctx context.Context, selector interface{}, so
 	})
 }
 
-func (db *MongoDB) Count(ctx context.Context, selector interface{}) (count int, err error) {
+func (db *Base) Count(ctx context.Context, selector interface{}) (count int, err error) {
 	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		count, err = c.Find(selector).Count()
 		return err
@@ -277,7 +283,7 @@ func (db *MongoDB) Count(ctx context.Context, selector interface{}) (count int, 
 // Console:
 // 		[12, 13, 14 ,15]
 //
-func (db *MongoDB) Distinct(ctx context.Context, selector interface{}, key string) ([]interface{}, error) {
+func (db *Base) Distinct(ctx context.Context, selector interface{}, key string) ([]interface{}, error) {
 	ret := make([]interface{}, 0)
 	err := db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		return c.Find(selector).Distinct(key, &ret)
@@ -285,13 +291,13 @@ func (db *MongoDB) Distinct(ctx context.Context, selector interface{}, key strin
 	return ret, err
 }
 
-func (db *MongoDB) PipeAll(ctx context.Context, pipeline interface{}, ret interface{}) error {
+func (db *Base) PipeAll(ctx context.Context, pipeline interface{}, ret interface{}) error {
 	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
 		return c.Pipe(pipeline).All(ret)
 	})
 }
 
-func (db *MongoDB) handlePicker(picker []string) interface{} {
+func (db *Base) handlePicker(picker []string) interface{} {
 	ret := make(bson.M)
 	for _, field := range picker {
 		ret[field] = 1
@@ -299,7 +305,7 @@ func (db *MongoDB) handlePicker(picker []string) interface{} {
 	return ret
 }
 
-func (db *MongoDB) handleTimeAuto(doc interface{}, isInsert bool) (map[string]interface{}, error) {
+func (db *Base) handleTimeAuto(doc interface{}, isInsert bool) (map[string]interface{}, error) {
 	if doc == nil {
 		return nil, errors.New("the doc can not be nil")
 	}

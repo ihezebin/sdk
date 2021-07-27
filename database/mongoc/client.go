@@ -92,6 +92,10 @@ type client struct {
 	config  Config
 }
 
+func (c *client) NewBaseModel(database string, collection string) *Base {
+	return NewBaseModel(c, database, collection)
+}
+
 //Deprecated: Use DoWithSession instead.
 func (c *client) GetSession() *mgo.Session {
 	return c.session.Copy()

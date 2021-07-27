@@ -34,9 +34,3 @@ type Config struct {
 	AppName     string        `json:"app_name"`
 	AutoTime    bool          `json:"auto_time"`
 }
-
-type Model interface {
-	Database() string
-	Collection() string
-	Indexes() ([]mgo.Index, error)
-}
