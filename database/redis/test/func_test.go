@@ -2,7 +2,7 @@ package test
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk/storage/redis"
+	"github.com/whereabouts/sdk/database/redis"
 	"log"
 	"testing"
 )

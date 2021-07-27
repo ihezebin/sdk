@@ -1,6 +1,6 @@
 package test
 
-import "github.com/whereabouts/sdk/storage/redis"
+import "github.com/whereabouts/sdk/database/redis"
 
 type EmailCache struct {
 	*redis.Cache
