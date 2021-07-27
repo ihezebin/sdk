@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/whereabouts/sdk-go/httpserver/middleware"
+	"github.com/whereabouts/sdk/httpserver/middleware"
 	"log"
 	"net/http"
 	"os"

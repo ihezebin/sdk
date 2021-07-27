@@ -2,7 +2,7 @@ package logger
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk-go/logger"
+	"github.com/whereabouts/sdk/logger"
 	"testing"
 )
 

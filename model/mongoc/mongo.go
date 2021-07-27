@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"github.com/whereabouts/sdk-go/utils/mapper"
-	"github.com/whereabouts/sdk-go/utils/timer"
+	"github.com/whereabouts/sdk/utils/mapper"
+	"github.com/whereabouts/sdk/utils/timer"
 	"reflect"
 )
 

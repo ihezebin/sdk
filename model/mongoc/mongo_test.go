@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/globalsign/mgo/bson"
-	"github.com/whereabouts/sdk-go/logger"
+	"github.com/whereabouts/sdk/logger"
 	"testing"
 	"time"
 )

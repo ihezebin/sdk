@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk-go/configure"
+	"github.com/whereabouts/sdk/configure"
 	"log"
 )
 

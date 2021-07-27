@@ -4,8 +4,8 @@ import (
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/storage"
 	ufsdk "github.com/ufilesdk-dev/ufile-gosdk"
-	"github.com/whereabouts/sdk-go/oss/qiniu"
-	"github.com/whereabouts/sdk-go/oss/ucloud"
+	"github.com/whereabouts/sdk/oss/qiniu"
+	"github.com/whereabouts/sdk/oss/ucloud"
 	"io"
 )
 

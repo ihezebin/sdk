@@ -19,7 +19,7 @@ type Hook interface {
 
 const (
 	logrusPackageName = "sirupsen/logrus"
-	loggerPackageName = "sdk-go/logger"
+	loggerPackageName = "sdk/logger"
 )
 
 var (
@@ -90,12 +90,12 @@ func (hook *callerHook) handleSimplify(file string, function string, line int) (
 
 // Description:
 // starting from the first layer of caller,
-// search upward until finding the non logrus package and the sdk-go/logger package
+// search upward until finding the non logrus package and the sdk/logger package
 // which is the interface location,
 // that is the actual call location
 //
 // 描述：
-// 从caller第一层开始，向上递进搜索, 直到找到非logrus包和非该接口所在的sdk-go/logger包为止，即为实际调用位置.
+// 从caller第一层开始，向上递进搜索, 直到找到非logrus包和非该接口所在的sdk/logger包为止，即为实际调用位置.
 //
 func findCaller(skip int) (file, function string, line int, err error) {
 	for i := 0; ; i++ {

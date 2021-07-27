@@ -2,8 +2,8 @@ package test
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk-go/code"
-	"github.com/whereabouts/sdk-go/model/redis"
+	"github.com/whereabouts/sdk/code"
+	"github.com/whereabouts/sdk/model/redis"
 	"log"
 	"testing"
 )

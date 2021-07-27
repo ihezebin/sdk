@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"github.com/whereabouts/sdk-go/configure"
-	"github.com/whereabouts/sdk-go/example/httpserver/config"
-	"github.com/whereabouts/sdk-go/example/httpserver/routes"
-	"github.com/whereabouts/sdk-go/example/httpserver/server"
-	"github.com/whereabouts/sdk-go/httpserver"
-	"github.com/whereabouts/sdk-go/httpserver/middleware"
+	"github.com/whereabouts/sdk/configure"
+	"github.com/whereabouts/sdk/example/httpserver/config"
+	"github.com/whereabouts/sdk/example/httpserver/routes"
+	"github.com/whereabouts/sdk/example/httpserver/server"
+	"github.com/whereabouts/sdk/httpserver"
+	"github.com/whereabouts/sdk/httpserver/middleware"
 	"log"
 )
 

@@ -1,8 +1,8 @@
 package proto
 
 import (
-	"github.com/whereabouts/sdk-go/httpserver/middleware"
-	"github.com/whereabouts/sdk-go/httpserver/result"
+	"github.com/whereabouts/sdk/httpserver/middleware"
+	"github.com/whereabouts/sdk/httpserver/result"
 	"mime/multipart"
 )
 

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/globalsign/mgo/bson"
-	"github.com/whereabouts/sdk-go/utils/timer"
+	"github.com/whereabouts/sdk/utils/timer"
 	"reflect"
 )
 

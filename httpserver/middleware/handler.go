@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/whereabouts/sdk-go/httpserver/result"
+	"github.com/whereabouts/sdk/httpserver/result"
 	"log"
 	"net/http"
 	"reflect"

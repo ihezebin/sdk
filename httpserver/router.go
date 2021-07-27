@@ -2,7 +2,7 @@ package httpserver
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/whereabouts/sdk-go/httpserver/middleware"
+	"github.com/whereabouts/sdk/httpserver/middleware"
 	"reflect"
 )
 

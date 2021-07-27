@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/whereabouts/sdk-go/logger"
+	"github.com/whereabouts/sdk/logger"
 	"testing"
 )
 

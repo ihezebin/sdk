@@ -2,8 +2,8 @@ package oss
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk-go/oss/qiniu"
-	"github.com/whereabouts/sdk-go/oss/ucloud"
+	"github.com/whereabouts/sdk/oss/qiniu"
+	"github.com/whereabouts/sdk/oss/ucloud"
 	"log"
 	"os"
 	"testing"

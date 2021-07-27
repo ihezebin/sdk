@@ -3,8 +3,8 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"github.com/whereabouts/sdk-go/example/httpserver/proto"
-	"github.com/whereabouts/sdk-go/httpserver/result"
+	"github.com/whereabouts/sdk/example/httpserver/proto"
+	"github.com/whereabouts/sdk/httpserver/result"
 	//"mime/multipart"
 )
 

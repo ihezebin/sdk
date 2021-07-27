@@ -2,9 +2,9 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/whereabouts/sdk-go/example/httpserver/handlers"
-	"github.com/whereabouts/sdk-go/example/httpserver/middleware"
-	"github.com/whereabouts/sdk-go/httpserver"
+	"github.com/whereabouts/sdk/example/httpserver/handlers"
+	"github.com/whereabouts/sdk/example/httpserver/middleware"
+	"github.com/whereabouts/sdk/httpserver"
 	"net/http"
 )
 
