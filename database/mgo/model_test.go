@@ -1,4 +1,4 @@
-package mongoc
+package mgo
 
 import (
 	"context"
