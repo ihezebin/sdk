@@ -10,6 +10,15 @@ func IsEmpty(s string) bool {
 	return Length(s) == 0 || s == ""
 }
 
+func IsAllEmpty(s ...string) bool {
+	for _, v := range s {
+		if NotEmpty(v) {
+			return false
+		}
+	}
+	return true
+}
+
 func NotEmpty(s string) bool {
 	return !IsEmpty(s)
 }
