@@ -33,7 +33,7 @@ func (db *Base) Database() string {
 }
 
 func (db *Base) Indexes() ([]mgo.Index, error) {
-	return db.Client().GetSession().DB(db.Database()).C(db.Collection()).Indexes()
+	return db.Client().Session().DB(db.Database()).C(db.Collection()).Indexes()
 }
 
 func (db *Base) Collection() string {
@@ -327,7 +327,7 @@ func (db *Base) handleTimeAuto(doc interface{}, isInsert bool) (map[string]inter
 		return nil, errors.New("the doc can not be no field")
 	}
 
-	if db.Client().GetConfig().AutoTime {
+	if db.Client().Config().AutoTime {
 		if v.MapIndex(reflect.ValueOf(keyCreateTime)).IsValid() {
 			if _, ok := v.MapIndex(reflect.ValueOf(keyCreateTime)).Interface().(string); !ok {
 				return nil, errors.New("if the auto_time is to true, that create time must be of type string")

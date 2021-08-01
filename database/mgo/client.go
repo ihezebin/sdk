@@ -4,14 +4,15 @@ import (
 	"context"
 	"github.com/globalsign/mgo"
 	"github.com/pkg/errors"
+	"github.com/whereabouts/sdk/utils/stringer"
 	"time"
 )
 
 type Client interface {
-	GetSession() *mgo.Session
+	Session() *mgo.Session
 	Close()
 	DoWithContext(ctx context.Context, model Model, exec func(s *mgo.Collection) error) error
-	GetConfig() Config
+	Config() Config
 }
 
 // example: mongodb://username:password@localhost:27017,otherhost:27017/db, default auto_time is true
@@ -39,8 +40,8 @@ func Dial(url string) (Client, error) {
 func NewClient(config Config) (Client, error) {
 
 	// Determine whether a client with the same alias already exists
-	if HasClient(config.AppName) {
-		return nil, errors.Errorf("there is already a client with alias %s, you can choose to use another alias", config.AppName)
+	if stringer.NotEmpty(config.Alias) && ClientManager().Has(config.Alias) {
+		return nil, errors.Errorf("there is already a client with alias %s, you can choose to use another alias", config.Alias)
 	}
 
 	poolLimit := defaultPoolLimit
@@ -81,8 +82,10 @@ func NewClient(config Config) (Client, error) {
 
 	c := &client{session: session, config: config}
 
-	// add client to the pool
-	AddClient(c.config.AppName, c)
+	// if alias is not empty, add client to the clientMap
+	if stringer.NotEmpty(config.Alias) {
+		ClientManager().Add(c.config.Alias, c)
+	}
 
 	return c, nil
 }
@@ -97,29 +100,31 @@ func (c *client) NewBaseModel(database string, collection string) *Base {
 }
 
 //Deprecated: Use DoWithSession instead.
-func (c *client) GetSession() *mgo.Session {
+func (c *client) Session() *mgo.Session {
 	return c.session.Copy()
 }
 
 func (c *client) Close() {
-	DeleteClient(c.GetConfig().AppName)
+	if stringer.NotEmpty(c.Config().Alias) {
+		ClientManager().Delete(c.Config().Alias)
+	}
 	c.session.Close()
 }
 
+func (c *client) Config() Config {
+	return c.config
+}
+
 func (c *client) DoWithContext(ctx context.Context, model Model, exec func(c *mgo.Collection) error) error {
-	s := c.GetSession()
+	s := c.Session()
 	defer s.Close()
 	return exec(s.DB(model.Database()).C(model.Collection()))
 }
 
 func (c *client) DoWithSession(do func(session *mgo.Session) error) error {
-	session := c.GetSession()
+	session := c.Session()
 	defer session.Close()
 	return do(session)
-}
-
-func (c *client) GetConfig() Config {
-	return c.config
 }
 
 // NewGlobalClient If there is only one Mongo, you can select the global client

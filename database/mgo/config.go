@@ -33,4 +33,7 @@ type Config struct {
 	MaxIdleTime time.Duration `json:"max_idle_time"`
 	AppName     string        `json:"app_name"`
 	AutoTime    bool          `json:"auto_time"`
+	// Alias If it is empty, it will not be included in the client Map management
+	// 如果为空则不纳入clientMap管理
+	Alias string `json:"alias"`
 }
