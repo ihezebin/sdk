@@ -6,6 +6,8 @@ import (
 	"github.com/whereabouts/sdk/utils/stringer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readconcern"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"time"
 )
 
@@ -13,6 +15,8 @@ type Client interface {
 	Kernel() *mongo.Client
 	Close(ctx context.Context) error
 	Config() Config
+	Do(ctx context.Context, model Model, exec Exec) (interface{}, error)
+	DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error)
 }
 
 func NewClient(ctx context.Context, config Config) (Client, error) {
@@ -34,6 +38,11 @@ func NewClientWithURI(ctx context.Context, alias string, uri string) (Client, er
 
 func NewClientWithOptions(ctx context.Context, alias string, options options.ClientOptions) (Client, error) {
 	kernel, err := mongo.Connect(ctx, &options)
+	if err != nil {
+		return nil, err
+	}
+
+	err = kernel.Ping(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +94,32 @@ func (c *client) Close(ctx context.Context) error {
 
 func (c *client) Config() Config {
 	return c.config
+}
+
+type Exec = func(ctx context.Context, collection *mongo.Collection) (interface{}, error)
+
+func (c *client) Do(ctx context.Context, model Model, exec Exec) (interface{}, error) {
+	return exec(ctx, c.Kernel().Database(model.Database()).Collection(model.Collection()))
+}
+
+func (c *client) DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error) {
+	// Specify the DefaultReadConcern option so any transactions started through
+	// the session will have read concern majority.
+	// The DefaultReadPreference and DefaultWriteConcern options aren't
+	// specified so they will be inheritied from client and be set to primary
+	// and majority, respectively.
+	sopts := options.Session().SetDefaultReadConcern(readconcern.Majority())
+	session, err := c.Kernel().StartSession(sopts)
+	if err != nil {
+		return nil, err
+	}
+	defer session.EndSession(ctx)
+	txnOpts := options.Transaction().SetReadPreference(readpref.PrimaryPreferred())
+	return session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
+		// Use sessCtx as the Context parameter for InsertOne and FindOne so
+		// both operations are run in a transaction.
+		return exec(sessCtx, c.Kernel().Database(model.Database()).Collection(model.Collection()))
+	}, txnOpts)
 }
 
 // NewGlobalClient If there is only one Mongo, you can select the global client

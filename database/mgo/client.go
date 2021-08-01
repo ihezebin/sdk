@@ -121,10 +121,10 @@ func (c *client) DoWithContext(ctx context.Context, model Model, exec func(c *mg
 	return exec(s.DB(model.Database()).C(model.Collection()))
 }
 
-func (c *client) DoWithSession(do func(session *mgo.Session) error) error {
+func (c *client) DoWithSession(exec func(session *mgo.Session) error) error {
 	session := c.Session()
 	defer session.Close()
-	return do(session)
+	return exec(session)
 }
 
 // NewGlobalClient If there is only one Mongo, you can select the global client
