@@ -17,6 +17,7 @@ type Client interface {
 	Config() Config
 	Do(ctx context.Context, model Model, exec Exec) (interface{}, error)
 	DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error)
+	NewBaseModel(database string, collection string) *Base
 }
 
 func NewClient(ctx context.Context, config Config) (Client, error) {
@@ -54,14 +55,26 @@ func NewClientWithOptions(ctx context.Context, alias string, options options.Cli
 			Password: options.Auth.Password,
 			Source:   options.Auth.AuthSource,
 		},
-		ReplicaSetName: *options.ReplicaSet,
-		Timeout:        *options.SocketTimeout,
-		PoolLimit:      *options.MaxPoolSize,
-		MaxIdleTime:    *options.MaxConnIdleTime,
-		AppName:        *options.AppName,
-		AutoTime:       true,
-		Alias:          alias,
+		AutoTime: true,
+		Alias:    alias,
 	}
+
+	if options.ReplicaSet != nil {
+		config.ReplicaSetName = *options.ReplicaSet
+	}
+	if options.SocketTimeout != nil {
+		config.Timeout = *options.SocketTimeout
+	}
+	if options.MaxPoolSize != nil {
+		config.PoolLimit = *options.MaxPoolSize
+	}
+	if options.MaxConnIdleTime != nil {
+		config.MaxIdleTime = *options.MaxConnIdleTime
+	}
+	if options.AppName != nil {
+		config.AppName = *options.AppName
+	}
+
 	c := &client{kernel: kernel, config: config}
 
 	// if alias is not empty, add client to the clientMap
