@@ -22,3 +22,7 @@ func IfString(condition bool, trueVal, falseVal string) string {
 func IfBool(condition bool, trueVal, falseVal bool) bool {
 	return If(condition, trueVal, falseVal).(bool)
 }
+
+func IfError(condition bool, trueVal, falseVal error) error {
+	return If(condition, trueVal, falseVal).(error)
+}

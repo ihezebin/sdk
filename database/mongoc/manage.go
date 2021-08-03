@@ -1,4 +1,4 @@
-package mongo
+package mongoc
 
 import (
 	"github.com/pkg/errors"
@@ -39,7 +39,7 @@ func (manager *manager) Delete(alias string) {
 func (manager *manager) Get(alias string) (Client, error) {
 	c, ok := manager.clientMap.Load(alias)
 	if !ok {
-		return nil, errors.Errorf("can't find mongo client of alias '%s'", alias)
+		return nil, errors.Errorf("can't find mongoc client of alias '%s'", alias)
 	}
 	return c.(Client), nil
 }

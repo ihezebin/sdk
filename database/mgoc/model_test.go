@@ -1,4 +1,4 @@
-package mgo
+package mgoc
 
 import (
 	"context"
