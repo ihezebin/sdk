@@ -3,7 +3,7 @@ package mongo
 import (
 	"context"
 	"github.com/pkg/errors"
-	"github.com/whereabouts/sdk/utils/stringer"
+	"github.com/whereabouts/sdk/enhance/stringer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"

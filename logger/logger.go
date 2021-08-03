@@ -3,7 +3,7 @@ package logger
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk/utils/stringer"
+	"github.com/whereabouts/sdk/enhance/stringer"
 	"io"
 	"os"
 )

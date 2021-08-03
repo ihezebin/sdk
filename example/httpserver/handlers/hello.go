@@ -40,7 +40,7 @@ func HelloFileHandler(ctx context.Context, req *proto.HelloFileHandlerReq, resp 
 
 // HelloMultipleFilesHandler
 // Multiple file upload:
-// cannot be resolved by mapping, get multiple files through gin native operation
+// cannot be resolved by mapping, get multiple files through gin nativer operation
 func HelloMultipleFilesHandler(ctx context.Context, req *proto.HelloMultipleFilesHandlerReq, resp *proto.HelloMultipleFilesHandlerResp) *result.HttpError {
 	multipartForm, err := req.GetContext().MultipartForm()
 	if err != nil {

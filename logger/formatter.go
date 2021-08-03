@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk/utils/timer"
+	"github.com/whereabouts/sdk/enhance/timer"
 	"strings"
 )
 

@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"github.com/whereabouts/sdk/enhance/nativer"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -45,10 +46,7 @@ func (model *Base) Insert(ctx context.Context, documents ...interface{}) (interf
 	return model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
 		result, err := collection.InsertMany(ctx, documents)
 		if result != nil {
-			if len(result.InsertedIDs) == 1 {
-				return result.InsertedIDs[0], err
-			}
-			return result.InsertedIDs, err
+			return nativer.If(len(result.InsertedIDs) == 1, result.InsertedIDs[0], result.InsertedIDs), err
 		}
 		return nil, err
 	})
