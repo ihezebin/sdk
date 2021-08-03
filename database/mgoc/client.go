@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/globalsign/mgo"
 	"github.com/pkg/errors"
-	"github.com/whereabouts/sdk/enhance/stringer"
+	"github.com/whereabouts/sdk/utils/stringer"
 	"time"
 )
 

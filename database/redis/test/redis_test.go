@@ -2,8 +2,8 @@ package test
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk/code"
 	"github.com/whereabouts/sdk/database/redis"
+	"github.com/whereabouts/sdk/utils/coder"
 	"log"
 	"testing"
 )
@@ -20,7 +20,7 @@ func TestRedis(t *testing.T) {
 		log.Fatal(err)
 	}
 	id := "korbin"
-	result := GetEmailCache().AddEmailCode(id, code.Default())
+	result := GetEmailCache().AddEmailCode(id, coder.Default())
 	fmt.Println(result)
 	result = GetEmailCache().GetEmailCode(id)
 	fmt.Println(result.String())

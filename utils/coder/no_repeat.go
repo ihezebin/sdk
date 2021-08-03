@@ -1,4 +1,4 @@
-package code
+package coder
 
 //func NoRepeat() string {
 //	return GenerateNoRepeat(DefaultLen, TypeBlend)
@@ -8,7 +8,7 @@ package code
 //	return GenerateNoRepeat(length, TypeBlend)
 //}
 
-//func GenerateNoRepeat(length int, codeType int) (code string) {
+//func GenerateNoRepeat(length int, codeType int) (coder string) {
 //	temp := time.Now().Unix()
 //	expend := len(fmt.Sprint(temp)) / length
 //	if expend < 2 {
@@ -23,28 +23,28 @@ package code
 //			for index >= len(characterBlend) {
 //				index = index - len(characterBlend)
 //			}
-//			code = fmt.Sprintf("%s%c", code, characterBlend[index])
+//			coder = fmt.Sprintf("%s%c", coder, characterBlend[index])
 //		case TypeDigit:
 //			for index >= len(characterDigit) {
 //				index = index - len(characterDigit)
 //			}
-//			code = fmt.Sprintf("%s%c", code, characterDigit[index])
+//			coder = fmt.Sprintf("%s%c", coder, characterDigit[index])
 //		case TypeLetterLower:
 //			for index >= len(characterLetterLower) {
 //				index = index - len(characterLetterLower)
 //			}
-//			code = fmt.Sprintf("%s%c", code, characterLetterLower[index])
+//			coder = fmt.Sprintf("%s%c", coder, characterLetterLower[index])
 //		case TypeLetterUpper:
 //			for index >= len(characterLetterUpper) {
 //				index = index - len(characterLetterUpper)
 //			}
-//			code = fmt.Sprintf("%s%c", code, characterLetterUpper[index])
+//			coder = fmt.Sprintf("%s%c", coder, characterLetterUpper[index])
 //		default:
 //			for index >= len(characterBlend) {
 //				index = index - len(characterBlend)
 //			}
-//			code = fmt.Sprintf("%s%c", code, characterBlend[index])
+//			coder = fmt.Sprintf("%s%c", coder, characterBlend[index])
 //		}
 //	}
-//	return code
+//	return coder
 //}

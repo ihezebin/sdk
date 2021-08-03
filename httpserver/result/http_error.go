@@ -4,7 +4,7 @@ import "encoding/json"
 
 type HttpError struct {
 	HttpStatusCode int         `json:"-"`
-	Code           interface{} `json:"code"`
+	Code           interface{} `json:"coder"`
 	Message        string      `json:"message"`
 }
 

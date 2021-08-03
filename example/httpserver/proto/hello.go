@@ -12,7 +12,7 @@ type HelloStandardHandlerReq struct {
 }
 
 type HelloStandardHandlerResp struct {
-	Code    bool   `json:"code"`
+	Code    bool   `json:"coder"`
 	Message string `json:"message"`
 }
 
@@ -22,7 +22,7 @@ type HelloFileHandlerReq struct {
 }
 
 type HelloFileHandlerResp struct {
-	Code bool   `json:"code"`
+	Code bool   `json:"coder"`
 	Url  string `json:"url"`
 }
 

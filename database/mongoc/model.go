@@ -3,7 +3,7 @@ package mongoc
 import (
 	"context"
 	"github.com/globalsign/mgo/bson"
-	"github.com/whereabouts/sdk/enhance/nativer"
+	"github.com/whereabouts/sdk/utils/nativer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )

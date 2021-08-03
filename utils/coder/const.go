@@ -1,4 +1,4 @@
-package code
+package coder
 
 import (
 	"math/rand"
