@@ -3,7 +3,6 @@ package mongoc
 import (
 	"context"
 	"github.com/globalsign/mgo/bson"
-	"github.com/whereabouts/sdk/utils/nativer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -44,133 +43,230 @@ func (model *Base) DoWithTransaction(ctx context.Context, exec Exec) (interface{
 	return model.Client().DoWithTransaction(ctx, model, exec)
 }
 
-func (model *Base) Count(ctx context.Context, filter interface{}) (int64, error) {
+func (model *Base) Count(ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error) {
 	count, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
-		return collection.CountDocuments(ctx, filter)
+		return collection.CountDocuments(ctx, filter, opts...)
 	})
 	return count.(int64), err
 }
 
 func (model *Base) CountDocuments(ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error) {
-	count, err := b.c(ctx).CountDocuments(ctx, filter, opts...)
-	return count, err
+	return model.Count(ctx, filter, opts...)
 }
 
 func (model *Base) InsertMany(ctx context.Context, documents []interface{}, opts ...*options.InsertManyOptions) (*mongo.InsertManyResult, error) {
-	insmres, err := b.c(ctx).InsertMany(ctx, documents, opts...)
-	return insmres, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.InsertMany(ctx, documents, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.(*mongo.InsertManyResult), err
 }
 
 func (model *Base) InsertOne(ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
-	insores, err := b.c(ctx).InsertOne(ctx, document, opts...)
-	return insores, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.InsertOne(ctx, document, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.(*mongo.InsertOneResult), err
 }
 
 func (model *Base) DeleteMany(ctx context.Context, filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-	dmres, err := b.c(ctx).DeleteMany(ctx, filter, opts...)
-	return dmres, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.DeleteMany(ctx, filter, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.(*mongo.DeleteResult), err
 }
 
 func (model *Base) DeleteOne(ctx context.Context, filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-	dor, err := b.c(ctx).DeleteOne(ctx, filter, opts...)
-	return dor, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.DeleteOne(ctx, filter, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.(*mongo.DeleteResult), err
+}
+
+func (model *Base) DeleteId(ctx context.Context, id interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
+	return model.DeleteOne(ctx, model.wrapId(id), opts...)
 }
 
 func (model *Base) Find(ctx context.Context, filter interface{}, results interface{}, opts ...*options.FindOptions) error {
-	cur, err := b.c(ctx).Find(ctx, filter, opts...)
-	if err == nil {
-		err = cur.All(ctx, results)
-	}
+	_, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		cur, err := collection.Find(ctx, filter, opts...)
+		if err == nil {
+			err = cur.All(ctx, results)
+		}
+		return nil, err
+	})
 	return err
 }
 
 func (model *Base) FindOne(ctx context.Context, filter interface{}, result interface{}, opts ...*options.FindOneOptions) error {
-	return b.c(ctx).FindOne(ctx, filter, opts...).Decode(result)
+	_, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return nil, collection.FindOne(ctx, filter, opts...).Decode(result)
+	})
+	return err
+}
+
+func (model *Base) FindId(ctx context.Context, id interface{}, result interface{}, opts ...*options.FindOneOptions) error {
+	return model.FindOne(ctx, model.wrapId(id), result, opts...)
 }
 
 func (model *Base) FindOneAndDelete(ctx context.Context, filter interface{}, result interface{}, opts ...*options.FindOneAndDeleteOptions) error {
-	return b.c(ctx).FindOneAndDelete(ctx, filter, opts...).Decode(result)
+	_, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return nil, collection.FindOneAndDelete(ctx, filter, opts...).Decode(result)
+	})
+	return err
 }
 
 func (model *Base) FindOneAndReplace(ctx context.Context, filter, replacement, result interface{}, opts ...*options.FindOneAndReplaceOptions) error {
-	return b.c(ctx).FindOneAndReplace(ctx, filter, replacement, opts...).Decode(result)
+	_, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return nil, collection.FindOneAndReplace(ctx, filter, replacement, opts...).Decode(result)
+	})
+	return err
 }
 
 func (model *Base) FindOneAndUpdate(ctx context.Context, filter, update, result interface{}, opts ...*options.FindOneAndUpdateOptions) error {
-	return b.c(ctx).FindOneAndUpdate(ctx, filter, update, opts...).Decode(result)
+	_, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return nil, collection.FindOneAndUpdate(ctx, filter, update, opts...).Decode(result)
+	})
+	return err
 }
 
 func (model *Base) FindOneAndUpsert(ctx context.Context, filter, update, result interface{}, opts ...*options.FindOneAndUpdateOptions) error {
-	rd := options.After
-	optUpsert := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(rd)
-	opts = append(opts, optUpsert)
-	return b.c(ctx).FindOneAndUpdate(ctx, filter, update, opts...).Decode(result)
+	_, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		optUpsert := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
+		opts = append(opts, optUpsert)
+		return nil, collection.FindOneAndUpdate(ctx, filter, update, opts...).Decode(result)
+	})
+	return err
 }
 
 func (model *Base) ReplaceOne(ctx context.Context, filter, replacement interface{}, opts ...*options.ReplaceOptions) (*mongo.UpdateResult, error) {
-	repres, err := b.c(ctx).ReplaceOne(ctx, filter, replacement, opts...)
-	return repres, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.ReplaceOne(ctx, filter, replacement, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.(*mongo.UpdateResult), err
 }
 
 func (model *Base) UpdateMany(ctx context.Context, filter, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	umres, err := b.c(ctx).UpdateMany(ctx, filter, replacement, opts...)
-	return umres, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.UpdateMany(ctx, filter, replacement, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.(*mongo.UpdateResult), err
 }
 
 func (model *Base) UpdateOne(ctx context.Context, filter, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	uores, err := b.c(ctx).UpdateOne(ctx, filter, replacement, opts...)
-	return uores, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.UpdateOne(ctx, filter, replacement, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.(*mongo.UpdateResult), err
+}
+
+func (model *Base) UpdateId(ctx context.Context, id, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	return model.UpdateOne(ctx, model.wrapId(id), replacement, opts...)
 }
 
 func (model *Base) Upsert(ctx context.Context, filter, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	optUpsert := options.Update().SetUpsert(true)
-	opts = append(opts, optUpsert)
-	uores, err := b.c(ctx).UpdateOne(ctx, filter, replacement, opts...)
-	return uores, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		optUpsert := options.Update().SetUpsert(true)
+		opts = append(opts, optUpsert)
+		return collection.UpdateOne(ctx, filter, replacement, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.(*mongo.UpdateResult), err
+}
+
+func (model *Base) UpsertId(ctx context.Context, id, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	return model.Upsert(ctx, model.wrapId(id), replacement, opts...)
 }
 
 func (model *Base) Distinct(ctx context.Context, fieldName string, filter interface{}, opts ...*options.DistinctOptions) ([]interface{}, error) {
-	distinct, err := b.c(ctx).Distinct(ctx, fieldName, filter, opts...)
-	return distinct, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.Distinct(ctx, fieldName, filter, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.([]interface{}), err
 }
 
 func (model *Base) Aggregate(ctx context.Context, pipeline, results interface{}, opts ...*options.AggregateOptions) error {
-
-	cur, err := b.c(ctx).Aggregate(ctx, pipeline, opts...)
-	if err == nil {
-		err = cur.All(ctx, results)
-	}
-
+	_, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		cur, err := collection.Aggregate(ctx, pipeline, opts...)
+		if err == nil {
+			err = cur.All(ctx, results)
+		}
+		return nil, err
+	})
 	return err
 }
 
 func (model *Base) Indexes() mongo.IndexView {
-	return b.c(context.Background()).Indexes()
+	indexes, _ := model.Do(context.TODO(), func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.Indexes(), nil
+	})
+	return indexes.(mongo.IndexView)
 }
 
 func (model *Base) Clone(opts ...*options.CollectionOptions) (*mongo.Collection, error) {
-	return b.c(context.Background()).Clone(opts...)
+	col, err := model.Do(context.TODO(), func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.Clone(opts...)
+	})
+	if col == nil {
+		return nil, err
+	}
+	return col.(*mongo.Collection), err
 }
 
 func (model *Base) Drop(ctx context.Context) error {
-	err := b.c(ctx).Drop(ctx)
+	_, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return nil, collection.Drop(ctx)
+	})
 	return err
 }
 
 func (model *Base) BulkWrite(ctx context.Context, models []mongo.WriteModel, opts ...*options.BulkWriteOptions) (*mongo.BulkWriteResult, error) {
-
-	bwres, err := b.c(ctx).BulkWrite(ctx, models, opts...)
-	return bwres, err
+	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.BulkWrite(ctx, models, opts...)
+	})
+	if result == nil {
+		return nil, err
+	}
+	return result.(*mongo.BulkWriteResult), err
 }
 
 func (model *Base) EstimatedDocumentCount(ctx context.Context, opts ...*options.EstimatedDocumentCountOptions) (int64, error) {
-	count, err := b.c(ctx).EstimatedDocumentCount(ctx, opts...)
-	return count, err
+	count, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.EstimatedDocumentCount(ctx, opts...)
+	})
+	return count.(int64), err
 }
 
 func (model *Base) Watch(ctx context.Context, pipeline interface{}, opts ...*options.ChangeStreamOptions) (*mongo.ChangeStream, error) {
-	cs, err := b.c(ctx).Watch(ctx, pipeline, opts...)
-	return cs, err
+	stream, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		return collection.Watch(ctx, pipeline, opts...)
+	})
+	return stream.(*mongo.ChangeStream), err
 }
 
 func (model *Base) wrapId(id interface{}) interface{} {
