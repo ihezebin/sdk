@@ -33,7 +33,7 @@ func (db *Base) Database() string {
 }
 
 func (db *Base) Indexes() ([]mgo.Index, error) {
-	return db.Client().Session().DB(db.Database()).C(db.Collection()).Indexes()
+	return db.Client().Kernel().DB(db.Database()).C(db.Collection()).Indexes()
 }
 
 func (db *Base) Collection() string {
@@ -47,7 +47,7 @@ func (db *Base) Client() Client {
 // DoWithContext it is used for you to use the nativer mgoc interface according to your own needs,
 // Use when you can't find the method you want in this package
 func (db *Base) DoWithContext(ctx context.Context, f func(c *mgo.Collection) error) error {
-	return db.Client().DoWithContext(ctx, db, f)
+	return db.Client().Do(ctx, db, f)
 }
 
 func (db *Base) RemoveOne(ctx context.Context, selector interface{}) error {

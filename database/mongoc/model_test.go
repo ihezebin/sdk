@@ -22,7 +22,7 @@ func TestInsert(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	id, err := c.NewBaseModel("test", "user").Insert(context.TODO(), User{
+	id, err := c.NewBaseModel("test", "user").InsertOne(context.TODO(), User{
 		Name: "aaa",
 		Age:  111,
 	})

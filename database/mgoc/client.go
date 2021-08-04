@@ -9,10 +9,11 @@ import (
 )
 
 type Client interface {
-	Session() *mgo.Session
+	Kernel() *mgo.Session
 	Close()
-	DoWithContext(ctx context.Context, model Model, exec func(s *mgo.Collection) error) error
+	Do(ctx context.Context, model Model, exec func(s *mgo.Collection) error) error
 	Config() Config
+	NewBaseModel(database string, collection string) *Base
 }
 
 // example: mongodb://username:password@localhost:27017,otherhost:27017/db, default auto_time is true
@@ -99,9 +100,13 @@ func (c *client) NewBaseModel(database string, collection string) *Base {
 	return NewBaseModel(c, database, collection)
 }
 
-//Deprecated: Use DoWithSession instead.
+//Deprecated: Use Kernel instead.
 func (c *client) Session() *mgo.Session {
 	return c.session.Copy()
+}
+
+func (c *client) Kernel() *mgo.Session {
+	return c.Session()
 }
 
 func (c *client) Close() {
@@ -115,14 +120,14 @@ func (c *client) Config() Config {
 	return c.config
 }
 
-func (c *client) DoWithContext(ctx context.Context, model Model, exec func(c *mgo.Collection) error) error {
-	s := c.Session()
+func (c *client) Do(ctx context.Context, model Model, exec func(c *mgo.Collection) error) error {
+	s := c.Kernel()
 	defer s.Close()
 	return exec(s.DB(model.Database()).C(model.Collection()))
 }
 
 func (c *client) DoWithSession(exec func(session *mgo.Session) error) error {
-	session := c.Session()
+	session := c.Kernel()
 	defer session.Close()
 	return exec(session)
 }
