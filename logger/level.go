@@ -39,14 +39,14 @@ const (
 	// TraceLevel level. Designates finer-grained informational events than the Debug.
 	TraceLevel
 
-	LevelStringPanic   = "panic"
-	LevelStringFatal   = "fatal"
-	LevelStringError   = "error"
-	LevelStringWarn    = "warn"
-	LevelStringWarning = "warning"
-	LevelStringInfo    = "info"
-	LevelStringDebug   = "debug"
-	LevelStringTrace   = "trace"
+	PanicLevelStr   = "panic"
+	FatalLevelStr   = "fatal"
+	ErrorLevelStr   = "error"
+	WarnLevelStr    = "warn"
+	WarningLevelStr = "warning"
+	InfoLevelStr    = "info"
+	DebugLevelStr   = "debug"
+	TraceLevelStr   = "trace"
 )
 
 var levelMap = map[string]Level{
