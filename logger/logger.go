@@ -24,10 +24,10 @@ func NewLoggerWithConfig(config Config) *Logger {
 
 	fields := make(Fields)
 	if stringer.NotEmpty(config.AppName) {
-		fields[fieldKeyApp] = config.AppName
+		fields[FieldKeyApp] = config.AppName
 	}
 	if config.Timestamp {
-		fields[fieldKeyTimestamp] = fieldValueZero
+		fields[FieldKeyTimestamp] = fieldValueZero
 	}
 	l.AddHook(NewFieldsHook(fields))
 	if stringer.NotEmpty(config.ErrFile) {

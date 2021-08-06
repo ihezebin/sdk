@@ -5,10 +5,11 @@ import (
 )
 
 const (
-	fieldKeyTime      = "time"
-	fieldKeyTimestamp = "timestamp"
-	fieldKeyApp       = "app"
-	fieldValueZero    = iota
+	FieldKeyTime      = "time"
+	FieldKeyTimestamp = "timestamp"
+	FieldKeyApp       = "app"
+
+	fieldValueZero = iota
 )
 
 type fieldsHook struct {
@@ -18,11 +19,10 @@ type fieldsHook struct {
 
 // NewFieldsHook Use to create the fieldsHook
 func NewFieldsHook(fields Fields) *fieldsHook {
-	hook := fieldsHook{
+	return &fieldsHook{
 		fields: fields,
 		levels: AllLevels,
 	}
-	return &hook
 }
 
 // Levels implement levels
@@ -33,11 +33,16 @@ func (hook *fieldsHook) Levels() []Level {
 // Fire implement fire
 func (hook *fieldsHook) Fire(entry *logrus.Entry) error {
 	for k, v := range hook.fields {
-		if k == fieldKeyTimestamp {
+		if k == FieldKeyTimestamp {
 			entry.Data[k] = entry.Time.Unix()
 			continue
 		}
 		entry.Data[k] = v
 	}
 	return nil
+}
+
+func (hook *fieldsHook) SetLevels(levels []logrus.Level) *fieldsHook {
+	hook.levels = levels
+	return hook
 }

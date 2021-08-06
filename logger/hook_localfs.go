@@ -87,7 +87,7 @@ func (hook *localFSHook) Fire(entry *logrus.Entry) error {
 
 // Levels returns configured log levels.
 func (hook *localFSHook) Levels() []logrus.Level {
-	return AllLevels
+	return hook.levels
 }
 
 // Write a log line to an io.Writer.

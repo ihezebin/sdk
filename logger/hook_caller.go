@@ -22,28 +22,33 @@ const (
 	loggerPackageName = "sdk/logger"
 )
 
-var (
-	FuncFieldKey   = "func"
-	FileFieldKey   = "file"
-	SourceFieldKey = "source"
+const (
+	FieldKeyFunc   = "func"
+	FieldKeyFile   = "file"
+	FieldKeySource = "source"
 )
 
 // callerHook for logging the caller
 type callerHook struct {
-	source   bool
-	simplify bool
-	skip     int
-	levels   []Level
+	source         bool
+	simplify       bool
+	skip           int
+	levels         []Level
+	fieldKeyFunc   string
+	fieldKeyFile   string
+	fieldKeySource string
 }
 
 // NewCallerHook Use to create the callerHook
 func NewCallerHook() *callerHook {
-	hook := callerHook{
-		simplify: false,
-		skip:     0,
-		levels:   AllLevels,
+	return &callerHook{
+		simplify:       false,
+		skip:           0,
+		levels:         AllLevels,
+		fieldKeyFile:   FieldKeyFile,
+		fieldKeyFunc:   FieldKeyFunc,
+		fieldKeySource: FieldKeySource,
 	}
-	return &hook
 }
 
 // Levels implement levels
@@ -61,10 +66,10 @@ func (hook *callerHook) Fire(entry *logrus.Entry) error {
 	file, function, line = hook.handleSimplify(file, function, line)
 	// handle mode
 	if hook.source {
-		entry.Data[SourceFieldKey] = fmt.Sprintf("%s:%d:%s", file, line, function)
+		entry.Data[FieldKeySource] = fmt.Sprintf("%s:%d:%s", file, line, function)
 	} else {
-		entry.Data[FileFieldKey] = fmt.Sprintf("%s:%d", file, line)
-		entry.Data[FuncFieldKey] = function
+		entry.Data[hook.fieldKeyFile] = fmt.Sprintf("%s:%d", file, line)
+		entry.Data[hook.fieldKeyFunc] = function
 	}
 	return nil
 }
@@ -135,17 +140,17 @@ func (hook *callerHook) SetLevels(levels []logrus.Level) *callerHook {
 	return hook
 }
 
-func (hook *callerHook) SetFuncFieldKey(key string) *callerHook {
-	FuncFieldKey = key
+func (hook *callerHook) SetFieldKeyFunc(key string) *callerHook {
+	hook.fieldKeyFunc = key
 	return hook
 }
 
-func (hook *callerHook) SetFileFieldKey(key string) *callerHook {
-	FileFieldKey = key
+func (hook *callerHook) SetFieldKeyFile(key string) *callerHook {
+	hook.fieldKeyFile = key
 	return hook
 }
 
-func (hook *callerHook) SetSourceFieldKey(key string) *callerHook {
-	SourceFieldKey = key
+func (hook *callerHook) SetFieldKeySource(key string) *callerHook {
+	hook.fieldKeySource = key
 	return hook
 }

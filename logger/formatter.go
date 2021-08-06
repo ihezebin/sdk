@@ -69,7 +69,7 @@ func (formatter *bracketFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			data[k] = v
 		}
 	}
-	data[fieldKeyTime] = entry.Time.Format(timer.DefaultFormatLayout)
+	data[FieldKeyTime] = entry.Time.Format(timer.DefaultFormatLayout)
 	data[logrus.FieldKeyMsg] = entry.Message
 	data[logrus.FieldKeyLevel] = entry.Level.String()
 
