@@ -28,6 +28,7 @@ type localFSHook struct {
 // NewLocalFSHook returns new LFS hook.
 // Output can be a string, io.Writer or WriterMap.
 // If using io.Writer or WriterMap, user is responsible for closing the used io.Writer.
+// 日志内容分级别输出到本地文件系统, 如: INFO级别输出到test.log文件, ERROR级别输出到test.err.log文件, DEBUG级别输出到os.Stderr
 func NewLocalFSHook(output interface{}, formatter Formatter) *localFSHook {
 	hook := &localFSHook{
 		lock:   new(sync.Mutex),

@@ -18,6 +18,8 @@ type fieldsHook struct {
 }
 
 // NewFieldsHook Use to create the fieldsHook
+// Used to add common log attributes
+// 用于添加公共的日志属性
 func NewFieldsHook(fields Fields) *fieldsHook {
 	return &fieldsHook{
 		fields: fields,

@@ -51,14 +51,12 @@ type rotateFileWriter struct {
 	expireTime time.Duration
 }
 
-func (writer *rotateFileWriter) Write(p []byte) (n int, err error) {
-	return writer.kernel.Write(p)
-}
-
 func DefaultRotateFileWriter(filename string) io.Writer {
 	return createRotateFileWriter(filename, defaultRotateTime, defaultRotateExpireTime)
 }
 
+// NewRotateFileWriter Rotate output and split local log files to avoid accumulation of excessive log content in a log file
+// 轮转输出, 分割本地日志文件, 避免一个日志文件中堆积过多日志内容
 func NewRotateFileWriter(filename string, rotateTime time.Duration, expireTime time.Duration) io.Writer {
 	return createRotateFileWriter(filename, rotateTime, expireTime)
 }
@@ -99,4 +97,8 @@ func createRotateFileWriter(filename string, rotateTime time.Duration, expireTim
 		panic(fmt.Sprintf("create rotate file writer failed: %s", err.Error()))
 	}
 	return &rotateFileWriter{kernel, filename, rotateTime, expireTime}
+}
+
+func (writer *rotateFileWriter) Write(p []byte) (n int, err error) {
+	return writer.kernel.Write(p)
 }

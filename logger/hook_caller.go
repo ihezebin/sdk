@@ -40,6 +40,10 @@ type callerHook struct {
 }
 
 // NewCallerHook Use to create the callerHook
+// StandardLogger adds this Hook by default,
+// which is used to increase the attributes of the specific location where the output log is located,
+// so as to quickly locate the original file name and function name where the log output is located.
+// StandardLogger默认添加了该Hook, 用于增加输出日志所在具体位置的属性, 便于快速定位日志输出所在的原文件名和函数名.
 func NewCallerHook() *callerHook {
 	return &callerHook{
 		simplify:       false,
@@ -100,7 +104,7 @@ func (hook *callerHook) handleSimplify(file string, function string, line int) (
 // that is the actual call location
 //
 // 描述：
-// 从caller第一层开始，向上递进搜索, 直到找到非logrus包和非该接口所在的sdk/logger包为止，即为实际调用位置.
+// 从caller第一层开始，向上递进搜索, 直到找到非logrus包和非该接口所在的sdk/logger包为止, 即为实际调用位置.
 //
 func findCaller(skip int) (file, function string, line int, err error) {
 	for i := 0; ; i++ {

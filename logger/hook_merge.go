@@ -30,6 +30,10 @@ type mergeHook struct {
 	ignoreKeys map[string]bool
 }
 
+// NewMergeHook Used to merge all other attributes except the standard attributes into custom,
+// to avoid too many attributes and inconvenient management,
+// you can add default standard attributes by passing parameters.
+// 用于合并除标准属性以外的其他所有属性到custom, 避免属性过多不便管理, 可通过传参增加默认的标准属性.
 func NewMergeHook(ignoreKeys ...string) *mergeHook {
 	hook := &mergeHook{
 		levels:     AllLevels,
