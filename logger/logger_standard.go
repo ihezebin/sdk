@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	standardLogger = newLogger()
+	standardLogger = newStandardLogger()
 )
 
 func StandardLogger() *Logger {

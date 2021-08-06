@@ -8,11 +8,11 @@ import (
 func TestStandardLogger(t *testing.T) {
 	logger.Println("hello logger")
 	logger.StandardLogger().Println("hello StandardLogger")
-	logger.NewLogger().Println("hello NewLogger")
+	logger.New().Println("hello NewLogger")
 }
 
 func TestNewLogger(t *testing.T) {
-	newLogger := logger.NewLogger(
+	newLogger := logger.New(
 		logger.WithTimestamp(true),
 		logger.WithAppName("logger"),
 		logger.WithLevel(logger.InfoLevelStr),

@@ -12,12 +12,12 @@ type Logger struct {
 	kernel *logrus.Logger
 }
 
-func NewLogger(cfs ...ConfigFunc) *Logger {
+func New(cfs ...ConfigFunc) *Logger {
 	return NewLoggerWithConfig(newConfig(cfs...))
 }
 
 func NewLoggerWithConfig(config Config) *Logger {
-	l := newLogger()
+	l := newStandardLogger()
 
 	l.SetLevel(string2Level(config.Level))
 	l.SetFormatter(string2Formatter(config.Format))
@@ -44,7 +44,7 @@ func NewLoggerWithConfig(config Config) *Logger {
 	return l
 }
 
-func newLogger() *Logger {
+func newStandardLogger() *Logger {
 	return (&Logger{
 		&logrus.Logger{
 			Out:          StandardErrOutput(),
