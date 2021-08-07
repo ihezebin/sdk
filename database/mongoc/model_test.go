@@ -69,7 +69,7 @@ func TestInsert(t *testing.T) {
 // === RUN   TestTransaction
 // {"file":"model_test.go:59","func":"mongoc.TestTransaction","level":"info","msg":"before transaction: {Name:Korbin Age:18}","time":"2021-08-07 18:51:05"}
 // {"file":"model_test.go:74","func":"mongoc.TestTransaction","level":"info","msg":"after failed transaction: {Name:Korbin Age:18}","time":"2021-08-07 18:51:05"}
-// {"file":"model_test.go:88","func":"mongoc.TestTransaction","level":"info","msg":"after success transaction: {Name:Hezebin Age:18}","time":"2021-08-07 18:51:05"}
+// {"file":"model_test.go:88","func":"mongoc.TestTransaction","level":"info","msg":"after success transaction: {Name:Hezebin2 Age:18}","time":"2021-08-07 18:51:05"}
 // --- PASS: TestTransaction (0.04s)
 //PASS
 func TestTransaction(t *testing.T) {
