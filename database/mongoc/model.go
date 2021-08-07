@@ -2,7 +2,8 @@ package mongoc
 
 import (
 	"context"
-	"github.com/globalsign/mgo/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -18,6 +19,8 @@ type Base struct {
 	ctx        context.Context
 	client     Client
 }
+
+var FilterNil = bson.M{}
 
 func NewBaseModel(client Client, database string, collection string) *Base {
 	return &Base{client: client, database: database, collection: collection}
@@ -39,8 +42,14 @@ func (model *Base) Do(ctx context.Context, exec Exec) (interface{}, error) {
 	return model.Client().Do(ctx, model, exec)
 }
 
-func (model *Base) DoWithTransaction(ctx context.Context, exec Exec) (interface{}, error) {
-	return model.Client().DoWithTransaction(ctx, model, exec)
+func (model *Base) DoWithTransaction(ctx context.Context, exec ModelExec) (interface{}, error) {
+	return model.Client().DoWithTransaction(ctx, model, func(ctx context.Context, _ *mongo.Collection) (interface{}, error) {
+		return exec(ctx, model)
+	})
+}
+
+func (model *Base) DoWithSession(ctx context.Context, exec SessionExec) error {
+	return model.Client().DoWithSession(ctx, model, exec)
 }
 
 func (model *Base) Count(ctx context.Context, filter interface{}, opts ...*options.CountOptions) (int64, error) {
@@ -56,6 +65,10 @@ func (model *Base) CountDocuments(ctx context.Context, filter interface{}, opts 
 
 func (model *Base) InsertMany(ctx context.Context, documents []interface{}, opts ...*options.InsertManyOptions) (*mongo.InsertManyResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		documents, err := model.handleAutoTimeInsert(documents...)
+		if err != nil {
+			return nil, err
+		}
 		return collection.InsertMany(ctx, documents, opts...)
 	})
 	if result == nil {
@@ -66,7 +79,11 @@ func (model *Base) InsertMany(ctx context.Context, documents []interface{}, opts
 
 func (model *Base) InsertOne(ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
-		return collection.InsertOne(ctx, document, opts...)
+		docs, err := model.handleAutoTimeInsert(document)
+		if err != nil {
+			return nil, err
+		}
+		return collection.InsertOne(ctx, docs[0], opts...)
 	})
 	if result == nil {
 		return nil, err
@@ -94,8 +111,12 @@ func (model *Base) DeleteOne(ctx context.Context, filter interface{}, opts ...*o
 	return result.(*mongo.DeleteResult), err
 }
 
-func (model *Base) DeleteId(ctx context.Context, id interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
-	return model.DeleteOne(ctx, model.wrapId(id), opts...)
+func (model *Base) DeleteId(ctx context.Context, id string, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error) {
+	if filter, err := model.id2Filter(id); err != nil {
+		return nil, err
+	} else {
+		return model.DeleteOne(ctx, filter, opts...)
+	}
 }
 
 func (model *Base) Find(ctx context.Context, filter interface{}, results interface{}, opts ...*options.FindOptions) error {
@@ -116,8 +137,12 @@ func (model *Base) FindOne(ctx context.Context, filter interface{}, result inter
 	return err
 }
 
-func (model *Base) FindId(ctx context.Context, id interface{}, result interface{}, opts ...*options.FindOneOptions) error {
-	return model.FindOne(ctx, model.wrapId(id), result, opts...)
+func (model *Base) FindId(ctx context.Context, id string, result interface{}, opts ...*options.FindOneOptions) error {
+	if filter, err := model.id2Filter(id); err != nil {
+		return err
+	} else {
+		return model.FindOne(ctx, filter, result, opts...)
+	}
 }
 
 func (model *Base) FindOneAndDelete(ctx context.Context, filter interface{}, result interface{}, opts ...*options.FindOneAndDeleteOptions) error {
@@ -160,9 +185,13 @@ func (model *Base) ReplaceOne(ctx context.Context, filter, replacement interface
 	return result.(*mongo.UpdateResult), err
 }
 
-func (model *Base) UpdateMany(ctx context.Context, filter, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+func (model *Base) UpdateMany(ctx context.Context, filter, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
-		return collection.UpdateMany(ctx, filter, replacement, opts...)
+		update, err := model.handleAutoTimeUpdate(update)
+		if err != nil {
+			return nil, err
+		}
+		return collection.UpdateMany(ctx, filter, update, opts...)
 	})
 	if result == nil {
 		return nil, err
@@ -170,9 +199,13 @@ func (model *Base) UpdateMany(ctx context.Context, filter, replacement interface
 	return result.(*mongo.UpdateResult), err
 }
 
-func (model *Base) UpdateOne(ctx context.Context, filter, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+func (model *Base) UpdateOne(ctx context.Context, filter, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
-		return collection.UpdateOne(ctx, filter, replacement, opts...)
+		update, err := model.handleAutoTimeUpdate(update)
+		if err != nil {
+			return nil, err
+		}
+		return collection.UpdateOne(ctx, filter, update, opts...)
 	})
 	if result == nil {
 		return nil, err
@@ -180,15 +213,23 @@ func (model *Base) UpdateOne(ctx context.Context, filter, replacement interface{
 	return result.(*mongo.UpdateResult), err
 }
 
-func (model *Base) UpdateId(ctx context.Context, id, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	return model.UpdateOne(ctx, model.wrapId(id), replacement, opts...)
+func (model *Base) UpdateId(ctx context.Context, id string, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	if filter, err := model.id2Filter(id); err != nil {
+		return nil, err
+	} else {
+		return model.UpdateOne(ctx, filter, update, opts...)
+	}
 }
 
-func (model *Base) Upsert(ctx context.Context, filter, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+func (model *Base) Upsert(ctx context.Context, filter, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
+		update, err := model.handleAutoTimeUpdate(update)
+		if err != nil {
+			return nil, err
+		}
 		optUpsert := options.Update().SetUpsert(true)
 		opts = append(opts, optUpsert)
-		return collection.UpdateOne(ctx, filter, replacement, opts...)
+		return collection.UpdateOne(ctx, filter, update, opts...)
 	})
 	if result == nil {
 		return nil, err
@@ -196,8 +237,12 @@ func (model *Base) Upsert(ctx context.Context, filter, replacement interface{}, 
 	return result.(*mongo.UpdateResult), err
 }
 
-func (model *Base) UpsertId(ctx context.Context, id, replacement interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
-	return model.Upsert(ctx, model.wrapId(id), replacement, opts...)
+func (model *Base) UpsertId(ctx context.Context, id string, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
+	if filter, err := model.id2Filter(id); err != nil {
+		return nil, err
+	} else {
+		return model.Upsert(ctx, filter, update, opts...)
+	}
 }
 
 func (model *Base) Distinct(ctx context.Context, fieldName string, filter interface{}, opts ...*options.DistinctOptions) ([]interface{}, error) {
@@ -269,6 +314,10 @@ func (model *Base) Watch(ctx context.Context, pipeline interface{}, opts ...*opt
 	return stream.(*mongo.ChangeStream), err
 }
 
-func (model *Base) wrapId(id interface{}) interface{} {
-	return bson.M{"_id": id}
+func (model *Base) id2Filter(id string) (interface{}, error) {
+	objectId, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	return bson.M{"_id": objectId}, nil
 }

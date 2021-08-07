@@ -17,6 +17,7 @@ type Client interface {
 	Config() Config
 	Do(ctx context.Context, model Model, exec Exec) (interface{}, error)
 	DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error)
+	DoWithSession(ctx context.Context, model Model, exec SessionExec) error
 	NewBaseModel(database string, collection string) *Base
 }
 
@@ -28,16 +29,18 @@ func NewClient(ctx context.Context, config Config) (Client, error) {
 	}
 	opts := convertConfig2Options(config)
 
-	return NewClientWithOptions(ctx, config.Alias, opts)
+	return NewClientWithOptions(ctx, config.Alias, opts, config.AutoTime)
 }
 
 // NewClientWithURI uri format: mongodb://username:password@example1.com,example2.com,example3.com/?replicaSet=test&w=majority&wtimeoutMS=5000
-func NewClientWithURI(ctx context.Context, alias string, uri string) (Client, error) {
-	opts := options.Client().ApplyURI(uri)
-	return NewClientWithOptions(ctx, alias, *opts)
+// Alias is used to specify the client alias. When used, the client can be obtained from the clientMap of the manger through the alias, and ClientManager().Get(alias) can be called
+// alias用于指定client别名，使用时可以通过该别名从manger的clientMap中获取client, 调用 ClientManager().Get(alias)
+// autoTime表示是否开启自动生成插入时间和更新时间
+func NewClientWithURI(ctx context.Context, alias string, uri string, autoTime bool) (Client, error) {
+	return NewClientWithOptions(ctx, alias, *options.Client().ApplyURI(uri), autoTime)
 }
 
-func NewClientWithOptions(ctx context.Context, alias string, options options.ClientOptions) (Client, error) {
+func NewClientWithOptions(ctx context.Context, alias string, options options.ClientOptions, autoTime bool) (Client, error) {
 	kernel, err := mongo.Connect(ctx, &options)
 	if err != nil {
 		return nil, err
@@ -55,7 +58,7 @@ func NewClientWithOptions(ctx context.Context, alias string, options options.Cli
 			Password: options.Auth.Password,
 			Source:   options.Auth.AuthSource,
 		},
-		AutoTime: true,
+		AutoTime: autoTime,
 		Alias:    alias,
 	}
 
@@ -115,14 +118,18 @@ func (c *client) Do(ctx context.Context, model Model, exec Exec) (interface{}, e
 	return exec(ctx, c.Kernel().Database(model.Database()).Collection(model.Collection()))
 }
 
+type ModelExec = func(ctx context.Context, model *Base) (interface{}, error)
+
+// DoWithTransaction Execute the transaction, if the return err is nil, the transaction is automatically committed, otherwise it is rolled back
+// 执行事务, 如果返回err为nil，则事务自动提交, 否则回滚
 func (c *client) DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error) {
 	// Specify the DefaultReadConcern option so any transactions started through
 	// the session will have read concern majority.
 	// The DefaultReadPreference and DefaultWriteConcern options aren't
 	// specified so they will be inheritied from client and be set to primary
 	// and majority, respectively.
-	sopts := options.Session().SetDefaultReadConcern(readconcern.Majority())
-	session, err := c.Kernel().StartSession(sopts)
+	sessionOpts := options.Session().SetDefaultReadConcern(readconcern.Majority())
+	session, err := c.Kernel().StartSession(sessionOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -133,6 +140,26 @@ func (c *client) DoWithTransaction(ctx context.Context, model Model, exec Exec) 
 		// both operations are run in a transaction.
 		return exec(sessCtx, c.Kernel().Database(model.Database()).Collection(model.Collection()))
 	}, txnOpts)
+}
+
+type SessionExec = func(sessionCtx mongo.SessionContext, collection *mongo.Collection) error
+
+// DoWithSession To open a transaction in the form of Seesion,
+// you need to manually commit the transaction by sessionContext.CommitTransaction(ctx) or rollback the transaction by sessionContext.CommitTransaction(ctx)
+// 以Seesion形式开启事务, 需要手动sessionContext.CommitTransaction(ctx)提交事务或sessionContext.CommitTransaction(ctx)回滚事务
+func (c *client) DoWithSession(ctx context.Context, model Model, exec SessionExec) error {
+	sessionOpts := options.Session().SetDefaultReadConcern(readconcern.Majority())
+	session, err := c.Kernel().StartSession(sessionOpts)
+	if err != nil {
+		return err
+	}
+	defer session.EndSession(ctx)
+	return mongo.WithSession(ctx, session, func(sessionContext mongo.SessionContext) error {
+		if err = session.StartTransaction(); err != nil {
+			return err
+		}
+		return exec(sessionContext, c.Kernel().Database(model.Database()).Collection(model.Collection()))
+	})
 }
 
 // NewGlobalClient If there is only one Mongo, you can select the global client

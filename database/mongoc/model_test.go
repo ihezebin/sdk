@@ -2,18 +2,51 @@ package mongoc
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"github.com/whereabouts/sdk/logger"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
 )
 
 type User struct {
-	Name string `json:"name"`
-	Age  int    `json:"age"`
+	Id   primitive.ObjectID `json:"id" bson:"_id"`
+	Name string             `json:"name"`
+	Age  int                `json:"age"`
+}
+
+// 610ececb4fb2d58d008e7c58
+func TestAutoTime(t *testing.T) {
+	ctx := context.TODO()
+	c, err := NewClient(ctx, Config{
+		Addrs: []string{"127.0.0.1:27018"},
+		Auth: &Auth{
+			Username: "root",
+			Password: "root",
+		},
+		AutoTime: true,
+	})
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	model := c.NewBaseModel("test", "user")
+	result, err := model.InsertOne(ctx, User{
+		Name: "Korbin",
+		Age:  18,
+	})
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	logger.Info(result.InsertedID)
+	_, err = model.UpdateId(ctx, "610ececb4fb2d58d008e7c58", bson.M{"$set": bson.M{"gender": "male"}})
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
 }
 
 func TestInsert(t *testing.T) {
 	c, err := NewClient(context.Background(), Config{
-		Addrs: []string{"127.0.0.1:27017"},
+		Addrs: []string{"127.0.0.1:27018"},
 		Auth: &Auth{
 			Username: "root",
 			Password: "root",
@@ -22,12 +55,72 @@ func TestInsert(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	id, err := c.NewBaseModel("test", "user").InsertOne(context.TODO(), User{
-		Name: "aaa",
-		Age:  111,
+	result, err := c.NewBaseModel("test", "user").InsertOne(context.TODO(), User{
+		Name: "Korbin",
+		Age:  18,
 	})
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	logger.Info(id)
+	logger.Info(result.InsertedID)
+}
+
+// ObjectId("610e657d6c5f1f389720218c")
+// === RUN   TestTransaction
+// {"file":"model_test.go:59","func":"mongoc.TestTransaction","level":"info","msg":"before transaction: {Name:Korbin Age:18}","time":"2021-08-07 18:51:05"}
+// {"file":"model_test.go:74","func":"mongoc.TestTransaction","level":"info","msg":"after failed transaction: {Name:Korbin Age:18}","time":"2021-08-07 18:51:05"}
+// {"file":"model_test.go:88","func":"mongoc.TestTransaction","level":"info","msg":"after success transaction: {Name:Hezebin Age:18}","time":"2021-08-07 18:51:05"}
+// --- PASS: TestTransaction (0.04s)
+//PASS
+func TestTransaction(t *testing.T) {
+	ctx := context.Background()
+	c, err := NewClient(ctx, Config{
+		Addrs: []string{"127.0.0.1:27018"},
+		Auth: &Auth{
+			Username: "root",
+			Password: "root",
+		},
+		ReplicaSetName: "winrs",
+	})
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	model := c.NewBaseModel("test", "user")
+	id := "610e657d6c5f1f389720218c"
+	user := User{}
+	err = model.FindId(ctx, id, &user)
+	if err != nil {
+		logger.Errorf("find user err: %s", err.Error())
+		return
+	}
+	logger.Infof("before transaction: %+v", user)
+
+	// failed
+	_, err = model.DoWithTransaction(ctx, func(ctx context.Context, model *Base) (interface{}, error) {
+		updateResult, err := model.UpdateId(ctx, id, bson.M{"name": "Hezebin1"})
+		if err != nil {
+			return updateResult, nil
+		}
+		return nil, errors.New("If the returned err is not nil, The transaction will be rolled back")
+	})
+	err = model.FindId(ctx, id, &user)
+	if err != nil {
+		logger.Errorf("find user err: %s", err.Error())
+		return
+	}
+	logger.Infof("after failed transaction: %+v", user)
+
+	// successful
+	_, err = model.DoWithTransaction(ctx, func(ctx context.Context, model *Base) (interface{}, error) {
+		return model.UpdateId(ctx, id, bson.M{"$set": bson.M{"name": "Hezebin2"}})
+	})
+	if err != nil {
+		logger.Errorf("update user err: %s", err.Error())
+	}
+	err = model.FindId(ctx, id, &user)
+	if err != nil {
+		logger.Errorf("find user err: %s", err.Error())
+		return
+	}
+	logger.Infof("after success transaction: %+v", user)
 }
