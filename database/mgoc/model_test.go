@@ -55,7 +55,7 @@ func TestMongo(t *testing.T) {
 		return
 	}
 	time.Sleep(time.Second * 2)
-	err = db.ModifyOne(ctx, bson.M{"name": "korbin"}, bson.M{"age": 180})
+	err = db.UpdateOne(ctx, bson.M{"name": "korbin"}, bson.M{"age": 180})
 	if err != nil {
 		logger.Errorln("update user korbin age 18 to 180 err:", err)
 		return
@@ -71,20 +71,10 @@ func TestMongo(t *testing.T) {
 	}
 }
 
-func TestModifyOne(t *testing.T) {
+func TestUpdateOne(t *testing.T) {
 	ctx := context.Background()
 	db := newMongoDB()
-	err := db.ModifyOne(ctx, nil, bson.M{"age": 777})
-	if err != nil {
-		logger.Errorln("modify one err:", err)
-		return
-	}
-}
-
-func TestReplaceOne(t *testing.T) {
-	ctx := context.Background()
-	db := newMongoDB()
-	err := db.ReplaceOne(ctx, nil, nil)
+	err := db.UpdateOne(ctx, nil, bson.M{"age": 777})
 	if err != nil {
 		logger.Errorln("modify one err:", err)
 		return

@@ -2,13 +2,8 @@ package mgoc
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"github.com/globalsign/mgo"
 	"github.com/globalsign/mgo/bson"
-	"github.com/whereabouts/sdk/utils/mapper"
-	"github.com/whereabouts/sdk/utils/timer"
-	"reflect"
 )
 
 type Model interface {
@@ -44,24 +39,24 @@ func (db *Base) Client() Client {
 	return db.client
 }
 
-// DoWithContext it is used for you to use the nativer mgoc interface according to your own needs,
+// Do it is used for you to use the nativer mgoc interface according to your own needs,
 // Use when you can't find the method you want in this package
-func (db *Base) DoWithContext(ctx context.Context, f func(c *mgo.Collection) error) error {
+func (db *Base) Do(ctx context.Context, f func(c *mgo.Collection) error) error {
 	return db.Client().Do(ctx, db, f)
 }
 
 func (db *Base) RemoveOne(ctx context.Context, selector interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
+	return db.Do(ctx, func(c *mgo.Collection) error {
 		return c.Remove(selector)
 	})
 }
-func (db *Base) RemoveId(ctx context.Context, id interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		return c.RemoveId(id)
+func (db *Base) RemoveId(ctx context.Context, id string) error {
+	return db.Do(ctx, func(c *mgo.Collection) error {
+		return c.RemoveId(bson.ObjectIdHex(id))
 	})
 }
 func (db *Base) RemoveAll(ctx context.Context, selector interface{}) (changeInfo *mgo.ChangeInfo, err error) {
-	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
+	err = db.Do(ctx, func(c *mgo.Collection) error {
 		changeInfo, err = c.RemoveAll(selector)
 		return err
 	})
@@ -69,152 +64,108 @@ func (db *Base) RemoveAll(ctx context.Context, selector interface{}) (changeInfo
 }
 
 func (db *Base) DeleteOne(ctx context.Context, selector interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		return c.Remove(selector)
-	})
+	return db.RemoveOne(ctx, selector)
 }
 
-func (db *Base) DeleteId(ctx context.Context, id interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		return c.RemoveId(id)
-	})
+func (db *Base) DeleteId(ctx context.Context, id string) error {
+	return db.RemoveId(ctx, id)
 }
 
 func (db *Base) DeleteAll(ctx context.Context, selector interface{}) (changeInfo *mgo.ChangeInfo, err error) {
-	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		changeInfo, err = c.RemoveAll(selector)
-		return err
-	})
-	return changeInfo, err
+	return db.RemoveAll(ctx, selector)
 }
 
 func (db *Base) Insert(ctx context.Context, doc ...interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		out := make([]interface{}, 0, len(doc))
-		for _, in := range doc {
-			v, err := db.handleTimeAuto(in, true)
-			if err != nil {
-				return err
-			}
-			out = append(out, v)
-		}
-		return c.Insert(out...)
-	})
-}
-
-// ReplaceOne replace the original document as a whole,
-// but the value of create_time is the value of the old document
-func (db *Base) ReplaceOne(ctx context.Context, selector, doc interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		newDoc, err := db.handleTimeAuto(doc, false)
+	return db.Do(ctx, func(c *mgo.Collection) error {
+		doc, err := db.handleAutoTimeInsert(doc...)
 		if err != nil {
 			return err
 		}
-		oldDoc := make(map[string]interface{})
-		err = db.FindOne(ctx, selector, nil, &oldDoc)
-		if err != nil {
-			return errors.New(fmt.Sprintf("do not find the old doc by this selector %+v", err))
-		}
-		// keep the create time
-		if createTime, ok := oldDoc[keyCreateTime]; ok {
-			newDoc[keyCreateTime] = createTime
-		}
-		err = c.Update(selector, newDoc)
-		return err
+		return c.Insert(doc...)
 	})
 }
 
-func (db *Base) ReplaceId(ctx context.Context, id, doc interface{}) error {
-	return db.ReplaceOne(ctx, bson.M{"_id": id}, doc)
-}
-
-func (db *Base) ModifyOne(ctx context.Context, selector, update interface{}, deletion ...bool) error {
-	//if doc == nil {
-	//	return errors.New(fmt.Sprint("doc does not allow nil!"))
-	//}
-	err := db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		setType := "$unset"
-		if len(deletion) == 0 || !deletion[0] {
-			setType = "$set"
-		}
-		v, err := db.handleTimeAuto(update, false)
+func (db *Base) UpdateOne(ctx context.Context, selector, update interface{}) error {
+	return db.Do(ctx, func(c *mgo.Collection) error {
+		update, err := db.handleAutoTimeUpdate(update)
 		if err != nil {
 			return err
 		}
-		return c.Update(selector, bson.M{setType: v})
+		return c.Update(selector, update)
 	})
-	return err
 }
 
-func (db *Base) ModifyId(ctx context.Context, id, update interface{}, deletion ...bool) error {
-	return db.ModifyOne(ctx, bson.M{"_id": id}, update, deletion...)
-}
-
-func (db *Base) ModifyAll(ctx context.Context, selector, update interface{}, deletion ...bool) (changeInfo *mgo.ChangeInfo, err error) {
-	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		setType := "$set"
-		if len(deletion) > 0 && deletion[0] {
-			setType = "$unset"
-		}
-		v, errt := db.handleTimeAuto(update, false)
-		if errt != nil {
+func (db *Base) UpdateId(ctx context.Context, id string, update interface{}) error {
+	return db.Do(ctx, func(c *mgo.Collection) error {
+		update, err := db.handleAutoTimeUpdate(update)
+		if err != nil {
 			return err
 		}
-		changeInfo, err = c.UpdateAll(selector, bson.M{setType: v})
+		return c.UpdateId(bson.ObjectIdHex(id), update)
+	})
+}
+
+func (db *Base) UpdateAll(ctx context.Context, selector, update interface{}) (changeInfo *mgo.ChangeInfo, err error) {
+	err = db.Do(ctx, func(c *mgo.Collection) error {
+		update, err := db.handleAutoTimeUpdate(update)
+		if err != nil {
+			return err
+		}
+		changeInfo, err = c.UpdateAll(selector, update)
 		return err
 	})
 	return
 }
 
-func (db *Base) Upsert(ctx context.Context, selector, doc interface{}) (changeInfo *mgo.ChangeInfo, err error) {
-	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		out, errT := db.handleTimeAuto(doc, true)
-		if errT != nil {
-			return errT
+func (db *Base) Upsert(ctx context.Context, selector, update interface{}) (changeInfo *mgo.ChangeInfo, err error) {
+	err = db.Do(ctx, func(c *mgo.Collection) error {
+		update, err = db.handleAutoTimeUpdate(update)
+		if err != nil {
+			return err
 		}
-		changeInfo, err = c.Upsert(selector, out)
+		changeInfo, err = c.Upsert(selector, update)
 		return err
 	})
 	return
 }
 
-func (db *Base) UpsertId(ctx context.Context, id, doc interface{}) (changeInfo *mgo.ChangeInfo, err error) {
-	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		out, errT := db.handleTimeAuto(doc, true)
-		if errT != nil {
-			return errT
+func (db *Base) UpsertId(ctx context.Context, id string, update interface{}) (changeInfo *mgo.ChangeInfo, err error) {
+	err = db.Do(ctx, func(c *mgo.Collection) error {
+		update, err = db.handleAutoTimeUpdate(update)
+		if err != nil {
+			return err
 		}
-		changeInfo, err = c.UpsertId(id, out)
+		changeInfo, err = c.UpsertId(bson.ObjectIdHex(id), update)
 		return err
 	})
 	return
 }
 
 // FindOne the param picker([]string) represents the field to return
-func (db *Base) FindOne(ctx context.Context, selector interface{}, picker []string, ret interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
+func (db *Base) FindOne(ctx context.Context, selector interface{}, picker []string, result interface{}) error {
+	return db.Do(ctx, func(c *mgo.Collection) error {
 		query := c.Find(selector)
 		if picker != nil {
 			query = query.Select(db.handlePicker(picker))
 		}
-		err := query.One(ret)
+		err := query.One(result)
 		return err
 	})
 }
 
-func (db *Base) FindId(ctx context.Context, id interface{}, picker []string, ret interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		query := c.FindId(id)
+func (db *Base) FindId(ctx context.Context, id string, picker []string, result interface{}) error {
+	return db.Do(ctx, func(c *mgo.Collection) error {
+		query := c.FindId(bson.ObjectIdHex(id))
 		if picker != nil {
 			query = query.Select(db.handlePicker(picker))
 		}
-		err := query.One(ret)
+		err := query.One(result)
 		return err
 	})
 }
 
-func (db *Base) FindAll(ctx context.Context, selector interface{}, sort []string, picker []string, skip int, limit int, ret interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
+func (db *Base) FindAll(ctx context.Context, selector interface{}, sort []string, picker []string, skip int, limit int, result interface{}) error {
+	return db.Do(ctx, func(c *mgo.Collection) error {
 		query := c.Find(selector)
 		if picker != nil {
 			query = query.Select(db.handlePicker(picker))
@@ -228,24 +179,12 @@ func (db *Base) FindAll(ctx context.Context, selector interface{}, sort []string
 		if limit > 0 {
 			query.Limit(limit)
 		}
-		return query.All(ret)
+		return query.All(result)
 	})
 }
 
-func (db *Base) FindObjectIdHex(ctx context.Context, id string, picker []string, ret interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
-		_id := bson.ObjectIdHex(id)
-		query := c.FindId(_id)
-		if picker != nil {
-			query = query.Select(db.handlePicker(picker))
-		}
-		err := query.One(ret)
-		return err
-	})
-}
-
-func (db *Base) FindOneWithSort(ctx context.Context, selector interface{}, sort []string, picker []string, ret interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
+func (db *Base) FindOneWithSort(ctx context.Context, selector interface{}, sort []string, picker []string, result interface{}) error {
+	return db.Do(ctx, func(c *mgo.Collection) error {
 		query := c.Find(selector)
 		if sort != nil {
 			query = query.Sort(sort...)
@@ -253,13 +192,13 @@ func (db *Base) FindOneWithSort(ctx context.Context, selector interface{}, sort 
 		if picker != nil {
 			query = query.Select(db.handlePicker(picker))
 		}
-		err := query.One(ret)
+		err := query.One(result)
 		return err
 	})
 }
 
 func (db *Base) Count(ctx context.Context, selector interface{}) (count int, err error) {
-	err = db.DoWithContext(ctx, func(c *mgo.Collection) error {
+	err = db.Do(ctx, func(c *mgo.Collection) error {
 		count, err = c.Find(selector).Count()
 		return err
 	})
@@ -285,14 +224,14 @@ func (db *Base) Count(ctx context.Context, selector interface{}) (count int, err
 //
 func (db *Base) Distinct(ctx context.Context, selector interface{}, key string) ([]interface{}, error) {
 	ret := make([]interface{}, 0)
-	err := db.DoWithContext(ctx, func(c *mgo.Collection) error {
+	err := db.Do(ctx, func(c *mgo.Collection) error {
 		return c.Find(selector).Distinct(key, &ret)
 	})
 	return ret, err
 }
 
 func (db *Base) PipeAll(ctx context.Context, pipeline interface{}, ret interface{}) error {
-	return db.DoWithContext(ctx, func(c *mgo.Collection) error {
+	return db.Do(ctx, func(c *mgo.Collection) error {
 		return c.Pipe(pipeline).All(ret)
 	})
 }
@@ -303,69 +242,4 @@ func (db *Base) handlePicker(picker []string) interface{} {
 		ret[field] = 1
 	}
 	return ret
-}
-
-func (db *Base) handleTimeAuto(doc interface{}, isInsert bool) (map[string]interface{}, error) {
-	if doc == nil {
-		return nil, errors.New("the doc can not be nil")
-	}
-	v := reflect.ValueOf(doc)
-	for v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-	if v.Kind() == reflect.Struct {
-		m, err := mapper.Struct2Map(v.Interface())
-		if err != nil {
-			return nil, err
-		}
-		v = reflect.ValueOf(m)
-	}
-	if v.Kind() != reflect.Map {
-		return nil, errors.New(fmt.Sprintf("the doc %+v is not a map or struct", v.Interface()))
-	}
-	if len(v.MapKeys()) == 0 {
-		return nil, errors.New("the doc can not be no field")
-	}
-
-	if db.Client().Config().AutoTime {
-		if v.MapIndex(reflect.ValueOf(keyCreateTime)).IsValid() {
-			if _, ok := v.MapIndex(reflect.ValueOf(keyCreateTime)).Interface().(string); !ok {
-				return nil, errors.New("if the auto_time is to true, that create time must be of type string")
-			}
-		}
-		if v.MapIndex(reflect.ValueOf(keyUpdateTime)).IsValid() {
-			if _, ok := v.MapIndex(reflect.ValueOf(keyUpdateTime)).Interface().(string); !ok {
-				return nil, errors.New("if the auto_time is to true, that update time must be of type string")
-			}
-		}
-		now := timer.Now()
-		if isInsert {
-			v.SetMapIndex(reflect.ValueOf(keyCreateTime), reflect.ValueOf(now))
-		}
-		v.SetMapIndex(reflect.ValueOf(keyUpdateTime), reflect.ValueOf(now))
-	}
-	ret := make(map[string]interface{})
-	for _, key := range v.MapKeys() {
-		ret[key.String()] = v.MapIndex(key).Interface()
-	}
-	delete(ret, "_id")
-	return ret, nil
-}
-
-const (
-	DefaultKeyCreateTime = "create_time"
-	DefaultKeyUpdateTime = "update_time"
-)
-
-var (
-	keyCreateTime = DefaultKeyCreateTime
-	keyUpdateTime = DefaultKeyUpdateTime
-)
-
-func SetKeyCreateTime(key string) {
-	keyCreateTime = key
-}
-
-func SetKeyUpdateTime(key string) {
-	keyUpdateTime = key
 }
