@@ -57,7 +57,7 @@ func (c *Configurator) LoadWithDefault(config interface{}) error {
 	return c.Load(defaultConfigPath, config)
 }
 
-func (c *Configurator) LoadWithCmd(key, value string, config interface{}) error {
+func (c *Configurator) LoadWithCli(key, value string, config interface{}) error {
 	file := flag.String(key, value, "go run main.go -[name] [value]")
 	flag.Parse()
 	return c.Load(*file, config)

@@ -10,8 +10,8 @@ func LoadWithDefault(config interface{}) error {
 	return gConfigurator.LoadWithDefault(config)
 }
 
-func LoadWithCmd(key, value string, config interface{}) error {
-	return gConfigurator.LoadWithCmd(key, value, config)
+func LoadWithCli(key, value string, config interface{}) error {
+	return gConfigurator.LoadWithCli(key, value, config)
 }
 
 func LoadWithEnv(key string, config interface{}) error {
