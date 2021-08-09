@@ -44,53 +44,53 @@ type RotateFileConfig struct {
 	ExpireTime time.Duration `json:"expire_time"`
 }
 
-type ConfigFunc func(config *Config)
+type Option func(config *Config)
 
-func newConfig(cfs ...ConfigFunc) Config {
+func newConfig(options ...Option) Config {
 	config := Config{}
-	for _, conf := range cfs {
-		conf(&config)
+	for _, option := range options {
+		option(&config)
 	}
 	return config
 }
 
-func WithAppName(appName string) ConfigFunc {
+func WithAppName(appName string) Option {
 	return func(config *Config) {
 		config.AppName = appName
 	}
 }
 
-func WithLevel(level string) ConfigFunc {
+func WithLevel(level string) Option {
 	return func(config *Config) {
 		config.Level = level
 	}
 }
 
-func WithFormat(format string) ConfigFunc {
+func WithFormat(format string) Option {
 	return func(config *Config) {
 		config.Format = format
 	}
 }
 
-func WithTimestamp(timestamp bool) ConfigFunc {
+func WithTimestamp(timestamp bool) Option {
 	return func(config *Config) {
 		config.Timestamp = timestamp
 	}
 }
 
-func WithFile(file string) ConfigFunc {
+func WithFile(file string) Option {
 	return func(config *Config) {
 		config.File = file
 	}
 }
 
-func WithErrFile(errFile string) ConfigFunc {
+func WithErrFile(errFile string) Option {
 	return func(config *Config) {
 		config.ErrFile = errFile
 	}
 }
 
-func WithRotateFile(rotateFile RotateFileConfig) ConfigFunc {
+func WithRotateFile(rotateFile RotateFileConfig) Option {
 	return func(config *Config) {
 		config.RotateFile = rotateFile
 	}

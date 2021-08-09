@@ -12,8 +12,8 @@ type Logger struct {
 	kernel *logrus.Logger
 }
 
-func New(cfs ...ConfigFunc) *Logger {
-	return NewLoggerWithConfig(newConfig(cfs...))
+func New(options ...Option) *Logger {
+	return NewLoggerWithConfig(newConfig(options...))
 }
 
 func NewLoggerWithConfig(config Config) *Logger {
@@ -239,7 +239,7 @@ func (logger *Logger) SetOutput(output io.Writer) *Logger {
 	return logger
 }
 
-// CloseCaller set ReportCaller false
+// DisableCaller set ReportCaller false
 func (logger *Logger) DisableCaller() *Logger {
 	logger.Kernel().SetReportCaller(false)
 	return logger

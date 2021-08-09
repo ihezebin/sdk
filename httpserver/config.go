@@ -16,22 +16,22 @@ type Config struct {
 	middlewares []middleware.Middleware
 }
 
-type ConfigFunc func(config *Config)
+type Option func(config *Config)
 
-func newConfig(cfs ...ConfigFunc) Config {
+func newConfig(options ...Option) Config {
 	config := Config{
 		Mode:        gin.DebugMode,
 		Name:        "",
 		Port:        8080,
 		middlewares: nil,
 	}
-	for _, setConfig := range cfs {
-		setConfig(&config)
+	for _, option := range options {
+		option(&config)
 	}
 	return config
 }
 
-func WithMode(mode string) ConfigFunc {
+func WithMode(mode string) Option {
 	return func(config *Config) {
 		switch mode {
 		case ModeDebug:
@@ -46,19 +46,19 @@ func WithMode(mode string) ConfigFunc {
 	}
 }
 
-func WithName(name string) ConfigFunc {
+func WithName(name string) Option {
 	return func(config *Config) {
 		config.Name = name
 	}
 }
 
-func WithPort(port int) ConfigFunc {
+func WithPort(port int) Option {
 	return func(config *Config) {
 		config.Port = port
 	}
 }
 
-func WithMiddles(middlewares ...middleware.Middleware) ConfigFunc {
+func WithMiddles(middlewares ...middleware.Middleware) Option {
 	return func(config *Config) {
 		config.middlewares = middlewares
 	}

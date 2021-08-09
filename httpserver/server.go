@@ -31,8 +31,8 @@ type server struct {
 	onShutdown []func()
 }
 
-func NewServer(cfs ...ConfigFunc) Server {
-	return NewServerWithConfig(newConfig(cfs...))
+func NewServer(options ...Option) Server {
+	return NewServerWithConfig(newConfig(options...))
 }
 
 func NewServerWithConfig(config Config) Server {
