@@ -6,6 +6,33 @@ import (
 )
 
 type Flag interface {
+	Int(name string) int
+	GlobalInt(name string) int
+	Int64(name string) int64
+	GlobalInt64(name string) int64
+	Uint(name string) uint
+	GlobalUint(name string) uint
+	Uint64(name string) uint64
+	GlobalUint64(name string) uint64
+	IntSlice(name string) []int
+	GlobalIntSlice(name string) []int
+	Int64Slice(name string) []int64
+	GlobalInt64Slice(name string) []int64
+	String(name string) string
+	GlobalString(name string) string
+	StringSlice(name string) []string
+	GlobalStringSlice(name string) []string
+	Duration(name string) time.Duration
+	GlobalDuration(name string) time.Duration
+	Bool(name string) bool
+	GlobalBool(name string) bool
+	NumFlags() int
+	Set(name, value string) error
+	GlobalSet(name, value string) error
+	IsSet(name string) bool
+	GlobalIsSet(name string) bool
+	FlagNames() (names []string)
+	GlobalFlagNames() (names []string)
 }
 
 type flag struct {
@@ -15,86 +42,86 @@ type flag struct {
 
 // Int looks up the value of a local IntFlag, returns
 // 0 if not found
-func (c *flag) Int(name string) int {
-	return c.ctx.Int(name)
+func (f *flag) Int(name string) int {
+	return f.ctx.Int(name)
 }
 
 // GlobalInt looks up the value of a global IntFlag, returns
 // 0 if not found
-func (c *flag) GlobalInt(name string) int {
-	return c.ctx.GlobalInt(name)
+func (f *flag) GlobalInt(name string) int {
+	return f.ctx.GlobalInt(name)
 }
 
 // Int64 looks up the value of a local Int64Flag, returns
 // 0 if not found
-func (c *flag) Int64(name string) int64 {
-	return c.ctx.Int64(name)
+func (f *flag) Int64(name string) int64 {
+	return f.ctx.Int64(name)
 }
 
 // GlobalInt64 looks up the value of a global Int64Flag, returns
 // 0 if not found
-func (c *flag) GlobalInt64(name string) int64 {
-	return c.ctx.GlobalInt64(name)
+func (f *flag) GlobalInt64(name string) int64 {
+	return f.ctx.GlobalInt64(name)
 }
 
 // Uint looks up the value of a local UintFlag, returns
 // 0 if not found
-func (c *flag) Uint(name string) uint {
-	return c.ctx.Uint(name)
+func (f *flag) Uint(name string) uint {
+	return f.ctx.Uint(name)
 }
 
 // GlobalUint looks up the value of a global UintFlag, returns
 // 0 if not found
-func (c *flag) GlobalUint(name string) uint {
-	return c.ctx.GlobalUint(name)
+func (f *flag) GlobalUint(name string) uint {
+	return f.ctx.GlobalUint(name)
 }
 
 // Uint64 looks up the value of a local Uint64Flag, returns
 // 0 if not found
-func (c *flag) Uint64(name string) uint64 {
-	return c.ctx.Uint64(name)
+func (f *flag) Uint64(name string) uint64 {
+	return f.ctx.Uint64(name)
 }
 
 // GlobalUint64 looks up the value of a global Uint64Flag, returns
 // 0 if not found
-func (c *flag) GlobalUint64(name string) uint64 {
-	return c.ctx.GlobalUint64(name)
+func (f *flag) GlobalUint64(name string) uint64 {
+	return f.ctx.GlobalUint64(name)
 }
 
 // IntSlice looks up the value of a local IntSliceFlag, returns
 // nil if not found
-func (c *flag) IntSlice(name string) []int {
-	return c.ctx.IntSlice(name)
+func (f *flag) IntSlice(name string) []int {
+	return f.ctx.IntSlice(name)
 }
 
 // GlobalIntSlice looks up the value of a global IntSliceFlag, returns
 // nil if not found
-func (c *flag) GlobalIntSlice(name string) []int {
-	return c.ctx.GlobalIntSlice(name)
+func (f *flag) GlobalIntSlice(name string) []int {
+	return f.ctx.GlobalIntSlice(name)
 }
 
 // Int64Slice looks up the value of a local Int64SliceFlag, returns
 // nil if not found
-func (c *flag) Int64Slice(name string) []int64 {
-	return c.ctx.Int64Slice(name)
+func (f *flag) Int64Slice(name string) []int64 {
+	return f.ctx.Int64Slice(name)
 }
 
 // GlobalInt64Slice looks up the value of a global Int64SliceFlag, returns
 // nil if not found
-func (c *flag) GlobalInt64Slice(name string) []int64 {
-	return c.ctx.GlobalInt64Slice(name)
+func (f *flag) GlobalInt64Slice(name string) []int64 {
+	return f.ctx.GlobalInt64Slice(name)
 }
 
 // String looks up the value of a local StringFlag, returns
 // "" if not found
-func (c *flag) String(name string) string {
-	return c.ctx.String(name)
+func (f *flag) String(name string) string {
+	return f.ctx.String(name)
 }
 
 // GlobalString looks up the value of a global StringFlag, returns
 // "" if not found
-func (c *flag) GlobalString(name string) string {
-	return c.ctx.GlobalString(name)
+func (f *flag) GlobalString(name string) string {
+	return f.ctx.GlobalString(name)
 }
 
 // StringSlice looks up the value of a local StringSliceFlag, returns
