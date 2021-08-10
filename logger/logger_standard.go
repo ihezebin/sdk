@@ -13,8 +13,8 @@ func StandardLogger() *Logger {
 	return standardLogger
 }
 
-func ResetStandardLogger(confs ...ConfigFunc) {
-	ResetStandardLoggerWithConfig(newConfig(confs...))
+func ResetStandardLogger(options ...Option) {
+	ResetStandardLoggerWithConfig(newConfig(options...))
 }
 
 func ResetStandardLoggerWithConfig(config Config) {

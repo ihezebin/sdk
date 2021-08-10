@@ -2,14 +2,16 @@ package cli
 
 import (
 	"github.com/urfave/cli"
+	"github.com/whereabouts/sdk/cli/command"
 	"os"
+	"sort"
 	"time"
 )
 
 type App struct {
 	kernel   *cli.App
 	flags    []cli.Flag
-	commands []cli.Command
+	commands []command.Command
 }
 
 func NewApp(options ...Option) *App {
@@ -18,8 +20,9 @@ func NewApp(options ...Option) *App {
 
 func NewAppWithConfig(config Config) *App {
 	return &App{
-		kernel: handleAppConfig(cli.NewApp(), config),
-		flags:  make([]cli.Flag, 0),
+		kernel:   handleAppConfig(cli.NewApp(), config),
+		flags:    make([]cli.Flag, 0),
+		commands: make([]command.Command, 0),
 	}
 }
 
@@ -29,37 +32,50 @@ func (app *App) Kernel() *cli.App {
 	if app.kernel == nil {
 		app.kernel = cli.NewApp()
 		app.flags = make([]cli.Flag, 0)
+		app.commands = make([]command.Command, 0)
 	}
 	return app.kernel
 }
 
-type Action func(flag Flag) error
+func (app *App) Commands() []command.Command {
+	return app.commands
+}
+
+func (app *App) Flags() []cli.Flag {
+	return app.flags
+}
+
+type Value = command.Value
+type Action func(v Value) error
 
 func (app *App) Run(action Action) error {
+	sort.Sort(cli.FlagsByName(app.flags))
 	app.Kernel().Flags = app.flags
-	app.Kernel().Commands = app.commands
+	for _, cmd := range app.commands {
+		app.Kernel().Commands = append(app.Kernel().Commands, *cmd.Kernel())
+	}
 	app.Kernel().Action = func(c *cli.Context) error {
-		return action(&flag{ctx: c, app: app})
+		return action(command.NewValue(app.Kernel(), c))
 	}
 	return app.Kernel().Run(os.Args)
 }
 
 func (app *App) Before(action Action) *App {
 	app.Kernel().Before = func(c *cli.Context) error {
-		return action(&flag{ctx: c, app: app})
+		return action(command.NewValue(app.Kernel(), c))
 	}
 	return app
 }
 
 func (app *App) After(action Action) *App {
 	app.Kernel().After = func(c *cli.Context) error {
-		return action(&flag{ctx: c, app: app})
+		return action(command.NewValue(app.Kernel(), c))
 	}
 	return app
 }
 
-func (app *App) WithCommand(command Command) *App {
-	app.Kernel().Commands = nil
+func (app *App) WithCommand(command command.Command) *App {
+	app.commands = append(app.commands, command)
 	return app
 }
 
