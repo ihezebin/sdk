@@ -8,7 +8,7 @@ import (
 
 type HelloStandardHandlerReq struct {
 	middleware.Context
-	Name string `json:"name,default=whereabouts.icu" form:"name,default=whereabouts.icu"`
+	Name string `json:"name,default=jsonName" form:"name,default=formName"`
 }
 
 type HelloStandardHandlerResp struct {

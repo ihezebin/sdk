@@ -18,5 +18,6 @@ func GetConfig() *Config {
 }
 
 func Load() error {
+	config.SetDefaultConfigPath("D:\\GoProjects\\sdk\\example\\httpserver\\config\\config.json")
 	return config.LoadWithDefault(&gConfig)
 }
