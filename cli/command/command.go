@@ -34,6 +34,13 @@ func (cmd *Command) Flags() []cli.Flag {
 
 type Action func(v Value) error
 
+func (cmd *Command) WithAction(action Action) *Command {
+	cmd.Kernel().Action = func(c *cli.Context) error {
+		return action(NewValue(c))
+	}
+	return cmd
+}
+
 func (cmd *Command) WithSubCommand(subCommand Command) *Command {
 	cmd.Kernel().Subcommands = append(cmd.Kernel().Subcommands, *subCommand.Kernel())
 	return cmd

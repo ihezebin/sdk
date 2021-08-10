@@ -55,21 +55,21 @@ func (app *App) Run(action Action) error {
 		app.Kernel().Commands = append(app.Kernel().Commands, *cmd.Kernel())
 	}
 	app.Kernel().Action = func(c *cli.Context) error {
-		return action(command.NewValue(app.Kernel(), c))
+		return action(command.NewValue(c))
 	}
 	return app.Kernel().Run(os.Args)
 }
 
 func (app *App) Before(action Action) *App {
 	app.Kernel().Before = func(c *cli.Context) error {
-		return action(command.NewValue(app.Kernel(), c))
+		return action(command.NewValue(c))
 	}
 	return app
 }
 
 func (app *App) After(action Action) *App {
 	app.Kernel().After = func(c *cli.Context) error {
-		return action(command.NewValue(app.Kernel(), c))
+		return action(command.NewValue(c))
 	}
 	return app
 }

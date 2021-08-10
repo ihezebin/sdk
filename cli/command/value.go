@@ -36,12 +36,11 @@ type Value interface {
 }
 
 type value struct {
-	app *cli.App
 	ctx *cli.Context
 }
 
-func NewValue(app *cli.App, ctx *cli.Context) Value {
-	return &value{app: app, ctx: ctx}
+func NewValue(ctx *cli.Context) Value {
+	return &value{ctx: ctx}
 }
 
 // Int looks up the value of a local IntFlag, returns
