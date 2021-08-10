@@ -16,37 +16,51 @@ const (
 )
 
 func LoggingRequest() Middleware {
-	return LoggingRequestWithLogger(logger.StandardLogger())
+	return LoggingRequestWithLogger(logger.StandardLogger(), false)
 }
 
 func LoggingResponse() Middleware {
-	return LoggingResponseWithLogger(logger.StandardLogger())
+	return LoggingResponseWithLogger(logger.StandardLogger(), false)
 }
 
-func LoggingRequestWithLogger(l *logger.Logger) Middleware {
+func LoggingSimplyRequest() Middleware {
+	return LoggingRequestWithLogger(logger.StandardLogger(), true)
+}
+
+func LoggingSimplyResponse() Middleware {
+	return LoggingResponseWithLogger(logger.StandardLogger(), true)
+}
+
+func LoggingRequestWithLogger(l *logger.Logger, simply bool) Middleware {
 	return func(c *gin.Context) {
-		l.WithFields(logger.Fields{
-			"method":    c.Request.Method,
-			"uri":       c.Request.URL.RequestURI(),
-			"client_ip": c.Request.RemoteAddr,
-			"headers":   convertHeaders2JSON(c.Request.Header),
-			"body":      requestBody(c),
-		}).Info(c.Request.Context(), "incoming http request info")
+		fields := logger.Fields{
+			"method": c.Request.Method,
+			"uri":    c.Request.URL.RequestURI(),
+			"remote": c.Request.RemoteAddr,
+			"body":   requestBody(c),
+		}
+		if !simply {
+			fields["headers"] = convertHeaders2JSON(c.Request.Header)
+		}
+		l.WithFields(fields).Info("incoming http request")
 	}
 }
 
-func LoggingResponseWithLogger(l *logger.Logger) Middleware {
+func LoggingResponseWithLogger(l *logger.Logger, simply bool) Middleware {
 	return func(c *gin.Context) {
 		rw := &responseWriter{Body: new(bytes.Buffer), ResponseWriter: c.Writer}
 		c.Writer = rw
 
 		c.Next()
 
-		l.WithFields(logger.Fields{
-			"status":  fmt.Sprintf("%v %s", c.Writer.Status(), http.StatusText(c.Writer.Status())),
-			"body":    responseBody(rw),
-			"headers": convertHeaders2JSON(c.Writer.Header()),
-		}).Info(c.Request.Context(), "outgoing http response info")
+		fields := logger.Fields{
+			"status": fmt.Sprintf("%v %s", c.Writer.Status(), http.StatusText(c.Writer.Status())),
+			"body":   responseBody(rw),
+		}
+		if !simply {
+			fields["headers"] = convertHeaders2JSON(c.Writer.Header())
+		}
+		l.WithFields(fields).Info("outgoing http response")
 	}
 }
 

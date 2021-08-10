@@ -14,6 +14,7 @@ func Routes(engine *gin.Engine) {
 	httpserver.After(engine, middleware.HelloAfterMiddleware)
 	// route
 	httpserver.Route(engine, http.MethodGet, "/standard", handlers.HelloStandardHandler)
+	httpserver.Route(engine, http.MethodPost, "/standard", handlers.HelloStandardHandler)
 	httpserver.Route(engine, http.MethodPost, "/file", handlers.HelloFileHandler)
 	httpserver.Route(engine, http.MethodPost, "/multiple", handlers.HelloMultipleFilesHandler)
 	// child route
