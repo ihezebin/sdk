@@ -11,7 +11,7 @@ import (
 type App struct {
 	kernel   *cli.App
 	flags    []cli.Flag
-	commands []command.Command
+	commands []*command.Command
 }
 
 func NewApp(options ...Option) *App {
@@ -22,7 +22,7 @@ func NewAppWithConfig(config Config) *App {
 	return &App{
 		kernel:   handleAppConfig(cli.NewApp(), config),
 		flags:    make([]cli.Flag, 0),
-		commands: make([]command.Command, 0),
+		commands: make([]*command.Command, 0),
 	}
 }
 
@@ -32,12 +32,12 @@ func (app *App) Kernel() *cli.App {
 	if app.kernel == nil {
 		app.kernel = cli.NewApp()
 		app.flags = make([]cli.Flag, 0)
-		app.commands = make([]command.Command, 0)
+		app.commands = make([]*command.Command, 0)
 	}
 	return app.kernel
 }
 
-func (app *App) Commands() []command.Command {
+func (app *App) Commands() []*command.Command {
 	return app.commands
 }
 
@@ -74,7 +74,7 @@ func (app *App) After(action Action) *App {
 	return app
 }
 
-func (app *App) WithCommand(command command.Command) *App {
+func (app *App) WithCommand(command *command.Command) *App {
 	app.commands = append(app.commands, command)
 	return app
 }
