@@ -1,11 +1,13 @@
 package config
 
 import (
+	"bytes"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"github.com/whereabouts/sdk/cli"
 	"github.com/whereabouts/sdk/utils/stringer"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -58,6 +60,8 @@ func (c *Configurator) Load(file interface{}, config interface{}) error {
 		return c.loadFilePath(file.(string), config)
 	case io.Reader:
 		return c.loadFileReader(file.(io.Reader), config)
+	case []byte:
+		return c.loadFileReader(bytes.NewReader(file.([]byte)), config)
 	default:
 		return errors.Errorf("unsupported config file type: %v", reflect.TypeOf(file))
 	}
@@ -85,15 +89,31 @@ func (c *Configurator) LoadWithEnv(key string, config interface{}) error {
 //}
 
 func (c *Configurator) loadFileReader(reader io.Reader, config interface{}) error {
-	//c.Kernel().SetConfigType("")
-	if err := c.Kernel().ReadConfig(reader); err != nil {
-		return errors.Wrap(err, "failed to load config reader")
-	}
-	err := c.Kernel().Unmarshal(config)
+	data, err := ioutil.ReadAll(reader)
 	if err != nil {
-		return errors.Wrap(err, "failed to unmarshal config")
+		return errors.Wrap(err, "failed to read config reader data")
 	}
-	return nil
+	for _, configType := range viper.SupportedExts {
+		c.Kernel().SetConfigType(configType)
+		if err = c.Kernel().ReadConfig(bytes.NewReader(data)); err != nil {
+			continue
+		} else {
+			err = c.Kernel().Unmarshal(config)
+			if err != nil {
+				return errors.Wrap(err, "failed to unmarshal config")
+			}
+			// check if zero value
+			configV := reflect.ValueOf(config)
+			for configV.Kind() == reflect.Ptr {
+				configV = configV.Elem()
+			}
+			if configV.IsZero() {
+				continue
+			}
+			return nil
+		}
+	}
+	return errors.New("failed to load config reader, the data format does not match these: [json, toml, yaml, yml, properties, props, prop, hcl, dotenv, env, ini]")
 }
 
 func (c *Configurator) loadFilePath(path string, config interface{}) error {

@@ -8,6 +8,26 @@ import (
 	"testing"
 )
 
+var (
+	json = []byte(`
+	{
+	 "port": 8001,
+	 "name": "Korbin",
+	 "age": 18
+	}
+	`)
+	toml = []byte(`
+	port = 8002
+	name = "Korbin"
+	age = 18
+	`)
+	yaml = []byte(`
+	port: 8003
+	name: "Korbin"
+	age: 18
+	`)
+)
+
 func TestLoadFile(t *testing.T) {
 	file, err := os.Open("./config.json")
 	if err != nil {
@@ -21,14 +41,15 @@ func TestLoadFile(t *testing.T) {
 }
 
 func TestLoadReader(t *testing.T) {
-	json := []byte(`
-	{
-	  "port": 8001,
-	  "name": "Korbin",
-	  "age": 18
-	}
-	`)
 	err := config.Load(bytes.NewBuffer(json), GetConfig())
+	if err != nil {
+		logger.Fatalf("load config err: %s", err.Error())
+	}
+	logger.Infof("%+v", *GetConfig())
+}
+
+func TestLoadData(t *testing.T) {
+	err := config.Load(toml, GetConfig())
 	if err != nil {
 		logger.Fatalf("load config err: %s", err.Error())
 	}
