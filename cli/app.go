@@ -8,10 +8,16 @@ import (
 	"time"
 )
 
+var nilAction = func(c *cli.Context) error {
+	return nil
+}
+
 type App struct {
 	kernel   *cli.App
 	flags    []cli.Flag
 	commands []*command.Command
+	action   Action
+	help     bool
 }
 
 func NewApp(options ...Option) *App {
@@ -23,6 +29,8 @@ func NewAppWithConfig(config Config) *App {
 		kernel:   handleAppConfig(cli.NewApp(), config),
 		flags:    make([]cli.Flag, 0),
 		commands: make([]*command.Command, 0),
+		action:   nil,
+		help:     true,
 	}
 }
 
@@ -37,25 +45,25 @@ func (app *App) Kernel() *cli.App {
 	return app.kernel
 }
 
-func (app *App) Commands() []*command.Command {
-	return app.commands
-}
-
-func (app *App) Flags() []cli.Flag {
-	return app.flags
-}
-
 type Value = command.Value
 type Action func(v Value) error
 
-func (app *App) Run(action Action) error {
+func (app *App) WithAction(action Action) *App {
+	app.action = action
+	app.Kernel().Action = func(c *cli.Context) error {
+		return action(command.NewValue(c))
+	}
+	return app
+}
+
+func (app *App) Run() error {
 	sort.Sort(cli.FlagsByName(app.flags))
 	app.Kernel().Flags = app.flags
 	for _, cmd := range app.commands {
 		app.Kernel().Commands = append(app.Kernel().Commands, *cmd.Kernel())
 	}
-	app.Kernel().Action = func(c *cli.Context) error {
-		return action(command.NewValue(c))
+	if app.action == nil && !app.help {
+		app.Kernel().Action = nilAction
 	}
 	return app.Kernel().Run(os.Args)
 }
@@ -77,6 +85,23 @@ func (app *App) After(action Action) *App {
 func (app *App) WithCommand(command *command.Command) *App {
 	app.commands = append(app.commands, command)
 	return app
+}
+
+func (app *App) WithDefaultHelp(help bool) *App {
+	app.help = help
+	return app
+}
+
+func (app *App) Commands() []*command.Command {
+	return app.commands
+}
+
+func (app *App) Action() Action {
+	return app.action
+}
+
+func (app *App) Flags() []cli.Flag {
+	return app.flags
 }
 
 func (app *App) WithFlagInt(name string, value int, usage string, required bool, hidden ...bool) *App {
