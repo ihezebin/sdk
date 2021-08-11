@@ -35,6 +35,15 @@ func TestLoadReader(t *testing.T) {
 	logger.Infof("%+v", *GetConfig())
 }
 
+func TestLoadWithFilePath(t *testing.T) {
+	configurator := config.New()
+	err := configurator.Load("./config.json", GetConfig())
+	if err != nil {
+		logger.Fatalf("load config err: %s", err.Error())
+	}
+	logger.Infof("%+v", *GetConfig())
+}
+
 func TestLoadWithEnv(t *testing.T) {
 	err := os.Setenv("CONFIG", "./config.json")
 	if err != nil {
@@ -50,14 +59,6 @@ func TestLoadWithEnv(t *testing.T) {
 func TestLoadWithDefault(t *testing.T) {
 	config.SetDefaultConfigPath("./config.json")
 	err := config.LoadWithDefault(GetConfig())
-	if err != nil {
-		logger.Fatalf("load config err: %s", err.Error())
-	}
-	logger.Infof("%+v", *GetConfig())
-}
-
-func TestLoadWithCmd(t *testing.T) {
-	err := config.LoadWithCmd("c", "./config.json", GetConfig())
 	if err != nil {
 		logger.Fatalf("load config err: %s", err.Error())
 	}
