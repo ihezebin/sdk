@@ -29,18 +29,18 @@ func NewClient(ctx context.Context, config Config) (Client, error) {
 	}
 	opts := convertConfig2Options(config)
 
-	return NewClientWithOptions(ctx, config.Alias, opts, config.AutoTime)
+	return NewClientWithOptions(ctx, opts, config.Alias, config.AutoTime)
 }
 
 // NewClientWithURI uri format: mongodb://username:password@example1.com,example2.com,example3.com/?replicaSet=test&w=majority&wtimeoutMS=5000
 // Alias is used to specify the client alias. When used, the client can be obtained from the clientMap of the manger through the alias, and ClientManager().Get(alias) can be called
 // alias用于指定client别名，使用时可以通过该别名从manger的clientMap中获取client, 调用 ClientManager().Get(alias)
 // autoTime表示是否开启自动生成插入时间和更新时间
-func NewClientWithURI(ctx context.Context, alias string, uri string, autoTime bool) (Client, error) {
-	return NewClientWithOptions(ctx, alias, *options.Client().ApplyURI(uri), autoTime)
+func NewClientWithURI(ctx context.Context, uri string, alias string, autoTime bool) (Client, error) {
+	return NewClientWithOptions(ctx, *options.Client().ApplyURI(uri), alias, autoTime)
 }
 
-func NewClientWithOptions(ctx context.Context, alias string, options options.ClientOptions, autoTime bool) (Client, error) {
+func NewClientWithOptions(ctx context.Context, options options.ClientOptions, alias string, autoTime bool) (Client, error) {
 	kernel, err := mongo.Connect(ctx, &options)
 	if err != nil {
 		return nil, err
