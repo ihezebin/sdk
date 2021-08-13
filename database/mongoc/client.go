@@ -162,19 +162,6 @@ func (c *client) DoWithSession(ctx context.Context, model Model, exec SessionExe
 	})
 }
 
-// NewGlobalClient If there is only one Mongo, you can select the global client
-func NewGlobalClient(ctx context.Context, config Config) (Client, error) {
-	var err error
-	gClient, err = NewClient(ctx, config)
-	return gClient, err
-}
-
-var gClient Client
-
-func GetGlobalClient() Client {
-	return gClient
-}
-
 func convertConfig2Options(config Config) options.ClientOptions {
 	opts := options.Client()
 	opts.SetHosts(config.Addrs)
@@ -207,4 +194,17 @@ func convertConfig2Options(config Config) options.ClientOptions {
 		opts.SetSocketTimeout(config.Timeout * time.Second)
 	}
 	return *opts
+}
+
+// NewGlobalClient If there is only one Mongo, you can select the global client
+func NewGlobalClient(ctx context.Context, config Config) (Client, error) {
+	var err error
+	gClient, err = NewClient(ctx, config)
+	return gClient, err
+}
+
+var gClient Client
+
+func GetGlobalClient() Client {
+	return gClient
 }
