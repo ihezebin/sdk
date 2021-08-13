@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/whereabouts/sdk/logger/field"
 	"github.com/whereabouts/sdk/logger/format"
+	"github.com/whereabouts/sdk/logger/hook"
 	"github.com/whereabouts/sdk/logger/level"
 	"io"
 )
@@ -56,7 +57,7 @@ func IsLevelEnabled(level level.Level) bool {
 }
 
 // AddHook adds a hook to the standard logger hook.
-func AddHook(hook field.Hook) *Logger {
+func AddHook(hook hook.Hook) *Logger {
 	return standardLogger.AddHook(hook)
 }
 
