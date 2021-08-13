@@ -1,41 +1,35 @@
-package logger
+package hook
 
 import (
 	"github.com/sirupsen/logrus"
-)
-
-const (
-	FieldKeyTime      = "time"
-	FieldKeyTimestamp = "timestamp"
-	FieldKeyApp       = "app"
-
-	fieldValueZero = iota
+	"github.com/whereabouts/sdk/logger/field"
+	"github.com/whereabouts/sdk/logger/level"
 )
 
 type fieldsHook struct {
-	fields Fields
-	levels []Level
+	fields field.Fields
+	levels []level.Level
 }
 
 // NewFieldsHook Use to create the fieldsHook
 // Used to add common log attributes
 // 用于添加公共的日志属性
-func NewFieldsHook(fields Fields) *fieldsHook {
+func NewFieldsHook(fields field.Fields) *fieldsHook {
 	return &fieldsHook{
 		fields: fields,
-		levels: AllLevels,
+		levels: level.AllLevels,
 	}
 }
 
 // Levels implement levels
-func (hook *fieldsHook) Levels() []Level {
+func (hook *fieldsHook) Levels() []level.Level {
 	return hook.levels
 }
 
 // Fire implement fire
 func (hook *fieldsHook) Fire(entry *logrus.Entry) error {
 	for k, v := range hook.fields {
-		if k == FieldKeyTimestamp {
+		if k == field.KeyTimestamp {
 			entry.Data[k] = entry.Time.Unix()
 			continue
 		}
@@ -44,7 +38,7 @@ func (hook *fieldsHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
-func (hook *fieldsHook) SetLevels(levels []logrus.Level) *fieldsHook {
+func (hook *fieldsHook) SetLevels(levels []level.Level) *fieldsHook {
 	hook.levels = levels
 	return hook
 }

@@ -1,26 +1,27 @@
 package logger
 
 import (
+	"github.com/whereabouts/sdk/logger/writer"
 	"io"
 	"time"
 )
 
 func StandardErrOutput() io.Writer {
-	return StandardErrorWriter()
+	return writer.StandardErrorWriter()
 }
 
 func StandardOutput() io.Writer {
-	return StandardOutWriter()
+	return writer.StandardOutWriter()
 }
 
 func FileOutput(filename interface{}) io.Writer {
-	return NewFileWriter(filename)
+	return writer.NewFileWriter(filename)
 }
 
 func DefaultRotateFileOutput(filename string) io.Writer {
-	return DefaultRotateFileWriter(filename)
+	return writer.DefaultRotateFileWriter(filename)
 }
 
 func RotateFileOutput(filename string, rotateTime time.Duration, expireTime time.Duration) io.Writer {
-	return NewRotateFileWriter(filename, rotateTime, expireTime)
+	return writer.NewRotateFileWriter(filename, rotateTime, expireTime)
 }

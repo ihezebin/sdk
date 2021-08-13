@@ -1,9 +1,11 @@
-package logger
+package hook
 
 import (
 	"errors"
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/whereabouts/sdk/logger/field"
+	"github.com/whereabouts/sdk/logger/level"
 	"path"
 	"runtime"
 	"strings"
@@ -18,14 +20,8 @@ type Hook interface {
 */
 
 const (
-	logrusPackageName = "sirupsen/logrus"
+	kernelPackageName = "sirupsen/logrus"
 	loggerPackageName = "sdk/logger"
-)
-
-const (
-	FieldKeyFunc   = "func"
-	FieldKeyFile   = "file"
-	FieldKeySource = "source"
 )
 
 // callerHook for logging the caller
@@ -33,7 +29,7 @@ type callerHook struct {
 	source         bool
 	simplify       bool
 	skip           int
-	levels         []Level
+	levels         []level.Level
 	fieldKeyFunc   string
 	fieldKeyFile   string
 	fieldKeySource string
@@ -48,19 +44,19 @@ func NewCallerHook() *callerHook {
 	return &callerHook{
 		simplify:       false,
 		skip:           0,
-		levels:         AllLevels,
-		fieldKeyFile:   FieldKeyFile,
-		fieldKeyFunc:   FieldKeyFunc,
-		fieldKeySource: FieldKeySource,
+		levels:         level.AllLevels,
+		fieldKeyFile:   field.KeyFile,
+		fieldKeyFunc:   field.KeyFunc,
+		fieldKeySource: field.KeySource,
 	}
 }
 
 // Levels implement levels
-func (hook *callerHook) Levels() []Level {
+func (hook *callerHook) Levels() []level.Level {
 	return hook.levels
 }
 
-// Fire implement fire
+// Fire implement logrus.Fire
 func (hook *callerHook) Fire(entry *logrus.Entry) error {
 	file, function, line, err := findCaller(hook.skip)
 	if err != nil {
@@ -70,7 +66,7 @@ func (hook *callerHook) Fire(entry *logrus.Entry) error {
 	file, function, line = hook.handleSimplify(file, function, line)
 	// handle mode
 	if hook.source {
-		entry.Data[FieldKeySource] = fmt.Sprintf("%s:%d:%s", file, line, function)
+		entry.Data[field.KeySource] = fmt.Sprintf("%s:%d:%s", file, line, function)
 	} else {
 		entry.Data[hook.fieldKeyFile] = fmt.Sprintf("%s:%d", file, line)
 		entry.Data[hook.fieldKeyFunc] = function
@@ -112,7 +108,7 @@ func findCaller(skip int) (file, function string, line int, err error) {
 		if err != nil {
 			return file, function, line, err
 		}
-		if !strings.Contains(file, logrusPackageName) && !strings.Contains(file, loggerPackageName) {
+		if !strings.Contains(file, kernelPackageName) && !strings.Contains(file, loggerPackageName) {
 			break
 		}
 	}
@@ -139,7 +135,7 @@ func (hook *callerHook) SetSimplify(simplify bool) *callerHook {
 	return hook
 }
 
-func (hook *callerHook) SetLevels(levels []logrus.Level) *callerHook {
+func (hook *callerHook) SetLevels(levels []level.Level) *callerHook {
 	hook.levels = levels
 	return hook
 }

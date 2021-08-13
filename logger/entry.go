@@ -3,6 +3,8 @@ package logger
 import (
 	"context"
 	"github.com/sirupsen/logrus"
+	"github.com/whereabouts/sdk/logger/field"
+	"github.com/whereabouts/sdk/logger/level"
 )
 
 type Entry struct {
@@ -25,13 +27,13 @@ func (entry *Entry) Kernel() *logrus.Entry {
 	return entry.kernel
 }
 
-// Bytes Returns the bytes representation of this entry from the formatter.
+// Bytes Returns the bytes representation of this entry from the format.
 func (entry *Entry) Bytes() ([]byte, error) {
 	return entry.Kernel().Bytes()
 }
 
 // String Returns the string representation from the reader and ultimately the
-// formatter.
+// format.
 func (entry *Entry) String() (string, error) {
 	return entry.Kernel().String()
 }
@@ -52,15 +54,15 @@ func (entry *Entry) WithField(key string, value interface{}) *Entry {
 }
 
 // WithFields Add a map of fields to the Entry.
-func (entry *Entry) WithFields(fields Fields) *Entry {
-	return entry.logrusEntry2Entry(entry.Kernel().WithFields(fields2LogrusFields(fields)))
+func (entry *Entry) WithFields(fields field.Fields) *Entry {
+	return entry.logrusEntry2Entry(entry.Kernel().WithFields(field.Fields2LogrusFields(fields)))
 }
 
 func (entry Entry) HasCaller() bool {
 	return entry.Kernel().HasCaller()
 }
 
-func (entry *Entry) Log(level Level, args ...interface{}) {
+func (entry *Entry) Log(level level.Level, args ...interface{}) {
 	entry.Kernel().Log(level, args...)
 }
 
@@ -102,7 +104,7 @@ func (entry *Entry) Panic(args ...interface{}) {
 
 // Entry Printf family functions
 
-func (entry *Entry) Logf(level Level, format string, args ...interface{}) {
+func (entry *Entry) Logf(level level.Level, format string, args ...interface{}) {
 	entry.Kernel().Logf(level, format, args...)
 }
 
@@ -144,7 +146,7 @@ func (entry *Entry) Panicf(format string, args ...interface{}) {
 
 // Entry Println family functions
 
-func (entry *Entry) Logln(level Level, args ...interface{}) {
+func (entry *Entry) Logln(level level.Level, args ...interface{}) {
 	entry.Kernel().Logln(level, args...)
 }
 

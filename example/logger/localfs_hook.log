@@ -1,1 +1,2 @@
 {"file":"hook_test.go:13","func":"logger.TestLocalfsHook","level":"info","msg":"info","time":"2021-07-24 00:51:13"}
+{"file":"hook_test.go:17","func":"logger.TestLocalFSHook","level":"info","msg":"TestLocalfsHook","time":"2021-08-13 11:18:02"}

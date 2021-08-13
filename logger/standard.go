@@ -2,6 +2,9 @@ package logger
 
 import (
 	"context"
+	"github.com/whereabouts/sdk/logger/field"
+	"github.com/whereabouts/sdk/logger/format"
+	"github.com/whereabouts/sdk/logger/level"
 	"io"
 )
 
@@ -26,8 +29,8 @@ func SetOutput(out io.Writer) *Logger {
 	return standardLogger.SetOutput(out)
 }
 
-// SetFormatter sets the standard logger formatter.
-func SetFormatter(formatter Formatter) *Logger {
+// SetFormatter sets the standard logger format.
+func SetFormatter(formatter format.Formatter) *Logger {
 	return standardLogger.SetFormatter(formatter)
 }
 
@@ -38,22 +41,22 @@ func DisableCaller() *Logger {
 }
 
 // SetLevel sets the standard logger level.
-func SetLevel(level Level) *Logger {
+func SetLevel(level level.Level) *Logger {
 	return standardLogger.SetLevel(level)
 }
 
 // GetLevel returns the standard logger level.
-func GetLevel() Level {
+func GetLevel() level.Level {
 	return standardLogger.GetLevel()
 }
 
 // IsLevelEnabled checks if the log level of the standard logger is greater than the level param
-func IsLevelEnabled(level Level) bool {
+func IsLevelEnabled(level level.Level) bool {
 	return standardLogger.IsLevelEnabled(level)
 }
 
 // AddHook adds a hook to the standard logger hook.
-func AddHook(hook Hook) *Logger {
+func AddHook(hook field.Hook) *Logger {
 	return standardLogger.AddHook(hook)
 }
 
@@ -82,7 +85,7 @@ func WithField(key string, value interface{}) *Entry {
 //
 // Note that it doesn't log until you call Debug, Print, Info, Warn, Fatal
 // or Panic on the Entry it returns.
-func WithFields(fields Fields) *Entry {
+func WithFields(fields field.Fields) *Entry {
 	return standardLogger.WithFields(fields)
 }
 

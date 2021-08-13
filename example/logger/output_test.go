@@ -2,6 +2,7 @@ package logger
 
 import (
 	"github.com/whereabouts/sdk/logger"
+	"github.com/whereabouts/sdk/logger/writer"
 	"testing"
 	"time"
 )
@@ -19,7 +20,7 @@ func TestFileOutput(t *testing.T) {
 }
 
 func TestRotateFileOutput(t *testing.T) {
-	logger := logger.StandardLogger().SetOutput(logger.NewRotateFileWriter("rotate.log", time.Second*3, time.Second*9))
+	logger := logger.StandardLogger().SetOutput(writer.NewRotateFileWriter("rotate.log", time.Second*3, time.Second*9))
 	for i := 0; i < 12; i++ {
 		logger.Println("TestRotateFileOutput")
 		time.Sleep(time.Second)

@@ -1,8 +1,10 @@
-package logger
+package hook
 
 import (
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/whereabouts/sdk/logger/format"
+	"github.com/whereabouts/sdk/logger/level"
 	"io"
 	"log"
 	"os"
@@ -13,14 +15,14 @@ import (
 
 // WriterMap is map for mapping a log level to an io.Writer.
 // Multiple levels may share a writer, but multiple writers may not be used for one level.
-type WriterMap map[Level]io.Writer
+type WriterMap map[level.Level]io.Writer
 
 // levelHook is a hook to handle writing to local log files.
 type localFSHook struct {
 	writers   WriterMap
-	levels    []Level
+	levels    []level.Level
 	lock      *sync.Mutex
-	formatter Formatter
+	formatter format.Formatter
 
 	defaultWriter io.Writer
 }
@@ -29,10 +31,10 @@ type localFSHook struct {
 // Output can be a string, io.Writer or WriterMap.
 // If using io.Writer or WriterMap, user is responsible for closing the used io.Writer.
 // 日志内容分级别输出到本地文件系统, 如: INFO级别输出到test.log文件, ERROR级别输出到test.err.log文件, DEBUG级别输出到os.Stderr
-func NewLocalFSHook(output interface{}, formatter Formatter) *localFSHook {
+func NewLocalFSHook(output interface{}, formatter format.Formatter) *localFSHook {
 	hook := &localFSHook{
 		lock:   new(sync.Mutex),
-		levels: AllLevels,
+		levels: level.AllLevels,
 	}
 	hook.SetFormatter(formatter)
 	switch output.(type) {
@@ -59,11 +61,11 @@ func NewLocalFSHook(output interface{}, formatter Formatter) *localFSHook {
 }
 
 // SetFormatter sets the format that will be used by hook.
-func (hook *localFSHook) SetFormatter(formatter Formatter) {
+func (hook *localFSHook) SetFormatter(formatter format.Formatter) {
 	hook.lock.Lock()
 	defer hook.lock.Unlock()
 	if formatter == nil {
-		formatter = defaultFormatter
+		formatter = format.DefaultFormatter()
 	}
 	hook.formatter = formatter
 }
@@ -87,7 +89,7 @@ func (hook *localFSHook) Fire(entry *logrus.Entry) error {
 }
 
 // Levels returns configured log levels.
-func (hook *localFSHook) Levels() []logrus.Level {
+func (hook *localFSHook) Levels() []level.Level {
 	return hook.levels
 }
 
@@ -102,7 +104,7 @@ func (hook *localFSHook) write(entry *logrus.Entry) error {
 		}
 		writer = hook.defaultWriter
 	}
-	// use our formatter instead of entry.String()
+	// use our format instead of entry.String()
 	msg, err := hook.formatter.Format(entry)
 	if err != nil {
 		log.Println("failed to format entry:", err)

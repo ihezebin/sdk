@@ -1,32 +1,31 @@
-package logger
+package hook
 
 import (
 	"github.com/sirupsen/logrus"
+	"github.com/whereabouts/sdk/logger/field"
+	"github.com/whereabouts/sdk/logger/level"
 )
 
 const (
-	HostKey  = "host"
-	TraceKey = "trace"
-
 	customKey = "custom"
 )
 
 var standardKeys = map[string]bool{
-	logrus.FieldKeyLevel: true, // level
-	logrus.FieldKeyMsg:   true, // msg
-	logrus.ErrorKey:      true, // error
-	FieldKeyApp:          true, // app
-	FieldKeyTime:         true, // time
-	FieldKeyTimestamp:    true, // timestamp
-	FieldKeyFunc:         true, // func
-	FieldKeyFile:         true, // file
-	FieldKeySource:       true, // source
-	TraceKey:             true, // trace
-	HostKey:              true, // host
+	field.KeyLevel:     true, // level
+	field.KeyMsg:       true, // msg
+	field.KeyError:     true, // error
+	field.KeyApp:       true, // app
+	field.KeyTime:      true, // time
+	field.KeyTimestamp: true, // timestamp
+	field.KeyFunc:      true, // func
+	field.KeyFile:      true, // file
+	field.KeySource:    true, // source
+	field.KeyTrace:     true, // trace
+	field.KeyHost:      true, // host
 }
 
 type mergeHook struct {
-	levels     []Level
+	levels     []level.Level
 	ignoreKeys map[string]bool
 }
 
@@ -36,7 +35,7 @@ type mergeHook struct {
 // 用于合并除标准属性以外的其他所有属性到custom, 避免属性过多不便管理, 可通过传参增加默认的标准属性.
 func NewMergeHook(ignoreKeys ...string) *mergeHook {
 	hook := &mergeHook{
-		levels:     AllLevels,
+		levels:     level.AllLevels,
 		ignoreKeys: standardKeys,
 	}
 	for _, key := range ignoreKeys {
@@ -63,8 +62,8 @@ func (hook *mergeHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
-func (hook *mergeHook) Levels() []Level {
-	return AllLevels
+func (hook *mergeHook) Levels() []level.Level {
+	return level.AllLevels
 }
 
 func (hook *mergeHook) SetLevels(levels []logrus.Level) *mergeHook {

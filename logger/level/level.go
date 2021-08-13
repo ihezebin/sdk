@@ -1,4 +1,4 @@
-package logger
+package level
 
 import (
 	"github.com/sirupsen/logrus"
@@ -60,7 +60,11 @@ var levelMap = map[string]Level{
 	"trace":   TraceLevel,
 }
 
-func string2Level(levelStr string) Level {
+func Default() Level {
+	return defaultLevel
+}
+
+func String2Level(levelStr string) Level {
 	if level, ok := levelMap[levelStr]; ok {
 		return level
 	}

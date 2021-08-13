@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/whereabouts/sdk/logger"
+	"github.com/whereabouts/sdk/logger/field"
 	"github.com/whereabouts/sdk/utils/mapper"
 	"io/ioutil"
 	"net/http"
@@ -33,7 +34,7 @@ func LoggingSimplyResponse() Middleware {
 
 func LoggingRequestWithLogger(l *logger.Logger, simply bool) Middleware {
 	return func(c *gin.Context) {
-		fields := logger.Fields{
+		fields := field.Fields{
 			"method": c.Request.Method,
 			"uri":    c.Request.URL.RequestURI(),
 			"remote": c.Request.RemoteAddr,
@@ -53,7 +54,7 @@ func LoggingResponseWithLogger(l *logger.Logger, simply bool) Middleware {
 
 		c.Next()
 
-		fields := logger.Fields{
+		fields := field.Fields{
 			"status": fmt.Sprintf("%v %s", c.Writer.Status(), http.StatusText(c.Writer.Status())),
 			"body":   responseBody(rw),
 		}

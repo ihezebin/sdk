@@ -3,6 +3,11 @@ package logger
 import (
 	"context"
 	"github.com/sirupsen/logrus"
+	"github.com/whereabouts/sdk/logger/field"
+	"github.com/whereabouts/sdk/logger/format"
+	"github.com/whereabouts/sdk/logger/hook"
+	"github.com/whereabouts/sdk/logger/level"
+	"github.com/whereabouts/sdk/logger/writer"
 	"github.com/whereabouts/sdk/utils/stringer"
 	"io"
 	"os"
@@ -19,26 +24,26 @@ func New(options ...Option) *Logger {
 func NewLoggerWithConfig(config Config) *Logger {
 	l := newStandardLogger()
 
-	l.SetLevel(string2Level(config.Level))
-	l.SetFormatter(string2Formatter(config.Format))
+	l.SetLevel(level.String2Level(config.Level))
+	l.SetFormatter(format.String2Formatter(config.Format))
 
-	fields := make(Fields)
+	fields := make(field.Fields)
 	if stringer.NotEmpty(config.AppName) {
-		fields[FieldKeyApp] = config.AppName
+		fields[field.KeyApp] = config.AppName
 	}
 	if config.Timestamp {
-		fields[FieldKeyTimestamp] = fieldValueZero
+		fields[field.KeyTimestamp] = field.ValueZero
 	}
-	l.AddHook(NewFieldsHook(fields))
+	l.AddHook(hook.NewFieldsHook(fields))
 	if stringer.NotEmpty(config.ErrFile) {
-		l.AddHook(NewLocalFSHook(config.ErrFile, string2Formatter(config.Format)))
+		l.AddHook(hook.NewLocalFSHook(config.ErrFile, format.String2Formatter(config.Format)))
 	}
 
 	if stringer.NotEmpty(config.File) {
 		l.SetOutput(FileOutput(config.File))
 	}
 	if stringer.NotEmpty(config.RotateFile.File) {
-		l.SetOutput(NewRotateFileWriter(config.RotateFile.File, config.RotateFile.RotateTime, config.RotateFile.ExpireTime))
+		l.SetOutput(writer.NewRotateFileWriter(config.RotateFile.File, config.RotateFile.RotateTime, config.RotateFile.ExpireTime))
 	}
 
 	return l
@@ -49,12 +54,12 @@ func newStandardLogger() *Logger {
 		&logrus.Logger{
 			Out:          StandardErrOutput(),
 			Hooks:        make(logrus.LevelHooks),
-			Formatter:    defaultFormatter,
+			Formatter:    format.DefaultFormatter(),
 			ReportCaller: false,
-			Level:        defaultLevel,
+			Level:        level.Default(),
 			ExitFunc:     os.Exit,
 		},
-	}).AddHook(NewCallerHook().
+	}).AddHook(hook.NewCallerHook().
 		SetSimplify(true),
 	)
 }
@@ -67,8 +72,8 @@ func (logger *Logger) WithField(key string, value interface{}) *Entry {
 	return &Entry{logger, logger.Kernel().WithField(key, value)}
 }
 
-func (logger *Logger) WithFields(fields Fields) *Entry {
-	return &Entry{logger, logger.Kernel().WithFields(fields2LogrusFields(fields))}
+func (logger *Logger) WithFields(fields field.Fields) *Entry {
+	return &Entry{logger, logger.Kernel().WithFields(field.Fields2LogrusFields(fields))}
 }
 
 func (logger *Logger) WithError(err error) *Entry {
@@ -81,7 +86,7 @@ func (logger *Logger) WithContext(ctx context.Context) *Entry {
 
 // Logger Printf family functions
 
-func (logger *Logger) Logf(level Level, format string, args ...interface{}) {
+func (logger *Logger) Logf(level level.Level, format string, args ...interface{}) {
 	logger.Kernel().Logf(level, format, args...)
 }
 
@@ -123,7 +128,7 @@ func (logger *Logger) Panicf(format string, args ...interface{}) {
 
 // Logger Print family functions
 
-func (logger *Logger) Log(level Level, args ...interface{}) {
+func (logger *Logger) Log(level level.Level, args ...interface{}) {
 	logger.Kernel().Log(level, args...)
 }
 
@@ -165,7 +170,7 @@ func (logger *Logger) Panic(args ...interface{}) {
 
 // Logger Println family functions
 
-func (logger *Logger) Logln(level Level, args ...interface{}) {
+func (logger *Logger) Logln(level level.Level, args ...interface{}) {
 	logger.Kernel().Logln(level, args...)
 }
 
@@ -206,29 +211,29 @@ func (logger *Logger) Panicln(args ...interface{}) {
 }
 
 // SetLevel sets the logger level.
-func (logger *Logger) SetLevel(level Level) *Logger {
+func (logger *Logger) SetLevel(level level.Level) *Logger {
 	logger.Kernel().SetLevel(level)
 	return logger
 }
 
 // GetLevel returns the logger level.
-func (logger *Logger) GetLevel() Level {
+func (logger *Logger) GetLevel() level.Level {
 	return logger.Kernel().GetLevel()
 }
 
 // AddHook adds a hook to the logger hook.
-func (logger *Logger) AddHook(hook Hook) *Logger {
+func (logger *Logger) AddHook(hook field.Hook) *Logger {
 	logger.Kernel().AddHook(hook)
 	return logger
 }
 
 // IsLevelEnabled checks if the log level of the logger is greater than the level param
-func (logger *Logger) IsLevelEnabled(level Level) bool {
+func (logger *Logger) IsLevelEnabled(level level.Level) bool {
 	return logger.Kernel().IsLevelEnabled(level)
 }
 
-// SetFormatter sets the logger formatter.
-func (logger *Logger) SetFormatter(formatter Formatter) *Logger {
+// SetFormatter sets the logger format.
+func (logger *Logger) SetFormatter(formatter format.Formatter) *Logger {
 	logger.Kernel().SetFormatter(formatter)
 	return logger
 }
@@ -246,7 +251,7 @@ func (logger *Logger) DisableCaller() *Logger {
 }
 
 // ReplaceHooks replaces the logger hook and returns the old ones
-func (logger *Logger) ReplaceHooks(hooks LevelHooks) LevelHooks {
+func (logger *Logger) ReplaceHooks(hooks field.LevelHooks) field.LevelHooks {
 	return logger.Kernel().ReplaceHooks(hooks)
 }
 
