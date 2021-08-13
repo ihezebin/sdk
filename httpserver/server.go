@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github.com/whereabouts/sdk/httpserver/hook"
 	"github.com/whereabouts/sdk/httpserver/middleware"
 	"log"
 	"net/http"
@@ -19,16 +20,16 @@ type Server interface {
 	GetEngine() (engine *gin.Engine)
 	Run(ctx context.Context) error
 	Close(ctx context.Context) error
-	OnShutdown(f func()) Server
-	OnBeforeRun(f func()) Server
+	OnShutdown(shutdownHook hook.ShutdownHook) Server
+	OnBeforeRun(hook.RunHook) Server
 	Route(routes Router) Server
 }
 
 type server struct {
 	http.Server
 	config      Config
-	onBeforeRun []func()
-	onShutdown  []func()
+	onBeforeRun []hook.RunHook
+	onShutdown  []hook.ShutdownHook
 }
 
 func NewServer(options ...Option) Server {
@@ -84,12 +85,12 @@ func (s *server) Run(ctx context.Context) error {
 	return s.Close(ctx)
 }
 
-func (s *server) OnShutdown(f func()) Server {
+func (s *server) OnShutdown(f hook.ShutdownHook) Server {
 	s.onShutdown = append(s.onShutdown, f)
 	return s
 }
 
-func (s *server) OnBeforeRun(f func()) Server {
+func (s *server) OnBeforeRun(f hook.RunHook) Server {
 	s.onBeforeRun = append(s.onBeforeRun, f)
 	return s
 }
