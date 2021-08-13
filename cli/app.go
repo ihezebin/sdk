@@ -14,6 +14,7 @@ var nilAction = func(c *cli.Context) error {
 
 type App struct {
 	kernel   *cli.App
+	config   Config
 	flags    []cli.Flag
 	commands []*command.Command
 	action   Action
@@ -27,6 +28,7 @@ func NewApp(options ...Option) *App {
 func NewAppWithConfig(config Config) *App {
 	return &App{
 		kernel:   handleAppConfig(cli.NewApp(), config),
+		config:   config,
 		flags:    make([]cli.Flag, 0),
 		commands: make([]*command.Command, 0),
 		action:   nil,
