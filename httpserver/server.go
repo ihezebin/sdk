@@ -20,15 +20,15 @@ type Server interface {
 	Run(ctx context.Context) error
 	Close(ctx context.Context) error
 	OnShutdown(f func()) Server
-	BeforeRun(f func()) Server
+	OnBeforeRun(f func()) Server
 	Route(routes Router) Server
 }
 
 type server struct {
 	http.Server
-	config     Config
-	beforeRun  []func()
-	onShutdown []func()
+	config      Config
+	onBeforeRun []func()
+	onShutdown  []func()
 }
 
 func NewServer(options ...Option) Server {
@@ -59,12 +59,12 @@ func (s *server) Name() string {
 
 func (s *server) Run(ctx context.Context) error {
 	// register func before run
-	for _, f := range s.beforeRun {
-		f()
+	for _, beforeRun := range s.onBeforeRun {
+		beforeRun()
 	}
 	// register func on shutdown
-	for _, f := range s.onShutdown {
-		s.RegisterOnShutdown(f)
+	for _, shutdown := range s.onShutdown {
+		s.RegisterOnShutdown(shutdown)
 	}
 	// server listenAndServe
 	ch := make(chan os.Signal)
@@ -89,8 +89,8 @@ func (s *server) OnShutdown(f func()) Server {
 	return s
 }
 
-func (s *server) BeforeRun(f func()) Server {
-	s.beforeRun = append(s.beforeRun, f)
+func (s *server) OnBeforeRun(f func()) Server {
+	s.onBeforeRun = append(s.onBeforeRun, f)
 	return s
 }
 
