@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/whereabouts/sdk/cli"
 	"github.com/whereabouts/sdk/cli/command"
+	"github.com/whereabouts/sdk/cli/flag"
 )
 
 func main() {
@@ -11,7 +12,7 @@ func main() {
 		command.WithName("do"),
 		command.WithCategory("other"),
 	).WithFlagString("thing, t", "something", "do some thing", false).
-		WithAction(func(v command.Value) error {
+		SetAction(func(v flag.Value) error {
 			fmt.Println(v.String("t"))
 			return nil
 		})
@@ -22,8 +23,8 @@ func main() {
 	).
 		WithFlagString("config, c", "./config.json", "config file path", false).
 		WithFlagBool("bool, b", true, "test bool", false).
-		WithCommand(command).
-		WithAction(func(v cli.Value) error {
+		SetCommand(command).
+		SetAction(func(v cli.Value) error {
 			fmt.Println(v.String("config"))
 			fmt.Println(v.Bool("b"))
 			return nil

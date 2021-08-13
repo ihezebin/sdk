@@ -2,6 +2,7 @@ package command
 
 import (
 	"github.com/urfave/cli"
+	"github.com/whereabouts/sdk/cli/flag"
 	"time"
 )
 
@@ -32,17 +33,31 @@ func (cmd *Command) Flags() []cli.Flag {
 	return cmd.Kernel().Flags
 }
 
-type Action func(v Value) error
+type Action func(v flag.Value) error
 
-func (cmd *Command) WithAction(action Action) *Command {
+func (cmd *Command) SetAction(action Action) *Command {
 	cmd.Kernel().Action = func(c *cli.Context) error {
-		return action(NewValue(c))
+		return action(flag.NewValue(c))
 	}
 	return cmd
 }
 
-func (cmd *Command) WithSubCommand(subCommand Command) *Command {
+func (cmd *Command) SetSubCommand(subCommand Command) *Command {
 	cmd.Kernel().Subcommands = append(cmd.Kernel().Subcommands, *subCommand.Kernel())
+	return cmd
+}
+
+func (cmd *Command) OnBeforeAction(action Action) *Command {
+	cmd.Kernel().Before = func(c *cli.Context) error {
+		return action(flag.NewValue(c))
+	}
+	return cmd
+}
+
+func (cmd *Command) OnAfterAction(action Action) *Command {
+	cmd.Kernel().After = func(c *cli.Context) error {
+		return action(flag.NewValue(c))
+	}
 	return cmd
 }
 

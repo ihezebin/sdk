@@ -3,6 +3,7 @@ package cli
 import (
 	"github.com/urfave/cli"
 	"github.com/whereabouts/sdk/cli/command"
+	"github.com/whereabouts/sdk/cli/flag"
 	"os"
 	"sort"
 	"time"
@@ -47,13 +48,13 @@ func (app *App) Kernel() *cli.App {
 	return app.kernel
 }
 
-type Value = command.Value
+type Value = flag.Value
 type Action func(v Value) error
 
-func (app *App) WithAction(action Action) *App {
+func (app *App) SetAction(action Action) *App {
 	app.action = action
 	app.Kernel().Action = func(c *cli.Context) error {
-		return action(command.NewValue(c))
+		return action(flag.NewValue(c))
 	}
 	return app
 }
@@ -70,26 +71,26 @@ func (app *App) Run() error {
 	return app.Kernel().Run(os.Args)
 }
 
-func (app *App) Before(action Action) *App {
+func (app *App) OnBeforeAction(action Action) *App {
 	app.Kernel().Before = func(c *cli.Context) error {
-		return action(command.NewValue(c))
+		return action(flag.NewValue(c))
 	}
 	return app
 }
 
-func (app *App) After(action Action) *App {
+func (app *App) OnAfterAction(action Action) *App {
 	app.Kernel().After = func(c *cli.Context) error {
-		return action(command.NewValue(c))
+		return action(flag.NewValue(c))
 	}
 	return app
 }
 
-func (app *App) WithCommand(command *command.Command) *App {
+func (app *App) SetCommand(command *command.Command) *App {
 	app.commands = append(app.commands, command)
 	return app
 }
 
-func (app *App) WithDefaultHelp(help bool) *App {
+func (app *App) SetDefaultHelp(help bool) *App {
 	app.help = help
 	return app
 }

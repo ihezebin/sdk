@@ -4,10 +4,10 @@ import (
 	"time"
 )
 
-var gApp = NewApp(WithHideHelp(true)).WithDefaultHelp(false)
+var gApp = NewApp(WithHideHelp(true)).SetDefaultHelp(false)
 
 func Run() (value Value, err error) {
-	err = gApp.WithAction(func(v Value) error {
+	err = gApp.SetAction(func(v Value) error {
 		value = v
 		return nil
 	}).Run()
