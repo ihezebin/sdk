@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	command := command.NewCommand(
+	cmd := command.NewCommand(
 		command.WithName("do"),
 		command.WithCategory("other"),
 	).WithFlagString("thing, t", "something", "do some thing", false).
@@ -23,7 +23,14 @@ func main() {
 	).
 		WithFlagString("config, c", "./config.json", "config file path", false).
 		WithFlagBool("bool, b", true, "test bool", false).
-		SetCommand(command).
+		SetCommand(cmd).
+		OnBeforeAction(func(v cli.Value) error {
+			fmt.Println("before")
+			return nil
+		}).OnAfterAction(func(v cli.Value) error {
+		fmt.Println("after")
+		return nil
+	}).
 		SetAction(func(v cli.Value) error {
 			fmt.Println(v.String("config"))
 			fmt.Println(v.Bool("b"))

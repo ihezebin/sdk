@@ -7,53 +7,24 @@ import (
 )
 
 type JWT struct {
-	Header    *Header  `json:"header"`
-	Payload   *Payload `json:"payload"`
-	Signature string   `json:"signature"`
+	Header    *Header    `json:"header"`
+	Payload   *Payload   `json:"payload"`
+	Signature *Signature `json:"signature"`
 }
 
-func NewToken() *JWT {
+func Default(secret string) *JWT {
+	header := DefaultHeader()
+	payload := DefaultPayload()
 	return &JWT{
-		Header:    defaultHeader(),
-		Payload:   defaultPayload(),
-		Signature: getSignature(),
+		Header:    header,
+		Payload:   payload,
+		Signature: NewSignature(header, payload, secret),
 	}
 }
 
-func Check(token string) bool {
-	sections := strings.Split(token, ".")
-	if len(sections) != 3 {
-		return false
-	}
-	sign := encryptionSHA256(fmt.Sprintf("%s.%s", sections[0], sections[1]), getSignature())
-	return sections[2] == sign
-}
+func New(header *Header, payload *Payload, signature *Signature) *JWT {
 
-func IsExpire(token string) bool {
-	payload := GetPayload(token)
-	if time.Now().Unix() > payload.Expire {
-		return true
-	}
-	return false
-}
-
-func Refresh(token string) string {
-	p := GetPayload(token)
-	p.Expire = time.Now().Add(p.Duration).Unix()
-	header := encodeStruct2Base64URL(defaultHeader())
-	payload := encodeStruct2Base64URL(p)
-	sign := encryptionSHA256(fmt.Sprintf("%s.%s", header, payload), getSignature())
-	return fmt.Sprintf("%s.%s.%s", header, payload, sign)
-}
-
-func GetPayload(token string) Payload {
-	payload := Payload{}
-	sections := strings.Split(token, ".")
-	if len(sections) != 3 {
-		return payload
-	}
-	_ = decodeBase64URL2Struct(sections[1], &payload)
-	return payload
+	return nil
 }
 
 func (jwt *JWT) String() string {
@@ -101,4 +72,40 @@ func (jwt *JWT) SetDuration(duration time.Duration) *JWT {
 func (jwt *JWT) SetExternal(external map[string]interface{}) *JWT {
 	jwt.Payload.External = external
 	return jwt
+}
+
+func Check(token string) bool {
+	sections := strings.Split(token, ".")
+	if len(sections) != 3 {
+		return false
+	}
+	sign := encryptionSHA256(fmt.Sprintf("%s.%s", sections[0], sections[1]), getSignature())
+	return sections[2] == sign
+}
+
+func IsExpire(token string) bool {
+	payload := GetPayload(token)
+	if time.Now().Unix() > payload.Expire {
+		return true
+	}
+	return false
+}
+
+func Refresh(token string) string {
+	p := GetPayload(token)
+	p.Expire = time.Now().Add(p.Duration).Unix()
+	header := encodeStruct2Base64URL(defaultHeader())
+	payload := encodeStruct2Base64URL(p)
+	sign := encryptionSHA256(fmt.Sprintf("%s.%s", header, payload), getSignature())
+	return fmt.Sprintf("%s.%s.%s", header, payload, sign)
+}
+
+func GetPayload(token string) Payload {
+	payload := Payload{}
+	sections := strings.Split(token, ".")
+	if len(sections) != 3 {
+		return payload
+	}
+	_ = decodeBase64URL2Struct(sections[1], &payload)
+	return payload
 }
