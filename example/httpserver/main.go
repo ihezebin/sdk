@@ -24,7 +24,7 @@ func main() {
 			middleware.LoggingSimplyRequest(),
 			middleware.LoggingSimplyResponse(),
 		),
-	).Route(routes.Routes).BeforeRun(server.Init).OnShutdown(server.Close).Run(ctx); err != nil {
+	).Route(routes.Routes).OnBeforeRun(server.Init).OnShutdown(server.Close).Run(ctx); err != nil {
 		logger.Fatalf("server run with error: %v\n", err)
 	}
 }
