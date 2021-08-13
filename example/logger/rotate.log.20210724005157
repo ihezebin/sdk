@@ -1,3 +1,0 @@
-{"file":"output_test.go:27","func":"logger.TestRotateFileOutput","level":"info","msg":"TestRotateFileOutput","time":"2021-07-24 00:51:57"}
-{"file":"output_test.go:27","func":"logger.TestRotateFileOutput","level":"info","msg":"TestRotateFileOutput","time":"2021-07-24 00:51:58"}
-{"file":"output_test.go:27","func":"logger.TestRotateFileOutput","level":"info","msg":"TestRotateFileOutput","time":"2021-07-24 00:51:59"}

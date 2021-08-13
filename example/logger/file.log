@@ -1,2 +1,3 @@
 {"file":"output_test.go:18","func":"logger.TestFileOutput","level":"info","msg":"TestStandardOutput","time":"2021-07-22 19:33:50"}
 {"file":"output_test.go:18","func":"logger.TestFileOutput","level":"info","msg":"TestStandardOutput","time":"2021-07-24 00:51:47"}
+{"file":"output_test.go:19","func":"logger.TestFileOutput","level":"info","msg":"TestStandardOutput","time":"2021-08-13 11:21:59"}
