@@ -34,9 +34,9 @@ func TestCallerHook(t *testing.T) {
 	logger.Infoln("TestCallerHook1")
 	logger.Errorln("TestCallerHook1")
 	callerHook2 := hook.NewCallerHook().SetSimplify(true).SetSource(true)
-	logger.StandardLogger().ReplaceHooks(field.LevelHooks{
-		level.InfoLevel:  []field.Hook{callerHook2},
-		level.ErrorLevel: []field.Hook{callerHook2},
+	logger.StandardLogger().ReplaceHooks(hook.LevelHooks{
+		level.InfoLevel:  []hook.Hook{callerHook2},
+		level.ErrorLevel: []hook.Hook{callerHook2},
 	})
 	logger.Infoln("TestCallerHook2")
 	logger.Errorln("TestCallerHook2")

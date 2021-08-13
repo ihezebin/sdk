@@ -222,7 +222,7 @@ func (logger *Logger) GetLevel() level.Level {
 }
 
 // AddHook adds a hook to the logger hook.
-func (logger *Logger) AddHook(hook field.Hook) *Logger {
+func (logger *Logger) AddHook(hook hook.Hook) *Logger {
 	logger.Kernel().AddHook(hook)
 	return logger
 }
@@ -251,7 +251,7 @@ func (logger *Logger) DisableCaller() *Logger {
 }
 
 // ReplaceHooks replaces the logger hook and returns the old ones
-func (logger *Logger) ReplaceHooks(hooks field.LevelHooks) field.LevelHooks {
+func (logger *Logger) ReplaceHooks(hooks hook.LevelHooks) hook.LevelHooks {
 	return logger.Kernel().ReplaceHooks(hooks)
 }
 

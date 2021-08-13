@@ -29,7 +29,3 @@ func Fields2LogrusFields(fields Fields) logrus.Fields {
 	}
 	return logrusFields
 }
-
-type Hook = logrus.Hook
-
-type LevelHooks = logrus.LevelHooks
