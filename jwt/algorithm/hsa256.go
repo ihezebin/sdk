@@ -3,31 +3,34 @@ package algorithm
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"encoding/base64"
 	"github.com/whereabouts/sdk/jwt"
 	"strings"
 )
 
-func HSA256() Algorithm {
-	return Algorithm{
-		Name:    "HSA256",
-		Handler: SHA256Handler,
-	}
+type hsa256 struct {
 }
 
-func SHA256Handler(header *jwt.Header, payload *jwt.Payload, secret string) (string, error) {
-	headerBase64URL, err := header.EncodeBase64URL()
+func HSA256() *hsa256 {
+	return &hsa256{}
+}
+
+func (alg *hsa256) String() string {
+	return "HSA256"
+}
+
+func (alg *hsa256) Encrypt(token *jwt.Token) ([]byte, error) {
+	header, err := token.Header().EncodeBase64URL()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	payloadBase64URL, err := payload.EncodeBase64URL()
+	payload, err := token.Payload().EncodeBase64URL()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	h := hmac.New(sha256.New, []byte(secret))
-	_, err = h.Write([]byte(strings.Join([]string{headerBase64URL, payloadBase64URL}, ".")))
+	h := hmac.New(sha256.New, []byte(token.Signature().Secret()))
+	_, err = h.Write([]byte(strings.Join([]string{header, payload}, ".")))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return base64.URLEncoding.EncodeToString(h.Sum(nil)), nil
+	return h.Sum(nil), nil
 }

@@ -1,15 +1,24 @@
 package jwt
 
-type Signature struct {
-	Header  *Header  `json:"header"`
-	Payload *Payload `json:"payload"`
-	Secret  string   `json:"secret"`
+import (
+	"encoding/base64"
+	"github.com/whereabouts/sdk/jwt/algorithm"
+)
+
+type signature struct {
+	algorithm algorithm.Algorithm
+	secret    string
+	data      []byte
 }
 
-func NewSignature(header *Header, payload *Payload, secret string) *Signature {
-	return &Signature{Header: header, Payload: payload, Secret: secret}
+func (s *signature) EncodeBase64URL() (string, error) {
+	return base64.URLEncoding.EncodeToString(s.data), nil
 }
 
-func (signature *Signature) Encrypt() (string, error) {
-	return signature.Header.Algorithm.Handler(signature.Header, signature.Payload, signature.Secret)
+func (s *signature) Algorithm() algorithm.Algorithm {
+	return s.algorithm
+}
+
+func (s *signature) Secret() string {
+	return s.secret
 }
