@@ -20,10 +20,10 @@ func DecodeSegment(seg string) ([]byte, error) {
 	return base64.URLEncoding.DecodeString(seg)
 }
 
-func splicingSegment(a, b string) string {
-	return strings.Join([]string{a, b}, ".")
+func SplicingSegment(segment ...string) string {
+	return strings.Join(segment, ".")
 }
 
-func splitSegment(v string) []string {
+func Split2Segment(v string) []string {
 	return strings.Split(v, ".")
 }

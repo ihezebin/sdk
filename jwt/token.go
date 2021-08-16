@@ -2,11 +2,9 @@ package jwt
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/pkg/errors"
 	"github.com/whereabouts/sdk/jwt/alg"
 	"github.com/whereabouts/sdk/utils/stringer"
-	"strings"
 	"time"
 )
 
@@ -49,7 +47,7 @@ func (token *Token) Sign(secret string) (string, error) {
 	}
 	header := EncodeSegment(headerJson)
 	payload := EncodeSegment(payloadJson)
-	signatureJson, err := token.Algorithm.Encrypt(splicingSegment(header, payload), secret)
+	signatureJson, err := token.Algorithm.Encrypt(SplicingSegment(header, payload), secret)
 	if err != nil {
 		return "", errors.Wrap(err, "encrypt signature err")
 	}
@@ -58,7 +56,7 @@ func (token *Token) Sign(secret string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	token.Raw = strings.Join([]string{header, payload, signature}, ".")
+	token.Raw = SplicingSegment(header, payload, signature)
 	return token.Raw, nil
 }
 
@@ -70,19 +68,14 @@ func (token *Token) Valid(secret string) bool {
 	if stringer.IsEmpty(token.Signature) {
 		return false
 	}
-	segments := splitSegment(token.Raw)
+	segments := Split2Segment(token.Raw)
 	if len(segments) != 3 {
 		return false
 	}
-	signatureJson, err := token.Algorithm.Encrypt(splicingSegment(segments[0], segments[1]), secret)
+	signatureJson, err := token.Algorithm.Encrypt(SplicingSegment(segments[0], segments[1]), secret)
 	if err != nil {
 		return false
 	}
-	fmt.Println(segments[0])
-	fmt.Println(segments[1])
-	fmt.Println(segments[2])
-	fmt.Println(token.Signature)
-	fmt.Println(EncodeSegment(signatureJson))
 	return token.Signature == EncodeSegment(signatureJson)
 }
 
@@ -95,7 +88,7 @@ func (token *Token) Refresh(secret string) *Token {
 }
 
 func Parse(token string) (*Token, error) {
-	segments := splitSegment(token)
+	segments := Split2Segment(token)
 	if len(segments) != 3 {
 		return nil, errors.New("")
 	}

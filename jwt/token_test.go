@@ -10,8 +10,8 @@ import (
 const secret = "jwt.whereabouts.icu"
 
 func TestJWT(t *testing.T) {
-	token := New(alg.HSA256()).SetOwner(secret)
-	sign, err := token.Sign("sign")
+	token := New(alg.HSA256()).SetOwner("jwt")
+	sign, err := token.Sign(secret)
 	if err != nil {
 		logger.Fatal(err)
 	}
