@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/whereabouts/sdk/jwt/alg"
 	"github.com/whereabouts/sdk/utils/stringer"
@@ -77,7 +78,12 @@ func (token *Token) Valid(secret string) bool {
 	if err != nil {
 		return false
 	}
-	return token.Signature == string(signatureJson)
+	fmt.Println(segments[0])
+	fmt.Println(segments[1])
+	fmt.Println(segments[2])
+	fmt.Println(token.Signature)
+	fmt.Println(EncodeSegment(signatureJson))
+	return token.Signature == EncodeSegment(signatureJson)
 }
 
 func (token *Token) Expired(secret string) bool {
