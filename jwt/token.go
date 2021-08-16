@@ -1,49 +1,51 @@
 package jwt
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"github.com/pkg/errors"
-	"github.com/whereabouts/sdk/jwt/algorithm"
+	"github.com/whereabouts/sdk/jwt/alg"
 	"strings"
 	"time"
 )
 
 type Token struct {
-	header    *header
-	payload   *payload
-	signature *signature
+	Header    map[string]interface{}
+	Payload   *Payload
+	Signature string
+	Algorithm alg.Algorithm
 }
 
-func New(algorithm algorithm.Algorithm) *Token {
+func New(algorithm alg.Algorithm) *Token {
 	return NewWithClaims(algorithm)
 }
 
-func NewWithClaims(algorithm algorithm.Algorithm, claims ...Claim) *Token {
+func NewWithClaims(algorithm alg.Algorithm, claims ...Claim) *Token {
 	return &Token{
-		&header{
-			Typ: defaultHeaderType,
-			Alg: algorithm.String(),
+		Header: map[string]interface{}{
+			"typ": "JWT",
+			"alg": algorithm.String(),
 		},
-		newPayload(claims...),
-		&signature{algorithm: algorithm},
+		Payload: newPayload(claims...),
+		Algorithm: algorithm,
 	}
 }
 
 func (token *Token) Claim(key string, value interface{}) *Token {
-	token.payload.Claim(key, value)
+	token.Payload.External[key] = value
 	return token
 }
 
 func (token *Token) Sign(secret string) (string, error) {
-	h, err := token.Header().EncodeBase64URL()
+	header, err := encodeSegment(token.Header)
 	if err != nil {
 		return "", err
 	}
-	p, err := token.Payload().EncodeBase64URL()
+	payload, err := encodeSegment(token.Payload)
 	if err != nil {
 		return "", err
 	}
-	token.Signature().secret = secret
-	token.Signature().data, err = token.Signature().Algorithm().Encrypt(token)
+	sign, err = token.Algorithm.Encrypt(header, payload, secret)
 	if err != nil {
 		return "", errors.Wrap(err, "encrypt signature err")
 	}
@@ -58,52 +60,65 @@ func (token *Token) String(secret string) (string, error) {
 	return token.Sign(secret)
 }
 
-func (token *Token) Payload() *payload {
-	return token.payload
-}
-
-func (token *Token) Header() *header {
-	return token.header
-}
-
-func (token *Token) Signature() *signature {
-	return token.signature
-}
 
 func (token *Token) SetIssuer(issuer string) *Token {
-	token.payload.Issuer = issuer
+	token.Payload.Issuer = issuer
 	return token
 }
 
 func (token *Token) SetOwner(owner string) *Token {
-	token.payload.Owner = owner
+	token.Payload.Owner = owner
 	return token
 }
 
 func (token *Token) SetPurpose(purpose string) *Token {
-	token.payload.Purpose = purpose
+	token.Payload.Purpose = purpose
 	return token
 }
 
 func (token *Token) SetRecipient(recipient string) *Token {
-	token.payload.Recipient = recipient
+	token.Payload.Recipient = recipient
 	return token
 }
 
 func (token *Token) SetExpire(expire time.Duration) *Token {
-	token.payload.Expire = token.payload.Time.Add(expire)
+	token.Payload.Expire = token.Payload.Time.Add(expire)
 	return token
 }
 
 func (token *Token) SetDuration(duration time.Duration) *Token {
-	token.payload.Duration = duration
+	token.Payload.Duration = duration
 	token.SetExpire(duration)
 	return token
 }
 
 func (token *Token) SetExternal(external map[string]interface{}) *Token {
-	token.payload.External = external
+	token.Payload.External = external
 	return token
+}
+
+func encodeSegment(segment interface{}) (string, error) {
+	switch segment.(type) {
+	case []byte:
+		return base64.URLEncoding.EncodeToString(segment.([])), nil
+	}
+	data, err := json.Marshal(segment)
+	if err != nil {
+		return "", errors.Wrap(err, "marshal token segment err")
+	}
+	return base64.URLEncoding.EncodeToString(data), nil
+}
+
+func decodeSegment(data string, segment interface{}) error {
+	decodeData, err := base64.URLEncoding.DecodeString(data)
+	if err != nil {
+		return errors.Wrap(err, "decode token segment err")
+	}
+	err = json.Unmarshal(decodeData, segment)
+	if err != nil {
+		return errors.Wrap(err, "unmarshal token segment err")
+	}
+	return nil
 }
 
 //func Check(token string) bool {

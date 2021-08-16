@@ -1,9 +1,6 @@
 package jwt
 
 import (
-	"encoding/base64"
-	"encoding/json"
-	"github.com/pkg/errors"
 	"time"
 )
 
@@ -14,7 +11,7 @@ const (
 	defaultPayloadExpireTime = time.Minute * 30
 )
 
-type payload struct {
+type Payload struct {
 	// 签发者
 	Issuer string `json:"issuer"`
 	// 令牌所有者,存放ID等标识
@@ -33,13 +30,9 @@ type payload struct {
 	External External `json:"external"`
 }
 
-func NewPayload() *payload {
-	return defaultPayload()
-}
-
-func defaultPayload() *payload {
+func defaultPayload() *Payload {
 	currentTime := time.Now()
-	return &payload{
+	return &Payload{
 		Issuer:    defaultPayloadIssuer,
 		Purpose:   defaultPayloadPurpose,
 		Recipient: defaultPayloadRecipient,
@@ -50,55 +43,7 @@ func defaultPayload() *payload {
 	}
 }
 
-func (p *payload) EncodeBase64URL() (string, error) {
-	data, err := json.Marshal(p)
-	if err != nil {
-		return "", errors.Wrap(err, "marshal payload err")
-	}
-	return base64.URLEncoding.EncodeToString(data), nil
-}
-
-func (p *payload) SetIssuer(issuer string) *payload {
-	p.Issuer = issuer
-	return p
-}
-
-func (p *payload) SetOwner(owner string) *payload {
-	p.Owner = owner
-	return p
-}
-
-func (p *payload) SetPurpose(purpose string) *payload {
-	p.Purpose = purpose
-	return p
-}
-
-func (p *payload) SetRecipient(recipient string) *payload {
-	p.Recipient = recipient
-	return p
-}
-
-func (p *payload) SetTime(time time.Time) *payload {
-	p.Time = time
-	return p
-}
-
-func (p *payload) SetExpire(expire time.Time) *payload {
-	p.Expire = expire
-	return p
-}
-
-func (p *payload) SetDuration(duration time.Duration) *payload {
-	p.Duration = duration
-	return p
-}
-
-func (p *payload) SetExternal(external map[string]interface{}) *payload {
-	p.External = external
-	return p
-}
-
-func (p *payload) Claim(key string, value interface{}) *payload {
-	p.External[key] = value
-	return p
+func (payload *Payload) Claim(key string, value interface{}) *Payload {
+	payload.External[key] = value
+	return payload
 }
