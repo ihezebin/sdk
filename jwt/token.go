@@ -1,19 +1,24 @@
 package jwt
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"github.com/pkg/errors"
 	"github.com/whereabouts/sdk/jwt/alg"
+	"github.com/whereabouts/sdk/utils/stringer"
 	"strings"
 	"time"
 )
 
 type Token struct {
-	Header    map[string]interface{}
+	Raw       string
+	Header    map[string]string
 	Payload   *Payload
 	Signature string
 	Algorithm alg.Algorithm
+}
+
+func Default() *Token {
+	return NewWithClaims(alg.HSA256())
 }
 
 func New(algorithm alg.Algorithm) *Token {
@@ -21,45 +26,105 @@ func New(algorithm alg.Algorithm) *Token {
 }
 
 func NewWithClaims(algorithm alg.Algorithm, claims ...Claim) *Token {
+	alg.RegisterAlg(algorithm)
 	return &Token{
-		Header: map[string]interface{}{
+		Header: map[string]string{
 			"typ": "JWT",
-			"alg": algorithm.String(),
+			"alg": algorithm.Name(),
 		},
-		Payload: newPayload(claims...),
+		Payload:   newPayload(claims...),
 		Algorithm: algorithm,
 	}
 }
 
-func (token *Token) Claim(key string, value interface{}) *Token {
-	token.Payload.External[key] = value
-	return token
-}
-
 func (token *Token) Sign(secret string) (string, error) {
-	header, err := encodeSegment(token.Header)
+	headerJson, err := json.Marshal(token.Header)
 	if err != nil {
 		return "", err
 	}
-	payload, err := encodeSegment(token.Payload)
+	payloadJson, err := json.Marshal(token.Payload)
 	if err != nil {
 		return "", err
 	}
-	sign, err = token.Algorithm.Encrypt(header, payload, secret)
+	header := EncodeSegment(headerJson)
+	payload := EncodeSegment(payloadJson)
+	signatureJson, err := token.Algorithm.Encrypt(splicingSegment(header, payload), secret)
 	if err != nil {
 		return "", errors.Wrap(err, "encrypt signature err")
 	}
-	s, err := token.Signature().EncodeBase64URL()
+	signature := EncodeSegment(signatureJson)
+	token.Signature = signature
 	if err != nil {
 		return "", err
 	}
-	return strings.Join([]string{h, p, s}, "."), nil
+	token.Raw = strings.Join([]string{header, payload, signature}, ".")
+	return token.Raw, nil
 }
 
 func (token *Token) String(secret string) (string, error) {
 	return token.Sign(secret)
 }
 
+func (token *Token) Valid(secret string) bool {
+	if stringer.IsEmpty(token.Signature) {
+		return false
+	}
+	segments := splitSegment(token.Raw)
+	if len(segments) != 3 {
+		return false
+	}
+	signatureJson, err := token.Algorithm.Encrypt(splicingSegment(segments[0], segments[1]), secret)
+	if err != nil {
+		return false
+	}
+	return token.Signature == string(signatureJson)
+}
+
+func (token *Token) Expired(secret string) bool {
+	return true
+}
+
+func (token *Token) Refresh(secret string) *Token {
+	return nil
+}
+
+func Parse(token string) (*Token, error) {
+	segments := splitSegment(token)
+	if len(segments) != 3 {
+		return nil, errors.New("")
+	}
+
+	kernel := &Token{Raw: token}
+	// parse header
+	headerJson, err := DecodeSegment(segments[0])
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(headerJson, &kernel.Header)
+	if err != nil {
+		return nil, errors.Wrap(err, "parse header err")
+	}
+	algorithm := alg.GetAlg(kernel.Header["alg"])
+	if algorithm == nil {
+		return nil, errors.New("alg err")
+	}
+	kernel.Algorithm = algorithm
+	// parse payload
+	payloadJson, err := DecodeSegment(segments[1])
+	err = json.Unmarshal(payloadJson, kernel.Payload)
+	if err != nil {
+		return nil, errors.Wrap(err, "parse payload err")
+	}
+	// parse signature
+	kernel.Signature = segments[2]
+
+	return kernel, nil
+}
+
+func (token *Token) Claim(key string, value interface{}) *Token {
+	token.Payload.External[key] = value
+	return token
+}
 
 func (token *Token) SetIssuer(issuer string) *Token {
 	token.Payload.Issuer = issuer
@@ -81,78 +146,21 @@ func (token *Token) SetRecipient(recipient string) *Token {
 	return token
 }
 
-func (token *Token) SetExpire(expire time.Duration) *Token {
-	token.Payload.Expire = token.Payload.Time.Add(expire)
+func (token *Token) SetExpire(expire time.Time) *Token {
+	token.Payload.Expire = expire
 	return token
 }
 
+// SetDuration Set the token validity time, the issuance time will be reset to the current time, and the expiration time is the duration after now.
+// 设置token有效时间, 将重置签发时间为当前时间, 过期时间为此后的duration
 func (token *Token) SetDuration(duration time.Duration) *Token {
+	token.Payload.Time = time.Now()
 	token.Payload.Duration = duration
-	token.SetExpire(duration)
+	token.SetExpire(token.Payload.Time.Add(duration))
 	return token
 }
 
-func (token *Token) SetExternal(external map[string]interface{}) *Token {
+func (token *Token) SetExternal(external External) *Token {
 	token.Payload.External = external
 	return token
 }
-
-func encodeSegment(segment interface{}) (string, error) {
-	switch segment.(type) {
-	case []byte:
-		return base64.URLEncoding.EncodeToString(segment.([])), nil
-	}
-	data, err := json.Marshal(segment)
-	if err != nil {
-		return "", errors.Wrap(err, "marshal token segment err")
-	}
-	return base64.URLEncoding.EncodeToString(data), nil
-}
-
-func decodeSegment(data string, segment interface{}) error {
-	decodeData, err := base64.URLEncoding.DecodeString(data)
-	if err != nil {
-		return errors.Wrap(err, "decode token segment err")
-	}
-	err = json.Unmarshal(decodeData, segment)
-	if err != nil {
-		return errors.Wrap(err, "unmarshal token segment err")
-	}
-	return nil
-}
-
-//func Check(token string) bool {
-//	sections := strings.Split(token, ".")
-//	if len(sections) != 3 {
-//		return false
-//	}
-//	sign := encryptionSHA256(fmt.Sprintf("%s.%s", sections[0], sections[1]), getSignature())
-//	return sections[2] == sign
-//}
-//
-//func IsExpire(token string) bool {
-//	payload := GetPayload(token)
-//	if time.Now().Unix() > payload.Expire {
-//		return true
-//	}
-//	return false
-//}
-//
-//func Refresh(token string) string {
-//	p := GetPayload(token)
-//	p.Expire = time.Now().Add(p.Duration).Unix()
-//	header := encodeStruct2Base64URL(defaultHeader())
-//	payload := encodeStruct2Base64URL(p)
-//	sign := encryptionSHA256(fmt.Sprintf("%s.%s", header, payload), getSignature())
-//	return fmt.Sprintf("%s.%s.%s", header, payload, sign)
-//}
-//
-//func Parse(token string) Payload {
-//	payload := Payload{}
-//	sections := strings.Split(token, ".")
-//	if len(sections) != 3 {
-//		return payload
-//	}
-//	_ = decodeBase64URL2Struct(sections[1], &payload)
-//	return payload
-//}

@@ -31,19 +31,19 @@ type Payload struct {
 }
 
 func defaultPayload() *Payload {
-	currentTime := time.Now()
+	now := time.Now()
 	return &Payload{
 		Issuer:    defaultPayloadIssuer,
 		Purpose:   defaultPayloadPurpose,
 		Recipient: defaultPayloadRecipient,
-		Time:      currentTime,
-		Expire:    currentTime.Add(defaultPayloadExpireTime),
+		Time:      now,
+		Expire:    now.Add(defaultPayloadExpireTime),
 		Duration:  defaultPayloadExpireTime,
-		External:  make(map[string]interface{}, 0),
+		External:  make(External, 0),
 	}
 }
 
-func (payload *Payload) Claim(key string, value interface{}) *Payload {
-	payload.External[key] = value
-	return payload
+func (payload *Payload) Valid() bool {
+
+	return true
 }

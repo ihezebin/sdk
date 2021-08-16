@@ -3,7 +3,6 @@ package alg
 import (
 	"crypto/hmac"
 	"crypto/sha256"
-	"strings"
 )
 
 type hsa256 struct {
@@ -13,13 +12,17 @@ func HSA256() *hsa256 {
 	return &hsa256{}
 }
 
-func (alg *hsa256) String() string {
+func init() {
+	RegisterAlg(HSA256())
+}
+
+func (alg *hsa256) Name() string {
 	return "HSA256"
 }
 
-func (alg *hsa256) Encrypt(header, payload, secret string) ([]byte, error) {
+func (alg *hsa256) Encrypt(signing, secret string) ([]byte, error) {
 	h := hmac.New(sha256.New, []byte(secret))
-	_, err := h.Write([]byte(strings.Join([]string{header, payload}, ".")))
+	_, err := h.Write([]byte(signing))
 	if err != nil {
 		return nil, err
 	}
