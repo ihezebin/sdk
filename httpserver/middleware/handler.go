@@ -83,7 +83,12 @@ func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 		ctx = context.WithValue(ctx, GinContextKey, c)
 
 		req := reflect.New(reqT)
-		if err := c.ShouldBind(req.Interface()); err != nil {
+		if c.Request.Method == http.MethodGet && c.Request.Body == http.NoBody {
+			err = c.BindQuery(req.Interface())
+		} else {
+			err = c.ShouldBind(req.Interface())
+		}
+		if err != nil {
 			log.Printf("bind param failed: %s\n", err.Error())
 			c.JSON(http.StatusBadRequest, result.Error(result.CodeBoolFail, fmt.Sprintf("bind param failed: %s", err.Error())))
 			return
