@@ -64,6 +64,9 @@ func (token *Token) String(secret string) (string, error) {
 	return token.Sign(secret)
 }
 
+// Valid Verify that the token is valid by comparing the signature generated after
+// the header and payload are encrypted with the same algorithm and key with the original signature.
+// 校验token是否有效, 通过将header和payload以同样的算法和密钥加密后生成的signature与原signature对比实现
 func (token *Token) Valid(secret string) bool {
 	if stringer.IsEmpty(token.Signature) {
 		return false
@@ -79,18 +82,21 @@ func (token *Token) Valid(secret string) bool {
 	return token.Signature == EncodeSegment(signatureJson)
 }
 
-func (token *Token) Expired(secret string) bool {
-	return true
+func (token *Token) Expired() bool {
+	return time.Now().After(token.Payload.Expire)
 }
 
-func (token *Token) Refresh(secret string) *Token {
-	return nil
+// Refresh Reset the expiration time based on the current time according to the duration of the token
+// 在当前时间基础上根据token的持续时间重置过期时间
+func (token *Token) Refresh() *Token {
+	token.Payload.Expire = time.Now().Add(token.Payload.Duration)
+	return token
 }
 
 func Parse(token string) (*Token, error) {
 	segments := Split2Segment(token)
 	if len(segments) != 3 {
-		return nil, errors.New("")
+		return nil, ErrSegmentLen
 	}
 
 	kernel := &Token{Raw: token}
@@ -101,18 +107,18 @@ func Parse(token string) (*Token, error) {
 	}
 	err = json.Unmarshal(headerJson, &kernel.Header)
 	if err != nil {
-		return nil, errors.Wrap(err, "parse header err")
+		return nil, errors.Wrap(err, "unmarshal header err")
 	}
 	algorithm := alg.GetAlg(kernel.Header["alg"])
 	if algorithm == nil {
-		return nil, errors.New("alg err")
+		return nil, errors.New("algorithm does not exist in alg.manager")
 	}
 	kernel.Algorithm = algorithm
 	// parse payload
 	payloadJson, err := DecodeSegment(segments[1])
 	err = json.Unmarshal(payloadJson, kernel.Payload)
 	if err != nil {
-		return nil, errors.Wrap(err, "parse payload err")
+		return nil, errors.Wrap(err, "unmarshal payload err")
 	}
 	// parse signature
 	kernel.Signature = segments[2]
@@ -150,12 +156,11 @@ func (token *Token) SetExpire(expire time.Time) *Token {
 	return token
 }
 
-// SetDuration Set the token validity time, the issuance time will be reset to the current time, and the expiration time is the duration after now.
-// 设置token有效时间, 将重置签发时间为当前时间, 过期时间为此后的duration
+// SetDuration Set the token validity time, the expiration time will be reset based on the current time.
+// 设置token有效时间, 将在当前时间基础上重置过期时间
 func (token *Token) SetDuration(duration time.Duration) *Token {
-	token.Payload.Time = time.Now()
 	token.Payload.Duration = duration
-	token.SetExpire(token.Payload.Time.Add(duration))
+	token.SetExpire(time.Now().Add(duration))
 	return token
 }
 

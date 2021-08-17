@@ -5,10 +5,10 @@ import (
 )
 
 const (
-	defaultPayloadIssuer     = "jwt"
-	defaultPayloadPurpose    = "authentication"
-	defaultPayloadRecipient  = "browser"
-	defaultPayloadExpireTime = time.Minute * 30
+	defaultPayloadIssuer    = "jwt"
+	defaultPayloadPurpose   = "authentication"
+	defaultPayloadRecipient = "browser"
+	defaultPayloadDuration  = time.Minute * 30
 )
 
 type Payload struct {
@@ -37,8 +37,8 @@ func defaultPayload() *Payload {
 		Purpose:   defaultPayloadPurpose,
 		Recipient: defaultPayloadRecipient,
 		Time:      now,
-		Expire:    now.Add(defaultPayloadExpireTime),
-		Duration:  defaultPayloadExpireTime,
+		Expire:    now.Add(defaultPayloadDuration),
+		Duration:  defaultPayloadDuration,
 		External:  make(External, 0),
 	}
 }
