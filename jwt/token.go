@@ -96,7 +96,7 @@ func (token *Token) Refresh() *Token {
 func Parse(token string) (*Token, error) {
 	segments := Split2Segment(token)
 	if len(segments) != 3 {
-		return nil, ErrSegmentLen
+		return nil, errors.New("a token consists of three segments connected by points")
 	}
 
 	kernel := &Token{Raw: token}
