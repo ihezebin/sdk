@@ -15,6 +15,26 @@ type User struct {
 	Age  int                `json:"age"`
 }
 
+func TestMongoc(t *testing.T) {
+	ctx := context.Background()
+	c, err := NewClient(ctx, Config{
+		Addrs: []string{"127.0.0.1:27017"},
+		Auth: &Auth{
+			Username: "root",
+			Password: "root",
+		},
+	})
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	base := c.NewBaseModel("test", "user")
+	result, err := base.UpdateId(ctx, "60ed5a48e00ed00b91b25000", bson.M{"$set": bson.M{"age": 666}})
+	if err != nil {
+		logger.Error(err)
+	}
+	logger.Infof("%+v", result)
+}
+
 // 610ececb4fb2d58d008e7c58
 func TestAutoTime(t *testing.T) {
 	ctx := context.TODO()
@@ -46,7 +66,7 @@ func TestAutoTime(t *testing.T) {
 
 func TestInsert(t *testing.T) {
 	c, err := NewClient(context.Background(), Config{
-		Addrs: []string{"127.0.0.1:27018"},
+		Addrs: []string{"127.0.0.1:27017"},
 		Auth: &Auth{
 			Username: "root",
 			Password: "root",
@@ -55,9 +75,10 @@ func TestInsert(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	result, err := c.NewBaseModel("test", "user").InsertOne(context.TODO(), User{
-		Name: "Korbin",
-		Age:  18,
+	result, err := c.NewBaseModel("test", "user").InsertOne(context.TODO(), map[string]interface{}{
+		"_id":  primitive.NewObjectID().Hex(),
+		"name": "Korbin",
+		"age":  18,
 	})
 	if err != nil {
 		logger.Fatal(err.Error())
