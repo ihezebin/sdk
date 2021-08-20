@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/whereabouts/sdk/example/httpserver/proto"
+	"github.com/whereabouts/sdk/httpserver/middleware"
 	"github.com/whereabouts/sdk/httpserver/result"
 	//"mime/multipart"
 )
@@ -13,10 +14,14 @@ import (
 // If the return value is nil, the resp structure is mapped to the response body in JSON format,
 // Otherwise, respond with JSON *result.HttpError or error content
 func HelloStandardHandler(ctx context.Context, req *proto.HelloStandardHandlerReq, resp *proto.HelloStandardHandlerResp) error {
-	// the first way to get *gin.Context
-	//c := ctx.Value(middleware.GinContextKey).(*gin.Context)
-	// the second way to get *gin.Context is to make req inherit middleware.Context
-	c := req.GetContext()
+	// test panic happened
+	//a := 0
+	//_ = 1 / a
+	// the way to get *gin.Context
+	c, err := middleware.ExtractGinContextWithCtx(ctx)
+	if err != nil {
+		return err
+	}
 	// set response value
 	resp.Code = result.CodeBoolOk
 	resp.Message = fmt.Sprintf("hello, %s! the request uri is %s", req.Name, c.Request.RequestURI)
@@ -40,9 +45,13 @@ func HelloFileHandler(ctx context.Context, req *proto.HelloFileHandlerReq, resp 
 
 // HelloMultipleFilesHandler
 // Multiple file upload:
-// cannot be resolved by mapping, get multiple files through gin nativer operation
+// cannot be resolved by mapping, get gin context to operate
 func HelloMultipleFilesHandler(ctx context.Context, req *proto.HelloMultipleFilesHandlerReq, resp *proto.HelloMultipleFilesHandlerResp) *result.HttpError {
-	multipartForm, err := req.GetContext().MultipartForm()
+	c, err := middleware.ExtractGinContextWithCtx(ctx)
+	if err != nil {
+		return result.Err2HttpError(err, false)
+	}
+	multipartForm, err := c.MultipartForm()
 	if err != nil {
 		return result.Err2HttpError(err, result.CodeBoolFail)
 	}

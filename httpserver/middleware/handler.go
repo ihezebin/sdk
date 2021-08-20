@@ -46,7 +46,7 @@ func (c Context) GetContext() *gin.Context {
 	return c.ctx
 }
 
-func GetRequest(ctx context.Context) (*http.Request, error) {
+func ExtractRequestWithCtx(ctx context.Context) (*http.Request, error) {
 	request, ok := ctx.Value(RequestKey).(*http.Request)
 	if !ok {
 		return nil, errors.New("context does not contain *http.Request")
@@ -54,7 +54,7 @@ func GetRequest(ctx context.Context) (*http.Request, error) {
 	return request, nil
 }
 
-func GetResponse(ctx context.Context) (*http.Response, error) {
+func ExtractResponseWithCtx(ctx context.Context) (*http.Response, error) {
 	response, ok := ctx.Value(ResponseKey).(*http.Response)
 	if !ok {
 		return nil, errors.New("context does not contain *http.Response")
@@ -62,7 +62,7 @@ func GetResponse(ctx context.Context) (*http.Response, error) {
 	return response, nil
 }
 
-func GetGinContext(ctx context.Context) (*gin.Context, error) {
+func ExtractGinContextWithCtx(ctx context.Context) (*gin.Context, error) {
 	ginCtx, ok := ctx.Value(GinContextKey).(*gin.Context)
 	if !ok {
 		return nil, errors.New("context does not contain *gin.Context")
@@ -88,10 +88,10 @@ func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, result.Error(result.CodeBoolFail, fmt.Sprintf("bind param failed: %s", err.Error())))
 			return
 		}
-		inheritGinContext(req, c)
+		//inheritGinContext(req, c)
 
 		resp := reflect.New(respT)
-		inheritGinContext(resp, c)
+		//inheritGinContext(resp, c)
 
 		results := mV.Call([]reflect.Value{reflect.ValueOf(ctx), req, resp})
 		errValue := results[0]

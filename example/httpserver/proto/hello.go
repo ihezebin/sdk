@@ -1,13 +1,11 @@
 package proto
 
 import (
-	"github.com/whereabouts/sdk/httpserver/middleware"
 	"github.com/whereabouts/sdk/httpserver/result"
 	"mime/multipart"
 )
 
 type HelloStandardHandlerReq struct {
-	middleware.Context
 	Name string `json:"name,default=jsonName" form:"name,default=formName"`
 }
 
@@ -27,7 +25,6 @@ type HelloFileHandlerResp struct {
 }
 
 type HelloMultipleFilesHandlerReq struct {
-	middleware.Context
 }
 
 type HelloMultipleFilesHandlerResp struct {

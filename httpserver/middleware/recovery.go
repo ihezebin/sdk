@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
+	"github.com/whereabouts/sdk/logger"
 	"net/http"
 	"runtime/debug"
 )
@@ -12,9 +12,9 @@ func Recovery() Middleware {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				// Print error stack information
-				log.Printf("panic: %v\n", err)
-				debug.PrintStack()
+				// Print error and stack information
+				logger.Errorf("panic: %v", err)
+				logger.Errorf("stack: %s", debug.Stack())
 				// Terminate subsequent interface calls
 				c.AbortWithStatus(http.StatusInternalServerError)
 			}
