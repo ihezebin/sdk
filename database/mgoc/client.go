@@ -16,7 +16,7 @@ type Client interface {
 	NewBaseModel(database string, collection string) *Base
 }
 
-// example: mongodb://username:password@localhost:27017,otherhost:27017/db, default auto_time is true
+// Dial example: mongodb://username:password@localhost:27017,otherhost:27017/db, default auto_time is true
 func Dial(url string) (Client, error) {
 	info, err := mgo.ParseURL(url)
 	if err != nil {
@@ -100,7 +100,7 @@ func (c *client) NewBaseModel(database string, collection string) *Base {
 	return NewBaseModel(c, database, collection)
 }
 
-//Deprecated: Use Kernel instead.
+// Deprecated: Use Kernel instead.
 func (c *client) Session() *mgo.Session {
 	return c.session.Copy()
 }
