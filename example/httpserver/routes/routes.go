@@ -13,16 +13,17 @@ func Routes(engine *gin.Engine) {
 	httpserver.Before(engine, middleware.HelloBeforeMiddleware)
 	httpserver.After(engine, middleware.HelloAfterMiddleware)
 	// route
-	httpserver.Route(engine, http.MethodGet, "/standard", handlers.HelloStandardHandler)
-	httpserver.Route(engine, http.MethodPost, "/standard", handlers.HelloStandardHandler)
-	httpserver.Route(engine, http.MethodPost, "/file", handlers.HelloFileHandler)
-	httpserver.Route(engine, http.MethodPost, "/multiple", handlers.HelloMultipleFilesHandler)
+	httpserver.Route(engine, http.MethodGet, "/standard", handlers.StandardHandler)
+	httpserver.Route(engine, http.MethodPost, "/standard", handlers.StandardHandler)
+	httpserver.Route(engine, http.MethodPost, "/file", handlers.StandardFileHandler)
+	httpserver.Route(engine, http.MethodPost, "/multiple", handlers.StandardMultipleFilesHandler)
 	// child route
-	hello := engine.Group("hello")
+	v1 := engine.Group("v1")
 	{
-		httpserver.Route(hello, http.MethodGet, "/standard", handlers.HelloStandardHandler)
-		httpserver.Route(hello, http.MethodPost, "/file", handlers.HelloFileHandler)
-		httpserver.Route(hello, http.MethodPost, "/multiple", handlers.HelloMultipleFilesHandler)
+		httpserver.Handle(v1, http.MethodGet, "/hello", handlers.HelloHandler)
+		httpserver.Handle(v1, http.MethodPost, "/hello", handlers.HelloHandler)
+		httpserver.Handle(v1, http.MethodPost, "/file", handlers.HelloFileHandler)
+		httpserver.Handle(v1, http.MethodPost, "/multiple", handlers.HelloMultipleFilesHandler)
 	}
 
 }
