@@ -37,13 +37,22 @@ func NewWithClaims(algorithm alg.Algorithm, claims ...Claim) *Token {
 }
 
 func (token *Token) Sign(secret string) (string, error) {
+	// check algorithm
+	if token.Algorithm == nil {
+		return "", errors.New("the algorithm of token can not be nil")
+	}
+	// verify payload field
+	if err := token.Payload.Valid(); err != nil {
+		return "", err
+	}
+
 	headerJson, err := json.Marshal(token.Header)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "marshal header err")
 	}
 	payloadJson, err := json.Marshal(token.Payload)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "marshal payload err")
 	}
 	header := EncodeSegment(headerJson)
 	payload := EncodeSegment(payloadJson)
@@ -53,9 +62,7 @@ func (token *Token) Sign(secret string) (string, error) {
 	}
 	signature := EncodeSegment(signatureJson)
 	token.Signature = signature
-	if err != nil {
-		return "", err
-	}
+
 	token.Raw = SplicingSegment(header, payload, signature)
 	return token.Raw, nil
 }
@@ -67,36 +74,54 @@ func (token *Token) String(secret string) (string, error) {
 // Valid Verify that the token is valid by comparing the signature generated after
 // the header and payload are encrypted with the same algorithm and key with the original signature.
 // 校验token是否有效, 通过将header和payload以同样的算法和密钥加密后生成的signature与原signature对比实现
-func (token *Token) Valid(secret string) bool {
-	if stringer.IsEmpty(token.Signature) {
-		return false
+func (token *Token) Valid(secret string) error {
+	// check algorithm
+	if token.Algorithm == nil {
+		return errors.New("the algorithm of token can not be nil")
 	}
+
+	// verify payload
+	if err := token.Payload.Valid(); err != nil {
+		return err
+	}
+
+	// check signature
+	if stringer.IsEmpty(token.Signature) {
+		return errors.New("the token has not been signed yet, signature is empty")
+	}
+
+	// check segments
 	segments := Split2Segment(token.Raw)
 	if len(segments) != 3 {
-		return false
+		return errors.New("incorrect token segments, eg: header.payload.signature")
 	}
+
+	// check for counterfeiting
 	signatureJson, err := token.Algorithm.Encrypt(SplicingSegment(segments[0], segments[1]), secret)
 	if err != nil {
-		return false
+		return err
 	}
-	return token.Signature == EncodeSegment(signatureJson)
+	if token.Signature != EncodeSegment(signatureJson) {
+		return errors.New("the token is fake")
+	}
+	return nil
 }
 
 func (token *Token) Expired() bool {
-	return time.Now().After(token.Payload.Expire)
+	return token.Payload.Expire.Before(time.Now())
 }
 
 // Refresh Reset the expiration time based on the current time according to the duration of the token
 // 在当前时间基础上根据token的持续时间重置过期时间
-func (token *Token) Refresh() *Token {
+func (token *Token) Refresh(secret string) (string, error) {
 	token.Payload.Expire = time.Now().Add(token.Payload.Duration)
-	return token
+	return token.Sign(secret)
 }
 
 func Parse(token string) (*Token, error) {
 	segments := Split2Segment(token)
 	if len(segments) != 3 {
-		return nil, errors.New("a token consists of three segments connected by points")
+		return nil, errors.New("invalid token, a token consists of three segments connected by points")
 	}
 
 	kernel := &Token{Raw: token}
@@ -107,18 +132,18 @@ func Parse(token string) (*Token, error) {
 	}
 	err = json.Unmarshal(headerJson, &kernel.Header)
 	if err != nil {
-		return nil, errors.Wrap(err, "unmarshal header err")
+		return nil, errors.Wrap(err, "invalid header of token")
 	}
 	algorithm := alg.GetAlg(kernel.Header["alg"])
 	if algorithm == nil {
-		return nil, errors.New("algorithm does not exist in alg.manager")
+		return nil, errors.New("invalid token, algorithm does not exist in alg.manager")
 	}
 	kernel.Algorithm = algorithm
 	// parse payload
 	payloadJson, err := DecodeSegment(segments[1])
-	err = json.Unmarshal(payloadJson, kernel.Payload)
+	err = json.Unmarshal(payloadJson, &kernel.Payload)
 	if err != nil {
-		return nil, errors.Wrap(err, "unmarshal payload err")
+		return nil, errors.Wrap(err, "invalid payload of token")
 	}
 	// parse signature
 	kernel.Signature = segments[2]
