@@ -19,7 +19,7 @@ func main() {
 		httpserver.WithName(config.GetConfig().AppName),
 		httpserver.WithPort(config.GetConfig().Port),
 		httpserver.WithMode(config.GetConfig().Mode),
-		httpserver.WithMiddles(
+		httpserver.WithMiddlewares(
 			middleware.Recovery(),
 			middleware.LoggingSimplyRequest(),
 			middleware.LoggingSimplyResponse(),
