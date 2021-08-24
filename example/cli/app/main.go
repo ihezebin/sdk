@@ -10,10 +10,15 @@ import (
 func main() {
 	cmd := command.NewCommand(
 		command.WithName("do"),
-		command.WithCategory("other"),
 	).WithFlagString("thing, t", "something", "do some thing", false).
 		SetAction(func(v flag.Value) error {
 			fmt.Println(v.String("t"))
+			fmt.Println(v.GlobalString("c"))
+			return nil
+		}).
+		SetSubCommand(command.NewCommand(command.WithName("did")).WithFlagString("aaa, a", "", "", false)).
+		OnBeforeAction(func(v flag.Value) error {
+			fmt.Println("do before")
 			return nil
 		})
 

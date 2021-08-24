@@ -42,7 +42,7 @@ func (cmd *Command) SetAction(action Action) *Command {
 	return cmd
 }
 
-func (cmd *Command) SetSubCommand(subCommand Command) *Command {
+func (cmd *Command) SetSubCommand(subCommand *Command) *Command {
 	cmd.Kernel().Subcommands = append(cmd.Kernel().Subcommands, *subCommand.Kernel())
 	return cmd
 }
