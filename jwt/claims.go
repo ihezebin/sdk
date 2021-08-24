@@ -44,15 +44,22 @@ func WithTime(time time.Time) Claim {
 	}
 }
 
-func WithExpire(issuer string) Claim {
+func WithExpire(expire time.Time) Claim {
 	return func(payload *Payload) {
-		payload.Issuer = issuer
+		payload.Expire = expire
 	}
 }
 
 func WithDuration(duration time.Duration) Claim {
 	return func(payload *Payload) {
 		payload.Duration = duration
+		payload.Expire = time.Now().Add(duration)
+	}
+}
+
+func WithCustom(key string, value interface{}) Claim {
+	return func(payload *Payload) {
+		payload.External[key] = value
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/whereabouts/sdk/httpserver/hook"
 	"github.com/whereabouts/sdk/httpserver/middleware"
+	"github.com/whereabouts/sdk/logger"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +18,7 @@ import (
 type Server interface {
 	Name() (name string)
 	AddMiddlewares(middlewares ...middleware.Middleware) Server
-	GetEngine() (engine *gin.Engine)
+	Kernel() (engine *gin.Engine)
 	Run(ctx context.Context) error
 	Close(ctx context.Context) error
 	OnShutdown(shutdownHook hook.ShutdownHook) Server
@@ -50,7 +51,7 @@ func NewServerWithConfig(config Config) Server {
 }
 
 func (s *server) Route(routes Router) Server {
-	routes(s.GetEngine())
+	routes(s.Kernel())
 	return s
 }
 
@@ -70,17 +71,17 @@ func (s *server) Run(ctx context.Context) error {
 	// server listenAndServe
 	ch := make(chan os.Signal)
 	go func() {
-		log.Printf("http server is starting in port:%d", s.config.Port)
+		logger.Infof("http server is starting in port:%d", s.config.Port)
 		if err := s.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
 				log.Printf("http server ListenAndServe err:%v\n", err)
-				ch <- sigerr
+				ch <- sigErr
 			}
 			log.Println("http server closed")
 		}
 	}()
 	// handle signal, to elegant closing server
-	signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, sigerr)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, sigErr)
 	log.Printf("got signal %v, http server exit\n", <-ch)
 	return s.Close(ctx)
 }
@@ -101,17 +102,17 @@ func (s *server) Close(ctx context.Context) error {
 }
 
 func (s *server) AddMiddlewares(middlewares ...middleware.Middleware) Server {
-	s.GetEngine().Use(middlewares...)
+	s.Kernel().Use(middlewares...)
 	return s
 }
 
-func (s *server) GetEngine() *gin.Engine {
+func (s *server) Kernel() *gin.Engine {
 	return s.Handler.(*gin.Engine)
 }
 
 type signalErr string
 
-const sigerr = signalErr("httpserver err signal")
+const sigErr = signalErr("httpserver err signal")
 
 func (s signalErr) Signal() {
 

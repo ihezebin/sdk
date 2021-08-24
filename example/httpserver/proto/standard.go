@@ -5,28 +5,28 @@ import (
 	"mime/multipart"
 )
 
-type HelloHandlerReq struct {
+type StandardHandlerReq struct {
 	Name string `json:"name,default=jsonName" form:"name,default=formName"`
 }
 
-type HelloHandlerResp struct {
+type StandardHandlerResp struct {
 	Code    bool   `json:"coder"`
 	Message string `json:"message"`
 }
 
-type HelloFileHandlerReq struct {
+type StandardFileHandlerReq struct {
 	File *multipart.FileHeader `json:"file" form:"file"`
 	Host string                `json:"host,default=whereabouts.icu" form:"host,default=whereabouts.icu"`
 }
 
-type HelloFileHandlerResp struct {
+type StandardFileHandlerResp struct {
 	Code bool   `json:"coder"`
 	Url  string `json:"url"`
 }
 
-type HelloMultipleFilesHandlerReq struct {
+type StandardMultipleFilesHandlerReq struct {
 }
 
-type HelloMultipleFilesHandlerResp struct {
+type StandardMultipleFilesHandlerResp struct {
 	result.DefaultResp
 }

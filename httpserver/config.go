@@ -58,7 +58,7 @@ func WithPort(port int) Option {
 	}
 }
 
-func WithMiddles(middlewares ...middleware.Middleware) Option {
+func WithMiddlewares(middlewares ...middleware.Middleware) Option {
 	return func(config *Config) {
 		config.middlewares = middlewares
 	}

@@ -9,11 +9,7 @@ import (
 	//"mime/multipart"
 )
 
-// HelloStandardHandler
-// request parameters are automatically mapped and bound to req,
-// If the return value is nil, the resp structure is mapped to the response body in JSON format,
-// Otherwise, respond with JSON *result.HttpError or error content
-func HelloStandardHandler(ctx context.Context, req *proto.HelloStandardHandlerReq, resp *proto.HelloStandardHandlerResp) error {
+func HelloHandler(ctx context.Context, req *proto.HelloHandlerReq, resp *proto.HelloHandlerResp) error {
 	// test panic happened
 	//a := 0
 	//_ = 1 / a
@@ -29,9 +25,6 @@ func HelloStandardHandler(ctx context.Context, req *proto.HelloStandardHandlerRe
 	return nil
 }
 
-// HelloFileHandler
-// Upload a single file:
-// it can be directly encapsulated into the req structure for parsing *multipart.FileHeader
 func HelloFileHandler(ctx context.Context, req *proto.HelloFileHandlerReq, resp *proto.HelloFileHandlerResp) error {
 	file := req.File
 	if file == nil {
@@ -43,9 +36,6 @@ func HelloFileHandler(ctx context.Context, req *proto.HelloFileHandlerReq, resp 
 	return nil
 }
 
-// HelloMultipleFilesHandler
-// Multiple file upload:
-// cannot be resolved by mapping, get gin context to operate
 func HelloMultipleFilesHandler(ctx context.Context, req *proto.HelloMultipleFilesHandlerReq, resp *proto.HelloMultipleFilesHandlerResp) *result.HttpError {
 	c, err := middleware.ExtractGinContextWithCtx(ctx)
 	if err != nil {

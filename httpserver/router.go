@@ -9,6 +9,10 @@ import (
 type Router = func(engine *gin.Engine)
 
 func Route(routes gin.IRoutes, method string, path string, function interface{}) {
+	routes.Handle(method, path, middleware.CreateRouteHandlerFunc(function))
+}
+
+func Handle(routes gin.IRoutes, method string, path string, function interface{}) {
 	routes.Handle(method, path, middleware.CreateHandlerFunc(function))
 }
 
