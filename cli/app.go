@@ -9,9 +9,19 @@ import (
 	"time"
 )
 
-var nilAction = func(c *cli.Context) error {
-	return nil
-}
+var (
+	NilAction = func(v Value) error {
+		return nil
+	}
+	HelpAction = func(v Value) error {
+		args := v.Args()
+		if args.Present() {
+			return cli.ShowCommandHelp(v.Kernel(), args.First())
+		}
+		_ = cli.ShowAppHelp(v.Kernel())
+		return nil
+	}
+)
 
 type App struct {
 	kernel   *cli.App
@@ -19,7 +29,6 @@ type App struct {
 	flags    []cli.Flag
 	commands []*command.Command
 	action   Action
-	help     bool
 }
 
 func NewApp(options ...Option) *App {
@@ -33,7 +42,6 @@ func NewAppWithConfig(config Config) *App {
 		flags:    make([]cli.Flag, 0),
 		commands: make([]*command.Command, 0),
 		action:   nil,
-		help:     true,
 	}
 }
 
@@ -51,10 +59,12 @@ func (app *App) Kernel() *cli.App {
 type Value = flag.Value
 type Action func(v Value) error
 
-func (app *App) SetAction(action Action) *App {
-	app.action = action
-	app.Kernel().Action = func(c *cli.Context) error {
-		return action(flag.NewValue(c))
+func (app *App) WithAction(action Action) *App {
+	if action != nil {
+		app.action = action
+		app.Kernel().Action = func(c *cli.Context) error {
+			return action(flag.NewValue(c))
+		}
 	}
 	return app
 }
@@ -65,33 +75,32 @@ func (app *App) Run() error {
 	for _, cmd := range app.commands {
 		app.Kernel().Commands = append(app.Kernel().Commands, *cmd.Kernel())
 	}
-	if app.action == nil && !app.help {
-		app.Kernel().Action = nilAction
-	}
+	//if app.action == nil {
+	//	app.Kernel().Action = nilAction
+	//}
 	return app.Kernel().Run(os.Args)
 }
 
 func (app *App) OnBeforeAction(action Action) *App {
-	app.Kernel().Before = func(c *cli.Context) error {
-		return action(flag.NewValue(c))
+	if action != nil {
+		app.Kernel().Before = func(c *cli.Context) error {
+			return action(flag.NewValue(c))
+		}
 	}
 	return app
 }
 
 func (app *App) OnAfterAction(action Action) *App {
-	app.Kernel().After = func(c *cli.Context) error {
-		return action(flag.NewValue(c))
+	if action != nil {
+		app.Kernel().After = func(c *cli.Context) error {
+			return action(flag.NewValue(c))
+		}
 	}
 	return app
 }
 
-func (app *App) SetCommand(command *command.Command) *App {
+func (app *App) AddCommand(command *command.Command) *App {
 	app.commands = append(app.commands, command)
-	return app
-}
-
-func (app *App) SetDefaultHelp(help bool) *App {
-	app.help = help
 	return app
 }
 
@@ -105,6 +114,42 @@ func (app *App) Action() Action {
 
 func (app *App) Flags() []cli.Flag {
 	return app.flags
+}
+
+type CommandNotFoundHandler = func(v Value, s string)
+
+// WithCommandNotFoundHandler Execute this function if the proper command cannot be found
+func (app *App) WithCommandNotFoundHandler(handler CommandNotFoundHandler) *App {
+	if handler != nil {
+		app.Kernel().CommandNotFound = func(context *cli.Context, s string) {
+			handler(flag.NewValue(context), s)
+		}
+	}
+	return app
+}
+
+type UsageErrorHandler = func(v Value, err error, isSubcommand bool) error
+
+// WithUsageErrorHandler Execute this function if a usage error occurs
+func (app *App) WithUsageErrorHandler(handler UsageErrorHandler) *App {
+	if handler != nil {
+		app.Kernel().OnUsageError = func(context *cli.Context, err error, isSubcommand bool) error {
+			return handler(flag.NewValue(context), err, isSubcommand)
+		}
+	}
+	return app
+}
+
+type ExitErrHandlerFunc = func(v Value, err error)
+
+// WithExitErrHandler Execute this function to handle ExitErrors.
+func (app *App) WithExitErrHandler(handler ExitErrHandlerFunc) *App {
+	if handler != nil {
+		app.Kernel().ExitErrHandler = func(context *cli.Context, err error) {
+			handler(flag.NewValue(context), err)
+		}
+	}
+	return app
 }
 
 func (app *App) WithFlagInt(name string, value int, usage string, required bool, hidden ...bool) *App {

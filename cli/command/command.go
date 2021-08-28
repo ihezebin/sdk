@@ -33,30 +33,49 @@ func (cmd *Command) Flags() []cli.Flag {
 	return cmd.Kernel().Flags
 }
 
-type Action func(v flag.Value) error
+type Value = flag.Value
+type Action func(v Value) error
 
-func (cmd *Command) SetAction(action Action) *Command {
-	cmd.Kernel().Action = func(c *cli.Context) error {
-		return action(flag.NewValue(c))
+func (cmd *Command) WithAction(action Action) *Command {
+	if action != nil {
+		cmd.Kernel().Action = func(c *cli.Context) error {
+			return action(flag.NewValue(c))
+		}
 	}
 	return cmd
 }
 
-func (cmd *Command) SetSubCommand(subCommand Command) *Command {
+func (cmd *Command) AddSubCommand(subCommand *Command) *Command {
 	cmd.Kernel().Subcommands = append(cmd.Kernel().Subcommands, *subCommand.Kernel())
 	return cmd
 }
 
 func (cmd *Command) OnBeforeAction(action Action) *Command {
-	cmd.Kernel().Before = func(c *cli.Context) error {
-		return action(flag.NewValue(c))
+	if action != nil {
+		cmd.Kernel().Before = func(c *cli.Context) error {
+			return action(flag.NewValue(c))
+		}
 	}
 	return cmd
 }
 
 func (cmd *Command) OnAfterAction(action Action) *Command {
-	cmd.Kernel().After = func(c *cli.Context) error {
-		return action(flag.NewValue(c))
+	if action != nil {
+		cmd.Kernel().After = func(c *cli.Context) error {
+			return action(flag.NewValue(c))
+		}
+	}
+	return cmd
+}
+
+type UsageErrorHandler = func(v Value, err error, isSubcommand bool) error
+
+// WithUsageErrorHandler Execute this function if a usage error occurs
+func (cmd *Command) WithUsageErrorHandler(handler UsageErrorHandler) *Command {
+	if handler != nil {
+		cmd.Kernel().OnUsageError = func(context *cli.Context, err error, isSubcommand bool) error {
+			return handler(flag.NewValue(context), err, isSubcommand)
+		}
 	}
 	return cmd
 }

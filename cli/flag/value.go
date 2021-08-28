@@ -6,6 +6,7 @@ import (
 )
 
 type Value interface {
+	Kernel() *cli.Context
 	Int(name string) int
 	GlobalInt(name string) int
 	Int64(name string) int64
@@ -33,6 +34,8 @@ type Value interface {
 	GlobalIsSet(name string) bool
 	FlagNames() (names []string)
 	GlobalFlagNames() (names []string)
+	NArg() int
+	Args() Args
 }
 
 type value struct {
@@ -41,6 +44,10 @@ type value struct {
 
 func NewValue(ctx *cli.Context) Value {
 	return &value{ctx: ctx}
+}
+
+func (v *value) Kernel() *cli.Context {
+	return v.ctx
 }
 
 // Int looks up the flag of a local IntFlag, returns
