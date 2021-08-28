@@ -36,7 +36,9 @@ func NewLoggerWithConfig(config Config) *Logger {
 	}
 	l.AddHook(hook.NewFieldsHook(fields))
 	if stringer.NotEmpty(config.ErrFile) {
-		l.AddHook(hook.NewLocalFSHook(config.ErrFile, format.String2Formatter(config.Format)))
+		l.AddHook(hook.NewLocalFSHook(hook.WriterMap{
+			level.ErrorLevel: FileOutput(config.ErrFile),
+		}, format.String2Formatter(config.Format)))
 	}
 
 	if stringer.NotEmpty(config.File) {

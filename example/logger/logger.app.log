@@ -1,0 +1,2 @@
+{"app":"logger","file":"logger_test.go:25","func":"logger.TestNewLogger","level":"info","msg":"TestNewLogger info","time":"2021-08-29 04:27:06","timestamp":1630182426}
+{"app":"logger","file":"logger_test.go:26","func":"logger.TestNewLogger","level":"error","msg":"TestNewLogger err","time":"2021-08-29 04:27:06","timestamp":1630182426}

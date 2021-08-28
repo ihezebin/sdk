@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"github.com/sirupsen/logrus"
 	"github.com/whereabouts/sdk/logger"
 	"github.com/whereabouts/sdk/logger/field"
 	"github.com/whereabouts/sdk/logger/hook"
@@ -12,7 +11,7 @@ import (
 
 func TestLocalFSHook(t *testing.T) {
 	logger.StandardLogger().AddHook(hook.NewLocalFSHook(hook.WriterMap{
-		logrus.InfoLevel: writer.NewFileWriter("localfs_hook.log"),
+		level.InfoLevel: writer.NewFileWriter("localfs_hook.log"),
 	}, nil))
 	logger.Infoln("TestLocalfsHook")
 	logger.Errorln("TestLocalfsHook")

@@ -19,8 +19,11 @@ func TestNewLogger(t *testing.T) {
 		logger.WithAppName("logger"),
 		logger.WithLevel(level.InfoLevelStr),
 		logger.WithFormat(format.JSON),
+		logger.WithFile("logger.app.log"),
+		logger.WithErrFile("logger.err.log"),
 	)
-	newLogger.Info("TestNewLogger")
+	newLogger.Info("TestNewLogger info")
+	newLogger.Error("TestNewLogger err")
 }
 
 func TestResetStandardLogger(t *testing.T) {
