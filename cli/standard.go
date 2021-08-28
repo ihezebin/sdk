@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-var gApp = NewApp(WithHideHelp(true))
+var gApp = NewApp(WithHideHelp(true)).WithAction(NilAction)
 
 func Run() (value Value, err error) {
 	err = gApp.WithAction(func(v Value) error {
