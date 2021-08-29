@@ -22,6 +22,9 @@ type Base struct {
 
 var FilterNil = bson.M{}
 
+// NewBaseModel You can quickly get the initialized Client through ClientManager().Get(alias string),
+// if you use the global Client, you can use GetGlobalClient() to get Client.
+// 可以通过 ClientManager().Get(alias string) 快速获取已初始化的Client， 若使用的全局Client, 则可使用 GetGlobalClient()
 func NewBaseModel(client Client, database string, collection string) *Base {
 	return &Base{client: client, database: database, collection: collection}
 }

@@ -21,6 +21,8 @@ type Client interface {
 	NewBaseModel(database string, collection string) *Base
 }
 
+// NewClient If only one db is used, it is recommended to use: NewGlobalClient
+// 若只使用到了一个库，推荐使用: NewGlobalClient
 func NewClient(ctx context.Context, config Config) (Client, error) {
 
 	// Determine whether a client with the same alias already exists
