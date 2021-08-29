@@ -68,10 +68,6 @@ func (model *Base) CountDocuments(ctx context.Context, filter interface{}, opts 
 
 func (model *Base) InsertMany(ctx context.Context, documents []interface{}, opts ...*options.InsertManyOptions) (*mongo.InsertManyResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
-		documents, err := model.handleAutoTimeInsert(documents...)
-		if err != nil {
-			return nil, err
-		}
 		return collection.InsertMany(ctx, documents, opts...)
 	})
 	if result == nil {
@@ -82,11 +78,7 @@ func (model *Base) InsertMany(ctx context.Context, documents []interface{}, opts
 
 func (model *Base) InsertOne(ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
-		docs, err := model.handleAutoTimeInsert(document)
-		if err != nil {
-			return nil, err
-		}
-		return collection.InsertOne(ctx, docs[0], opts...)
+		return collection.InsertOne(ctx, document, opts...)
 	})
 	if result == nil {
 		return nil, err
@@ -190,10 +182,6 @@ func (model *Base) ReplaceOne(ctx context.Context, filter, replacement interface
 
 func (model *Base) UpdateMany(ctx context.Context, filter, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
-		update, err := model.handleAutoTimeUpdate(update)
-		if err != nil {
-			return nil, err
-		}
 		return collection.UpdateMany(ctx, filter, update, opts...)
 	})
 	if result == nil {
@@ -204,10 +192,6 @@ func (model *Base) UpdateMany(ctx context.Context, filter, update interface{}, o
 
 func (model *Base) UpdateOne(ctx context.Context, filter, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
-		update, err := model.handleAutoTimeUpdate(update)
-		if err != nil {
-			return nil, err
-		}
 		return collection.UpdateOne(ctx, filter, update, opts...)
 	})
 	if result == nil {
@@ -226,10 +210,6 @@ func (model *Base) UpdateId(ctx context.Context, id string, update interface{}, 
 
 func (model *Base) Upsert(ctx context.Context, filter, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error) {
 	result, err := model.Do(ctx, func(ctx context.Context, collection *mongo.Collection) (interface{}, error) {
-		update, err := model.handleAutoTimeUpdate(update)
-		if err != nil {
-			return nil, err
-		}
 		optUpsert := options.Update().SetUpsert(true)
 		opts = append(opts, optUpsert)
 		return collection.UpdateOne(ctx, filter, update, opts...)

@@ -77,40 +77,24 @@ func (db *Base) DeleteAll(ctx context.Context, selector interface{}) (changeInfo
 
 func (db *Base) Insert(ctx context.Context, doc ...interface{}) error {
 	return db.Do(ctx, func(c *mgo.Collection) error {
-		doc, err := db.handleAutoTimeInsert(doc...)
-		if err != nil {
-			return err
-		}
 		return c.Insert(doc...)
 	})
 }
 
 func (db *Base) UpdateOne(ctx context.Context, selector, update interface{}) error {
 	return db.Do(ctx, func(c *mgo.Collection) error {
-		update, err := db.handleAutoTimeUpdate(update)
-		if err != nil {
-			return err
-		}
 		return c.Update(selector, update)
 	})
 }
 
 func (db *Base) UpdateId(ctx context.Context, id string, update interface{}) error {
 	return db.Do(ctx, func(c *mgo.Collection) error {
-		update, err := db.handleAutoTimeUpdate(update)
-		if err != nil {
-			return err
-		}
 		return c.UpdateId(bson.ObjectIdHex(id), update)
 	})
 }
 
 func (db *Base) UpdateAll(ctx context.Context, selector, update interface{}) (changeInfo *mgo.ChangeInfo, err error) {
 	err = db.Do(ctx, func(c *mgo.Collection) error {
-		update, err := db.handleAutoTimeUpdate(update)
-		if err != nil {
-			return err
-		}
 		changeInfo, err = c.UpdateAll(selector, update)
 		return err
 	})
@@ -119,10 +103,6 @@ func (db *Base) UpdateAll(ctx context.Context, selector, update interface{}) (ch
 
 func (db *Base) Upsert(ctx context.Context, selector, update interface{}) (changeInfo *mgo.ChangeInfo, err error) {
 	err = db.Do(ctx, func(c *mgo.Collection) error {
-		update, err = db.handleAutoTimeUpdate(update)
-		if err != nil {
-			return err
-		}
 		changeInfo, err = c.Upsert(selector, update)
 		return err
 	})
@@ -131,10 +111,6 @@ func (db *Base) Upsert(ctx context.Context, selector, update interface{}) (chang
 
 func (db *Base) UpsertId(ctx context.Context, id string, update interface{}) (changeInfo *mgo.ChangeInfo, err error) {
 	err = db.Do(ctx, func(c *mgo.Collection) error {
-		update, err = db.handleAutoTimeUpdate(update)
-		if err != nil {
-			return err
-		}
 		changeInfo, err = c.UpsertId(bson.ObjectIdHex(id), update)
 		return err
 	})

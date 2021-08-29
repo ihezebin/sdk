@@ -25,7 +25,6 @@ func newMongoDB() *Base {
 		Source:         "admin",
 		ReplicaSetName: "",
 		Timeout:        3,
-		AutoTime:       true,
 		AppName:        "test_mongo",
 	})
 	if err != nil {

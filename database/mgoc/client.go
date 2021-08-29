@@ -33,7 +33,6 @@ func Dial(url string) (Client, error) {
 		PoolLimit:      info.PoolLimit,
 		MaxIdleTime:    time.Duration(info.MaxIdleTimeMS) * time.Millisecond,
 		AppName:        info.AppName,
-		AutoTime:       true,
 	}
 	return NewClient(config)
 }

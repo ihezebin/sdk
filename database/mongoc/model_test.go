@@ -44,7 +44,6 @@ func TestAutoTime(t *testing.T) {
 			Username: "root",
 			Password: "root",
 		},
-		AutoTime: true,
 	})
 	if err != nil {
 		logger.Fatal(err.Error())

@@ -19,8 +19,8 @@ type Config struct {
 	// MaxIdleTime The maximum number of seconds to remain idle in the pool, default 20 minutes
 	MaxIdleTime time.Duration `json:"max_idle_time"`
 	AppName     string        `json:"app_name"`
-	AutoTime    bool          `json:"auto_time"`
-	Alias       string        `json:"alias"`
+	//AutoTime    bool          `json:"auto_time"`
+	Alias string `json:"alias"`
 }
 
 type Auth struct {
