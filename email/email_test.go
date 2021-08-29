@@ -2,7 +2,7 @@ package email
 
 import (
 	"fmt"
-	"log"
+	"github.com/whereabouts/sdk/logger"
 	"testing"
 )
 
@@ -27,7 +27,7 @@ func TestEmail(t *testing.T) {
 		`)
 	err := emailClient.Send(msg)
 	if err != nil {
-		log.Println("send mail err:", err)
+		logger.Println("send mail err:", err)
 	}
 	fmt.Println("send mail successfully")
 }

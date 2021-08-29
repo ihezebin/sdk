@@ -2,7 +2,7 @@ package mapper
 
 import (
 	"fmt"
-	"log"
+	"github.com/whereabouts/sdk/logger"
 	"testing"
 )
 
@@ -26,7 +26,7 @@ func TestStruct2Map(t *testing.T) {
 		Weight: 50,
 	})
 	if err != nil {
-		log.Println("struct to map err:", err)
+		logger.Println("struct to map err:", err)
 		return
 	}
 	fmt.Println(m)
@@ -35,7 +35,7 @@ func TestStruct2Map(t *testing.T) {
 	stu := Stu{}
 	err = Map2Struct(map[string]interface{}{"name": "korbin", "age": 22}, &stu)
 	if err != nil {
-		log.Println("map to struct err:", err)
+		logger.Println("map to struct err:", err)
 	}
 	fmt.Println(stu)
 }

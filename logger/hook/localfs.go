@@ -3,10 +3,10 @@ package hook
 import (
 	"fmt"
 	"github.com/sirupsen/logrus"
+	"github.com/whereabouts/sdk/logger"
 	"github.com/whereabouts/sdk/logger/format"
 	"github.com/whereabouts/sdk/logger/level"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -107,7 +107,7 @@ func (hook *localFSHook) write(entry *logrus.Entry) error {
 	// use our format instead of entry.String()
 	msg, err := hook.formatter.Format(entry)
 	if err != nil {
-		log.Println("failed to format entry:", err)
+		logger.Println("failed to format entry:", err)
 		return err
 	}
 	_, err = writer.Write(msg)

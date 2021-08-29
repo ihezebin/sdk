@@ -3,7 +3,7 @@ package test
 import (
 	"fmt"
 	"github.com/whereabouts/sdk/database/redisc"
-	"log"
+	"github.com/whereabouts/sdk/logger"
 	"testing"
 )
 
@@ -16,7 +16,7 @@ func TestFunc(t *testing.T) {
 	})
 	defer client.Close()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	cache := redisc.New("email")
 	val, err := cache.Get("12113").Value()

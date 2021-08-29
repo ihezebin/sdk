@@ -1,8 +1,10 @@
 package server
 
-import "log"
+import (
+	"github.com/whereabouts/sdk/logger"
+)
 
 func Init() {
 	// init db
-	log.Println("doing something before server run...")
+	logger.Println("doing something before server run...")
 }

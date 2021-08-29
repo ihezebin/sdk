@@ -1,8 +1,10 @@
 package server
 
-import "log"
+import (
+	"github.com/whereabouts/sdk/logger"
+)
 
 func Close() {
 	// close db
-	log.Println("doing something on shutdown...")
+	logger.Println("doing something on shutdown...")
 }

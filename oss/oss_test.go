@@ -2,9 +2,9 @@ package oss
 
 import (
 	"fmt"
+	"github.com/whereabouts/sdk/logger"
 	"github.com/whereabouts/sdk/oss/qiniu"
 	"github.com/whereabouts/sdk/oss/ucloud"
-	"log"
 	"os"
 	"testing"
 )
@@ -19,12 +19,12 @@ func TestQiniu(t *testing.T) {
 	})
 	file, err := os.Open("C:\\Users\\Korbin\\Pictures\\hzb.jpg")
 	if err != nil {
-		log.Println(err)
+		logger.Println(err)
 		return
 	}
 	url, err := client.Upload(file, "Korbin.jpg")
 	if err != nil {
-		log.Println(err, url)
+		logger.Println(err, url)
 		return
 	}
 	fmt.Println(url)
@@ -44,7 +44,7 @@ func TestUCloud(t *testing.T) {
 	}
 	url, err := client.Upload(file, "Korbin.jpg")
 	if err != nil {
-		log.Println(err, url)
+		logger.Println(err, url)
 		return
 	}
 	fmt.Println(url)

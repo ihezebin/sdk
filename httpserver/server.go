@@ -8,7 +8,6 @@ import (
 	"github.com/whereabouts/sdk/httpserver/hook"
 	"github.com/whereabouts/sdk/httpserver/middleware"
 	"github.com/whereabouts/sdk/logger"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -74,15 +73,15 @@ func (s *server) Run(ctx context.Context) error {
 		logger.Infof("http server is starting in port:%d", s.config.Port)
 		if err := s.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
-				log.Printf("http server ListenAndServe err:%v\n", err)
+				logger.Printf("http server ListenAndServe err:%v\n", err)
 				ch <- sigErr
 			}
-			log.Println("http server closed")
+			logger.Println("http server closed")
 		}
 	}()
 	// handle signal, to elegant closing server
 	signal.Notify(ch, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT, sigErr)
-	log.Printf("got signal %v, http server exit\n", <-ch)
+	logger.Printf("got signal %v, http server exit\n", <-ch)
 	return s.Close(ctx)
 }
 
@@ -97,7 +96,7 @@ func (s *server) OnBeforeRun(f hook.RunHook) Server {
 }
 
 func (s *server) Close(ctx context.Context) error {
-	log.Println("http server is closing...")
+	logger.Println("http server is closing...")
 	return s.Shutdown(ctx)
 }
 
