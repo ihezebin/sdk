@@ -2,14 +2,14 @@ package test
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk/database/redis"
+	"github.com/whereabouts/sdk/database/redisc"
 	"github.com/whereabouts/sdk/utils/coder"
 	"log"
 	"testing"
 )
 
 func TestRedis(t *testing.T) {
-	client, err := redis.Init(redis.Config{
+	client, err := redisc.Init(redisc.Config{
 		Addr:      ":6379",
 		Password:  "root",
 		MaxIdle:   10,

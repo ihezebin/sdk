@@ -1,11 +1,11 @@
-package redis
+package redisc
 
 import (
 	"errors"
 	"github.com/gomodule/redigo/redis"
 )
 
-var ErrNil = errors.New("redis returned nil")
+var ErrNil = errors.New("redisc returned nil")
 
 type Result struct {
 	reply interface{}

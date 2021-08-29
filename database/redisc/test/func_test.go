@@ -2,13 +2,13 @@ package test
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk/database/redis"
+	"github.com/whereabouts/sdk/database/redisc"
 	"log"
 	"testing"
 )
 
 func TestFunc(t *testing.T) {
-	client, err := redis.Init(redis.Config{
+	client, err := redisc.Init(redisc.Config{
 		Addr:      ":6379",
 		Password:  "root",
 		MaxIdle:   10,
@@ -18,7 +18,7 @@ func TestFunc(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cache := redis.New("email")
+	cache := redisc.New("email")
 	val, err := cache.Get("12113").Value()
 	if err != nil {
 		fmt.Println("err: ", err)
