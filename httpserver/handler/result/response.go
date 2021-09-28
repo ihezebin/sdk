@@ -7,8 +7,9 @@ type Response struct {
 	Data           interface{} `json:"data,omitempty"`
 }
 
-func (resp *Response) WithStatusCode() *Response {
-
+func (resp *Response) WithStatusCode(statusCode int) *Response {
+	resp.HttpStatusCode = statusCode
+	return resp
 }
 
 func ResponseSuccess(data interface{}) *Response {

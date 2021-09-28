@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/whereabouts/sdk/httpserver/handler"
 	"github.com/whereabouts/sdk/httpserver/middleware"
 	"reflect"
 )
@@ -9,11 +10,11 @@ import (
 type Router = func(engine *gin.Engine)
 
 func Route(routes gin.IRoutes, method string, path string, function interface{}) {
-	routes.Handle(method, path, middleware.CreateRouteHandlerFunc(function))
+	routes.Handle(method, path, handler.CreateRouteHandlerFunc(function))
 }
 
 func Handle(routes gin.IRoutes, method string, path string, function interface{}) {
-	routes.Handle(method, path, middleware.CreateHandlerFunc(function))
+	routes.Handle(method, path, handler.CreateHandlerFunc(function))
 }
 
 func Before(routes gin.IRoutes, before ...middleware.Middleware) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/whereabouts/sdk/example/httpserver/proto"
+	result2 "github.com/whereabouts/sdk/httpserver/handler/result"
 	"github.com/whereabouts/sdk/httpserver/middleware"
 	"github.com/whereabouts/sdk/httpserver/result"
 	//"mime/multipart"
@@ -24,7 +25,7 @@ func StandardHandler(ctx context.Context, req *proto.StandardHandlerReq) (*proto
 	}
 	// set response value
 	resp := proto.StandardHandlerResp{}
-	resp.Code = result.CodeBoolOk
+	resp.Code = result2.CodeBoolOk
 	resp.Message = fmt.Sprintf("hello, %s! the request uri is %s", req.Name, c.Request.RequestURI)
 	fmt.Println("hello standard")
 	return &resp, nil
@@ -37,10 +38,10 @@ func StandardHandler(ctx context.Context, req *proto.StandardHandlerReq) (*proto
 func StandardFileHandler(ctx context.Context, req *proto.StandardFileHandlerReq) (*proto.StandardFileHandlerResp, error) {
 	file := req.File
 	if file == nil {
-		return nil, result.Error(result.CodeBoolFail, "fail to find any file")
+		return nil, result2.Error(result2.CodeBoolFail, "fail to find any file")
 	}
 	resp := proto.StandardFileHandlerResp{}
-	resp.Code = result.CodeBoolOk
+	resp.Code = result2.CodeBoolOk
 	resp.Url = fmt.Sprintf("http://file.%s/%s", req.Host, file.Filename)
 	fmt.Println("hello file")
 	return &resp, nil
@@ -56,7 +57,7 @@ func StandardMultipleFilesHandler(ctx context.Context, req *proto.StandardMultip
 	}
 	multipartForm, err := c.MultipartForm()
 	if err != nil {
-		return nil, result.Err2HttpError(err, result.CodeBoolFail)
+		return nil, result.Err2HttpError(err, result2.CodeBoolFail)
 	}
 	// get files
 	files := multipartForm.File["files"]
@@ -66,7 +67,7 @@ func StandardMultipleFilesHandler(ctx context.Context, req *proto.StandardMultip
 	}
 
 	resp := proto.StandardMultipleFilesHandlerResp{}
-	resp.Code = result.CodeBoolOk
+	resp.Code = result2.CodeBoolOk
 	resp.Message = fmt.Sprintf("success to upload these files : %+v", message)
 	fmt.Println("hello multiple file")
 	return &resp, nil
