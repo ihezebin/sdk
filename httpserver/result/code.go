@@ -2,6 +2,7 @@ package result
 
 const (
 	CodeBoolOk   = true
+	CodeIntOk    = 0
 	CodeBoolFail = false
 )
 
