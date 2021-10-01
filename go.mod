@@ -16,5 +16,6 @@ require (
 	github.com/spf13/viper v1.8.1
 	github.com/ufilesdk-dev/ufile-gosdk v1.0.1
 	github.com/urfave/cli v1.22.5
+	github.com/xuri/excelize/v2 v2.4.1 // indirect
 	go.mongodb.org/mongo-driver v1.7.0
 )
