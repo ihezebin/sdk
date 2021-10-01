@@ -4,8 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	result2 "github.com/whereabouts/sdk/httpserver/handler/result"
-	"github.com/whereabouts/sdk/httpserver/result"
+	"github.com/whereabouts/sdk/httpserver/handler/result"
 	"github.com/whereabouts/sdk/logger"
 	"net/http"
 	"reflect"
@@ -19,37 +18,38 @@ type responseKey struct{}
 type ginContextKey struct{}
 
 var (
-	contextType           = reflect.TypeOf((*context.Context)(nil)).Elem()
-	returnErrorType       = reflect.TypeOf((*error)(nil)).Elem()
-	returnResultErrorType = reflect.TypeOf((*result2.Err)(nil))
+	contextType    = reflect.TypeOf((*context.Context)(nil)).Elem()
+	ginContextType = reflect.TypeOf((*gin.Context)(nil))
+	errorType      = reflect.TypeOf((*error)(nil)).Elem()
+	errType        = reflect.TypeOf((*result.Err)(nil))
+	resultType     = reflect.TypeOf((*result.Result)(nil))
 
 	RequestKey    = requestKey{}
 	ResponseKey   = responseKey{}
 	GinContextKey = ginContextKey{}
 )
 
-type Context struct {
-	ctx *gin.Context
+//New
+// example:
+// func Hello(ctx context.Context, req *proto.HelloHandlerReq) (*proto.HelloHandlerResp, error) {
+// 	 resp := proto.HelloHandlerResp{}
+// 	 resp.Welcome = fmt.Sprintf("hello, %s!", req.Name)
+// 	 return &resp, nil
+// }
+func New(method interface{}) gin.HandlerFunc {
+	return NewWithOptions(method)
 }
 
-func (c Context) GetContext() *gin.Context {
-	return c.ctx
-}
-
-func CreateHandlerFunc(method interface{}) gin.HandlerFunc {
-	return CreateHandlerFuncWithOptions(method)
-}
-
-func CreateHandlerFuncWithOptions(method interface{}, options ...Option) gin.HandlerFunc {
+func NewWithOptions(method interface{}, options ...Option) gin.HandlerFunc {
 	conf := newConfig(options...)
-	return createHandlerFuncWithLogger(method, conf, logger.StandardLogger())
+	return newHandlerFuncWithLogger(method, conf, logger.StandardLogger())
 }
 
-func createHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logger) gin.HandlerFunc {
-	mV, reqT, err := checkMethod(method, conf)
-	if err != nil {
-		l.Errorf("CreateHandlerFunc panic: %v", err)
-		panic(err)
+func newHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logger) gin.HandlerFunc {
+	mV, reqT, checkErr := checkMethod(method, conf)
+	if checkErr != nil {
+		l.Errorf("checkMethod err: %v", checkErr)
+		panic(checkErr)
 	}
 
 	return func(c *gin.Context) {
@@ -58,48 +58,84 @@ func createHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logg
 		ctx = context.WithValue(ctx, ResponseKey, c.Writer)
 		ctx = context.WithValue(ctx, GinContextKey, c)
 
-		req := reflect.New(reqT)
-		if err = c.ShouldBind(req.Interface()); err != nil {
-			c.JSON(http.StatusBadRequest, result.Err2HttpError(err, result2.CodeBoolFail))
-			l.Errorf("method(%T) failed to bind: %v", method, err)
-		}
+		var res *result.Result
 
-		results := mV.Call([]reflect.Value{reflect.ValueOf(ctx), req})
-		resp, errValue := results[0].Interface(), results[1].Interface()
-		// response contains http_error
-		if errValue != nil {
-			switch v := errValue.(type) {
-			case *result.HttpError:
-				if v.HttpStatusCode != 0 {
-					c.JSON(v.HttpStatusCode, v)
-					return
-				}
-				c.JSON(http.StatusOK, v)
-			case error:
-				c.JSON(http.StatusOK, result.Err2HttpError(v, result2.CodeBoolFail))
-			}
+		// bind request param
+		req := reflect.New(reqT)
+		if bindErr := c.ShouldBind(req.Interface()); bindErr != nil {
+			res = result.Failed(bindErr)
+			c.JSON(http.StatusBadRequest, result.Error2Err(bindErr, result.CodeBoolFail))
+			l.Errorf("method(%T) failed to bind: %v", method, bindErr)
 			return
 		}
-		c.PureJSON(http.StatusOK, resp)
+
+		// handle request
+		var resultV []reflect.Value
+		if conf.withGinCtx {
+			resultV = mV.Call([]reflect.Value{reflect.ValueOf(ctx), req, reflect.ValueOf(c)})
+		} else {
+			resultV = mV.Call([]reflect.Value{reflect.ValueOf(ctx), req})
+		}
+
+		// do response
+		if conf.useResult {
+			res = resultV[0].Interface().(*result.Result)
+			if res == nil {
+				res = result.New()
+			}
+			c.PureJSON(res.StatusCode(), res)
+			return
+		}
+
+		var resp, err interface{}
+		if conf.noResponse {
+			err = resultV[0].Interface()
+		} else {
+			resp, err = resultV[0].Interface(), resultV[1].Interface()
+		}
+		// response contains err
+		if err != nil {
+			switch e := err.(type) {
+			case *result.Err:
+				res = result.Failed(e).WithCode(e.Code).WithStatusCode(e.StatusCode())
+			case error:
+				res = result.Failed(e)
+			}
+			c.JSON(res.StatusCode(), res)
+			return
+		}
+
+		if conf.noResponse {
+			return
+		}
+
+		res = result.Succeed(resp)
+		c.PureJSON(res.StatusCode(), res)
 	}
 }
 
 func checkMethod(method interface{}, conf config) (mV reflect.Value, reqT reflect.Type, err error) {
+	// check method
 	mV = reflect.ValueOf(method)
 	if !mV.IsValid() {
 		err = errors.Errorf("handle method(%T) not found", method)
 		return
 	}
-
 	mT := mV.Type()
 	if mT.Kind() != reflect.Func {
 		err = errors.Errorf("handle method(%T) type must be func", method)
 		return
 	}
 
+	// check in params of method
 	if conf.withGinCtx {
 		if mT.NumIn() != 3 {
 			err = errors.Errorf("method(%T) must has 3 ins", method)
+			return
+		}
+		ginCtxT := mT.In(2)
+		if ginCtxT != ginContextType {
+			err = errors.Errorf("the third in of method(%T) must be *gin.Context", method)
 			return
 		}
 	} else {
@@ -116,39 +152,42 @@ func checkMethod(method interface{}, conf config) (mV reflect.Value, reqT reflec
 	}
 
 	reqT = mT.In(1)
-	if reqT.Kind() != reflect.Ptr {
-		err = errors.Errorf("the second in of method(%T) must be pointer", method)
+	for reqT.Kind() == reflect.Ptr {
+		reqT = reqT.Elem()
+	}
+
+	// check out params of method return
+	if conf.useResult {
+		if mT.NumOut() != 1 {
+			err = errors.Errorf("method(%T) must has 1 out", method)
+			return
+		}
+		if mT.Out(0) != resultType {
+			err = errors.Errorf("the first out of method(%T) must be *result.Result or error", method)
+			return
+		}
 		return
 	}
 
-	if reqT.Elem().Kind() != reflect.Struct {
-		err = errors.Errorf("the second in of method(%T) must be struct", method)
-		return
-	}
-	reqT = reqT.Elem()
-
-	if mT.NumOut() != 2 {
-		err = errors.Errorf("method(%T) must has 2 out", method)
-		return
-	}
-
-	respT := mT.Out(0)
-	if respT.Kind() != reflect.Ptr {
-		err = errors.Errorf("the first out of method(%T) must be pointer", method)
-		return
+	errOutIndex := 0
+	if conf.noResponse {
+		if mT.NumOut() != 1 {
+			err = errors.Errorf("method(%T) must has 1 out", method)
+			return
+		}
+	} else {
+		if mT.NumOut() != 2 {
+			err = errors.Errorf("method(%T) must has 2 out", method)
+			return
+		}
+		errOutIndex = 1
 	}
 
-	if respT.Elem().Kind() != reflect.Struct {
-		err = errors.Errorf("the first out of method(%T) must be struct", method)
-		return
-	}
-	respT = respT.Elem()
-
-	errT := mT.Out(1)
-	if errT != returnErrorType && errT != returnResultErrorType {
-		err = errors.Errorf("the second out of method(%T) must be result.HttpError or error", method)
+	errT := mT.Out(errOutIndex)
+	if errT != errorType && errT != errType {
+		err = errors.Errorf("the first out of method(%T) must be *result.Err or error", method)
 		return
 	}
 
-	return mV, reqT, err
+	return
 }

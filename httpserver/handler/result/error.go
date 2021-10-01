@@ -1,24 +1,30 @@
 package result
 
 import (
-	"encoding/json"
 	"github.com/pkg/errors"
+	"net/http"
 )
 
 type Err struct {
-	HttpStatusCode int         `json:"-"`
-	Code           interface{} `json:"code"`
-	Message        string      `json:"message"`
+	statusCode int
+	Code       interface{} `json:"code"`
+	Message    string      `json:"message"`
 }
 
 func (err *Err) Error() string {
-	data, _ := json.Marshal(err)
-	return string(data)
+	return err.Message
 }
 
 func (err *Err) WithStatusCode(statusCode int) *Err {
-	err.HttpStatusCode = statusCode
+	err.statusCode = statusCode
 	return err
+}
+
+func (err *Err) StatusCode() int {
+	if err.statusCode == 0 {
+		return http.StatusOK
+	}
+	return err.statusCode
 }
 
 func Error(code interface{}, msg string) *Err {

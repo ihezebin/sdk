@@ -8,7 +8,7 @@ const (
 
 const (
 	OK           = "OK"
-	Fail         = "OK"
+	Fail         = "Fail"
 	Created      = "Created"
 	Accepted     = "Accepted"
 	NoContent    = "No Content"

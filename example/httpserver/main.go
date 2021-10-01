@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"github.com/whereabouts/sdk/example/httpserver/config"
-	"github.com/whereabouts/sdk/example/httpserver/routes"
 	"github.com/whereabouts/sdk/example/httpserver/server"
 	"github.com/whereabouts/sdk/httpserver"
 	"github.com/whereabouts/sdk/httpserver/middleware"
@@ -24,7 +23,7 @@ func main() {
 			middleware.LoggingSimplyRequest(),
 			middleware.LoggingSimplyResponse(),
 		),
-	).Route(routes.Routes).OnBeforeRun(server.Init).OnShutdown(server.Close).Run(ctx); err != nil {
+	).Routes(server.Routes).OnBeforeRun(server.Init).OnShutdown(server.Close).Run(ctx); err != nil {
 		logger.Fatalf("server run with error: %v\n", err)
 	}
 }

@@ -1,32 +1,29 @@
 package proto
 
 import (
-	"github.com/whereabouts/sdk/httpserver/result"
 	"mime/multipart"
 )
 
-type HelloHandlerReq struct {
+type HelloReq struct {
 	Name string `json:"name,default=jsonName" form:"name,default=formName"`
 }
 
-type HelloHandlerResp struct {
-	Code    bool   `json:"coder"`
-	Message string `json:"message"`
+type HelloResp struct {
+	Welcome string `json:"welcome"`
 }
 
-type HelloFileHandlerReq struct {
+type HelloFileReq struct {
 	File *multipart.FileHeader `json:"file" form:"file"`
 	Host string                `json:"host,default=whereabouts.icu" form:"host,default=whereabouts.icu"`
 }
 
-type HelloFileHandlerResp struct {
-	Code bool   `json:"coder"`
-	Url  string `json:"url"`
+type HelloFileResp struct {
+	Url string `json:"url"`
 }
 
-type HelloMultipleFilesHandlerReq struct {
+type HelloMultipleFilesReq struct {
 }
 
-type HelloMultipleFilesHandlerResp struct {
-	result.DefaultResp
+type HelloMultipleFilesResp struct {
+	Result string `json:"result"`
 }

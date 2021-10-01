@@ -22,7 +22,7 @@ type Server interface {
 	Close(ctx context.Context) error
 	OnShutdown(shutdownHook hook.ShutdownHook) Server
 	OnBeforeRun(hook.RunHook) Server
-	Route(routes Router) Server
+	Routes(routes Router) Server
 }
 
 type server struct {
@@ -49,7 +49,9 @@ func NewServerWithConfig(config Config) Server {
 	return s
 }
 
-func (s *server) Route(routes Router) Server {
+type Router func(engine *gin.Engine)
+
+func (s *server) Routes(routes Router) Server {
 	routes(s.Kernel())
 	return s
 }
