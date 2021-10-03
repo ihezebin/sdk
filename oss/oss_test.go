@@ -10,7 +10,7 @@ import (
 )
 
 func TestQiniu(t *testing.T) {
-	client := NewQiNiuClient(&qiniu.Config{
+	client := qiniu.NewClient(qiniu.Config{
 		Zone:      qiniu.ZoneHuanan,
 		AccessKey: "AccessKey",
 		SecretKey: "SecretKey",
@@ -31,7 +31,7 @@ func TestQiniu(t *testing.T) {
 }
 
 func TestUCloud(t *testing.T) {
-	client := NewUCloudClient(&ucloud.Config{
+	client := ucloud.NewClient(ucloud.Config{
 		PublicKey:  "PublicKey",
 		PrivateKey: "PrivateKey",
 		FileHost:   "cn-bj.ufileos.com",

@@ -14,6 +14,7 @@ require (
 	github.com/qiniu/go-sdk/v7 v7.9.7
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.8.1
+	github.com/tencentcloud/tencentcloud-sdk-go v1.0.264 // indirect
 	github.com/ufilesdk-dev/ufile-gosdk v1.0.1
 	github.com/urfave/cli v1.22.5
 	github.com/xuri/excelize/v2 v2.4.1 // indirect
