@@ -16,12 +16,12 @@ type Client interface {
 
 type client struct {
 	kernel *sms.Client
-	config *Config
+	config Config
 }
 
 // NewClient 实例化一个认证客户端，入参需要传入腾讯云账户密钥对secretId，secretKey
-func NewClient(config *Config) (Client, error) {
-	if config == nil || config.SecretKey == "" || config.SecretId == "" {
+func NewClient(config Config) (Client, error) {
+	if config.SecretKey == "" || config.SecretId == "" {
 		return nil, errors.New("create sms client must need secret_id and secret_key")
 	}
 	if config.Region == "" {

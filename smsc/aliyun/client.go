@@ -13,12 +13,12 @@ type Client interface {
 
 type client struct {
 	kernel *dysmsapi20170525.Client
-	config *Config
+	config Config
 }
 
-func NewClient(config *Config) (Client, error) {
+func NewClient(config Config) (Client, error) {
 
-	if config == nil || config.AccessKeyId == "" || config.AccessKeySecret == "" {
+	if config.AccessKeyId == "" || config.AccessKeySecret == "" {
 		return nil, errors.New("create sms client must need access_key_id and access_key_secret")
 	}
 	if config.Endpoint == "" {
