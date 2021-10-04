@@ -3,6 +3,8 @@ module github.com/whereabouts/sdk
 go 1.15
 
 require (
+	github.com/alibabacloud-go/darabonba-openapi v0.1.7
+	github.com/alibabacloud-go/dysmsapi-20170525/v2 v2.0.2
 	github.com/gin-gonic/gin v1.7.2
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-resty/resty/v2 v2.6.0
@@ -15,6 +17,8 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/viper v1.8.1
 	github.com/tencentcloud/tencentcloud-sdk-go v1.0.264 // indirect
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.264
+	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.264
 	github.com/ufilesdk-dev/ufile-gosdk v1.0.1
 	github.com/urfave/cli v1.22.5
 	github.com/xuri/excelize/v2 v2.4.1 // indirect

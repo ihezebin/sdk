@@ -5,7 +5,7 @@ import (
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/sms/bytes"
 	"github.com/qiniu/go-sdk/v7/storage"
-	"github.com/whereabouts/sdk/oss"
+	"github.com/whereabouts/sdk/ossc"
 	"io"
 	"io/ioutil"
 )
@@ -16,7 +16,7 @@ type client struct {
 	config   Config
 }
 
-func NewClient(config Config) oss.Client {
+func NewClient(config Config) ossc.Client {
 	putPolicy := storage.PutPolicy{
 		Scope: config.Bucket,
 	}

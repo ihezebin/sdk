@@ -1,4 +1,4 @@
-package nativer
+package common
 
 func If(condition bool, trueVal, falseVal interface{}) interface{} {
 	if condition {

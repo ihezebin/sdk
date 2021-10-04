@@ -2,7 +2,7 @@ package ucloud
 
 import (
 	ufsdk "github.com/ufilesdk-dev/ufile-gosdk"
-	"github.com/whereabouts/sdk/oss"
+	"github.com/whereabouts/sdk/ossc"
 	"io"
 )
 
@@ -10,7 +10,7 @@ type client struct {
 	config *ufsdk.Config
 }
 
-func NewClient(config Config) oss.Client {
+func NewClient(config Config) ossc.Client {
 	return &client{
 		config: &ufsdk.Config{
 			PublicKey:       config.PublicKey,

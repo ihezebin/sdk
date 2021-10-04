@@ -1,10 +1,10 @@
-package oss
+package ossc
 
 import (
 	"fmt"
 	"github.com/whereabouts/sdk/logger"
-	"github.com/whereabouts/sdk/oss/qiniu"
-	"github.com/whereabouts/sdk/oss/ucloud"
+	"github.com/whereabouts/sdk/ossc/qiniu"
+	"github.com/whereabouts/sdk/ossc/ucloud"
 	"os"
 	"testing"
 )
