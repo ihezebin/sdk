@@ -39,6 +39,7 @@ cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
+github.com/QcloudApi/qcloud_sign_golang v0.0.0-20141224014652-e4130a326409/go.mod h1:1pk82RBxDY/JZnPQrtqHlUFfCctgdorsd9M06fMynOM=
 github.com/alibabacloud-go/darabonba-openapi v0.1.4/go.mod h1:j03z4XUkIC9aBj/w5Bt7H0cygmPNt5sug8NXle68+Og=
 github.com/alibabacloud-go/darabonba-openapi v0.1.7 h1:W0uSIzejswpz02ILRgEMFFkMZGAnfpB6BjrGvbOjCK0=
 github.com/alibabacloud-go/darabonba-openapi v0.1.7/go.mod h1:6FV1Bt1AItYIlC2rVopPTumrRNtkfPBmrPVAZ8v2bLk=
@@ -193,6 +194,10 @@ github.com/google/go-cmp v0.5.3/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.4/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.5 h1:Khx7svrCpmxxtHBq5j2mp/xVjsi8hQMfNLvJFAlrGgU=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
+github.com/google/go-querystring v1.0.0 h1:Xkwi/a1rcvNg1PPYe5vI8GbeBY/jrVuDX5ASuANWTrk=
+github.com/google/go-querystring v1.0.0/go.mod h1:odCYkC5MyYFN7vkCjXpyrEuKhc/BUO6wN/zVPAxq5ck=
+github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD/fhyJ8=
+github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/google/martian v2.1.0+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXiIaQGbYVAs8BPL6v8lEs=
 github.com/google/martian/v3 v3.0.0/go.mod h1:y5Zk1BBys9G+gd6Jrk0W3cC1+ELVxBWuIGO+w/tUAp0=
@@ -209,6 +214,7 @@ github.com/google/pprof v0.0.0-20201203190320-1bf35d6f28c2/go.mod h1:kpwsk12EmLe
 github.com/google/pprof v0.0.0-20210122040257-d980be63207e/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/google/pprof v0.0.0-20210226084205-cbba55b83ad5/go.mod h1:kpwsk12EmLew5upagYY7GY0pfYCcupk39gWOCRROcvE=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
+github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
@@ -301,6 +307,10 @@ github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3Rllmb
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 h1:RWengNIwukTxcDr9M+97sNutRR1RKhG96O6jWumTTnw=
 github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826/go.mod h1:TaXosZuwdSHYgviHp1DAtfrULt5eUgsSMsZf+YrPgl8=
 github.com/montanaflynn/stats v0.0.0-20171201202039-1bf9dbcd8cbe/go.mod h1:wL8QJuTMNUDYhXwkmfOly8iTdp5TEcJFWZD2D7SIkUc=
+github.com/mozillazg/go-httpheader v0.2.1 h1:geV7TrjbL8KXSyvghnFm+NyTux/hxwueTSrwhe88TQQ=
+github.com/mozillazg/go-httpheader v0.2.1/go.mod h1:jJ8xECTlalr6ValeXYdOF8fFUISeBAdw6E61aqQma60=
+github.com/mozillazg/go-httpheader v0.3.0 h1:3brX5z8HTH+0RrNA1362Rc3HsaxyWEKtGY45YrhuINM=
+github.com/mozillazg/go-httpheader v0.3.0/go.mod h1:PuT8h0pw6efvp8ZeUec1Rs7dwjK08bt6gKSReGMqtdA=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
 github.com/pelletier/go-toml v1.7.0/go.mod h1:vwGMzjaWMwyfHwgIBhI2YUM4fB6nL6lVAvS1LBMMhTE=
@@ -463,6 +473,7 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cmq v1.0.264 h1:0NAj7sv
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cmq v1.0.264/go.mod h1:lMGRATy+K7bKhXtxNTqRbSmaCy48xSQXPJqc1tYV50k=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cms v1.0.264 h1:wrE0hjFJNCAvJ8XC1GBkHbNRwSOs/ZSKHU8Hvx3luBI=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cms v1.0.264/go.mod h1:BMOdxeUMN94RmsH73vJbwV93lV5/qa61S6nNQW5CzMY=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.194/go.mod h1:7sCQWVkxcsR38nffDW057DRGk8mUjK1Ing/EFOK8s8Y=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.264 h1:USf7I8ohzoqCwAcCHz5rz0hD57mmNXZgrLfxFLx1WmA=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.264/go.mod h1:7sCQWVkxcsR38nffDW057DRGk8mUjK1Ing/EFOK8s8Y=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/cpdp v1.0.264 h1:RCJ7m77zsteKHah/bHqojiWxYYuaka7Jl8Y9rGzdQ98=
@@ -559,6 +570,7 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/iotvideo v1.0.264 h1:pI
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/iotvideo v1.0.264/go.mod h1:rg5UtNZfTbi0Kp1z11cR+jRxMvCeTqRTznKJE+HCKDA=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/iotvideoindustry v1.0.264 h1:Z0RAzGhvYtSa71HNanWqblVPOXbHPsElCGReL7gLsPQ=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/iotvideoindustry v1.0.264/go.mod h1:u1pFSP2nJtu/ZmqtGUiaOlYvrtn9IAI8ETsa5XMa1s0=
+github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/kms v1.0.194/go.mod h1:yrBKWhChnDqNz1xuXdSbWXG56XawEq0G5j1lg4VwBD4=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/kms v1.0.264 h1:GqEjUVL/85scxdC6+LrQVjbEz4WQrL1Ms1L2iwds5nA=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/kms v1.0.264/go.mod h1:yrBKWhChnDqNz1xuXdSbWXG56XawEq0G5j1lg4VwBD4=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/lighthouse v1.0.264 h1:I8cI1b2COZLLYiLEIxqaoMpSwThSgGA0FnWi2q6sX+c=
@@ -731,6 +743,8 @@ github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/yunsou v1.0.264 h1:9uOK
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/yunsou v1.0.264/go.mod h1:9MrYXMTXdB+ddmpaRH8J0MRdTfrf3HlaTx5lC2yaAzE=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/zj v1.0.264 h1:QZevCZEYHlZgBvuTOqB75t+Eand5nugWfQn5hHWiKmg=
 github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/zj v1.0.264/go.mod h1:nDOYCwy4QCGrb81K73WNstK8QDkfwiw29yX1V1j03iY=
+github.com/tencentyun/cos-go-sdk-v5 v0.7.31 h1:NujkkOKMJ3IFs1+trCwXOKRCIPQ8qI5Lxul9JkhTg6M=
+github.com/tencentyun/cos-go-sdk-v5 v0.7.31/go.mod h1:4E4+bQ2gBVJcgEC9Cufwylio4mXOct2iu05WjgEBx1o=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tjfoc/gmsm v1.3.2 h1:7JVkAn5bvUJ7HtU08iW6UiD+UTmJTIToHCfeFzkcCxM=

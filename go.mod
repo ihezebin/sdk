@@ -9,9 +9,11 @@ require (
 	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8
 	github.com/go-resty/resty/v2 v2.6.0
 	github.com/gomodule/redigo v1.8.5
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/lestrrat-go/strftime v1.0.4 // indirect
+	github.com/mozillazg/go-httpheader v0.3.0 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/qiniu/go-sdk/v7 v7.9.7
 	github.com/sirupsen/logrus v1.8.1
@@ -19,6 +21,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go v1.0.264 // indirect
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/common v1.0.264
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.264
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.31
 	github.com/ufilesdk-dev/ufile-gosdk v1.0.1
 	github.com/urfave/cli v1.22.5
 	github.com/xuri/excelize/v2 v2.4.1 // indirect

@@ -2,15 +2,19 @@ package ucloud
 
 import (
 	ufsdk "github.com/ufilesdk-dev/ufile-gosdk"
-	"github.com/whereabouts/sdk/ossc"
 	"io"
 )
+
+type Client interface {
+	Upload(file io.Reader, key string) (string, error)
+	Delete(key string) error
+}
 
 type client struct {
 	config *ufsdk.Config
 }
 
-func NewClient(config Config) ossc.Client {
+func NewClient(config Config) Client {
 	return &client{
 		config: &ufsdk.Config{
 			PublicKey:       config.PublicKey,
@@ -23,37 +27,24 @@ func NewClient(config Config) ossc.Client {
 	}
 }
 
-func (c *client) Upload(file io.Reader, filename string) (string, error) {
+func (c *client) Upload(file io.Reader, key string) (string, error) {
 	req, err := ufsdk.NewFileRequest(c.config, nil)
 	if err != nil {
 		return "", err
 	}
-	err = req.IOPut(file, filename, "")
+	err = req.IOPut(file, key, "")
 	if err != nil {
 		return string(req.DumpResponse(true)), err
 	}
-	return req.GetPublicURL(filename), err
+	return req.GetPublicURL(key), err
 }
 
-func (c *client) Download(url string) error {
+func (c *client) Delete(key string) error {
 	req, err := ufsdk.NewFileRequest(c.config, nil)
 	if err != nil {
 		return err
 	}
-	// 普通下载 "DownLoadURL"
-	err = req.Download(url)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (c *client) Delete(filename string) error {
-	req, err := ufsdk.NewFileRequest(c.config, nil)
-	if err != nil {
-		return err
-	}
-	err = req.DeleteFile(filename)
+	err = req.DeleteFile(key)
 	if err != nil {
 		return err
 	}

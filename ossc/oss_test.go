@@ -1,13 +1,42 @@
 package ossc
 
 import (
+	"context"
 	"fmt"
 	"github.com/whereabouts/sdk/logger"
 	"github.com/whereabouts/sdk/ossc/qiniu"
+	"github.com/whereabouts/sdk/ossc/tencent"
 	"github.com/whereabouts/sdk/ossc/ucloud"
 	"os"
+	"strings"
 	"testing"
 )
+
+func TestTencent(t *testing.T) {
+	ctx := context.Background()
+	client := tencent.NewClient(tencent.Config{
+		SecretID:  "AKIDjLkvsc8QVLxLUP5WjhRwCDzXrxoRpzua",
+		SecretKey: "UjjV2KNBl6D5j8LK5btwlMiqjOo01nKc",
+		BucketURL: "http://picture.whereabouts.icu",
+	})
+	url, err := client.Upload(ctx, strings.NewReader("test file3"), "test3.txt")
+	if err != nil {
+		logger.Fatal(err)
+	}
+	logger.Info(url)
+	err = client.Delete(ctx, "test.txt")
+	if err != nil {
+		logger.Fatal(err)
+	}
+	faileds, err := client.DeleteMulti(ctx, "test1.txt", "test2.txt", "test3.txt")
+	if err != nil {
+		logger.Fatal(err)
+	}
+	if len(faileds) > 0 {
+		logger.Error(faileds)
+	}
+	logger.Info("upload succeed")
+}
 
 func TestQiniu(t *testing.T) {
 	client := qiniu.NewClient(qiniu.Config{

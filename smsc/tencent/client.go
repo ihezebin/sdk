@@ -114,7 +114,7 @@ func (c *client) SendSms(msg *Message, telephones ...string) ([]FailedInfo, erro
 		}
 	}
 	if len(failedInfos) > 0 {
-		return failedInfos, errors.New(fmt.Sprintf("send sms to some phones failed. deatils in failedInfos"))
+		return failedInfos, errors.New(fmt.Sprintf("send sms to some phones failed. detail in failedInfos"))
 	}
 
 	return nil, nil

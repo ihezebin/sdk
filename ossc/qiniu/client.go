@@ -5,10 +5,14 @@ import (
 	"github.com/qiniu/go-sdk/v7/auth/qbox"
 	"github.com/qiniu/go-sdk/v7/sms/bytes"
 	"github.com/qiniu/go-sdk/v7/storage"
-	"github.com/whereabouts/sdk/ossc"
 	"io"
 	"io/ioutil"
 )
+
+type Client interface {
+	Upload(file io.Reader, filename string) (string, error)
+	Delete(filename string) error
+}
 
 type client struct {
 	uploader *storage.FormUploader
@@ -16,7 +20,7 @@ type client struct {
 	config   Config
 }
 
-func NewClient(config Config) ossc.Client {
+func NewClient(config Config) Client {
 	putPolicy := storage.PutPolicy{
 		Scope: config.Bucket,
 	}
@@ -45,10 +49,6 @@ func (c *client) Upload(file io.Reader, filename string) (string, error) {
 		return "", err
 	}
 	return storage.MakePublicURL(c.config.Domain, filename), err
-}
-
-func (c *client) Download(url string) error {
-	return nil
 }
 
 func (c *client) Delete(filename string) error {
