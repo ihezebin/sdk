@@ -14,3 +14,49 @@ type Config struct {
 	// "说明3": "verifyUploadMD5 用于数据完整性校验，默认不开启，若要开启请置为true",
 	VerifyUploadMD5 bool `json:"verify_upload_md_5"`
 }
+
+type Option func(config *Config)
+
+func newConfig(options ...Option) Config {
+	config := Config{}
+	for _, option := range options {
+		option(&config)
+	}
+	return config
+}
+
+func WithPublicKey(publicKey string) Option {
+	return func(config *Config) {
+		config.PublicKey = publicKey
+	}
+}
+
+func WithPrivateKey(privateKey string) Option {
+	return func(config *Config) {
+		config.PrivateKey = privateKey
+	}
+}
+
+func WithBucketName(bucketName string) Option {
+	return func(config *Config) {
+		config.BucketName = bucketName
+	}
+}
+
+func WithBucketHost(bucketHost string) Option {
+	return func(config *Config) {
+		config.BucketHost = bucketHost
+	}
+}
+
+func WithFileHost(fileHost string) Option {
+	return func(config *Config) {
+		config.FileHost = fileHost
+	}
+}
+
+func WithVerifyUploadMD5(verifyUploadMD5 bool) Option {
+	return func(config *Config) {
+		config.VerifyUploadMD5 = verifyUploadMD5
+	}
+}

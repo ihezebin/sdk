@@ -7,7 +7,7 @@ const (
 	defaultMaxColumn = 1000
 )
 
-type Options = excelize.Options
+type Option = excelize.Options
 
 type ReadConfig struct {
 	MaxRow    int
@@ -15,6 +15,17 @@ type ReadConfig struct {
 }
 
 type ReadOption func(opt *ReadConfig)
+
+func newReadConfig(options ...ReadOption) ReadConfig {
+	readConfig := ReadConfig{
+		MaxRow:    defaultMaxRow,
+		MaxColumn: defaultMaxColumn,
+	}
+	for _, option := range options {
+		option(&readConfig)
+	}
+	return readConfig
+}
 
 // WithMaxRow set the max row to read when get all rows
 func WithMaxRow(maxRow int) ReadOption {

@@ -9,18 +9,16 @@ import (
 	"net/url"
 )
 
-type Client interface {
-	Upload(ctx context.Context, file io.Reader, key string) (string, error)
-	Delete(ctx context.Context, key string) error
-	DeleteMulti(ctx context.Context, keys ...string) ([]string, error)
-}
-
-type client struct {
+type Client struct {
 	kernel *cos.Client
 	config Config
 }
 
-func NewClient(config Config) Client {
+func NewClient(options ...Option) *Client {
+	return NewClientWithConfig(newConfig(options...))
+}
+
+func NewClientWithConfig(config Config) *Client {
 	u, _ := url.Parse(config.BucketURL)
 	b := &cos.BaseURL{BucketURL: u}
 	// 永久密钥
@@ -30,26 +28,30 @@ func NewClient(config Config) Client {
 			SecretKey: config.SecretKey,
 		},
 	})
-	return &client{kernel: c, config: config}
+	return &Client{kernel: c, config: config}
 }
 
-func (c *client) Upload(ctx context.Context, file io.Reader, key string) (string, error) {
-	_, err := c.kernel.Object.Put(ctx, key, file, nil)
+func (client *Client) Kernel() *cos.Client {
+	return client.kernel
+}
+
+func (client *Client) Upload(ctx context.Context, file io.Reader, key string) (string, error) {
+	_, err := client.kernel.Object.Put(ctx, key, file, nil)
 	if err != nil {
 		return "", err
 	}
-	return c.kernel.Object.GetObjectURL(key).String(), err
+	return client.kernel.Object.GetObjectURL(key).String(), err
 }
 
-func (c *client) Delete(ctx context.Context, key string) error {
-	_, err := c.kernel.Object.Delete(ctx, key)
+func (client *Client) Delete(ctx context.Context, key string) error {
+	_, err := client.kernel.Object.Delete(ctx, key)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (c *client) DeleteMulti(ctx context.Context, keys ...string) ([]string, error) {
+func (client *Client) DeleteMulti(ctx context.Context, keys ...string) ([]string, error) {
 	obs := make([]cos.Object, 0)
 	for _, key := range keys {
 		obs = append(obs, cos.Object{Key: key})
@@ -61,7 +63,7 @@ func (c *client) DeleteMulti(ctx context.Context, keys ...string) ([]string, err
 		// Quiet: true,
 	}
 
-	result, _, err := c.kernel.Object.DeleteMulti(ctx, opt)
+	result, _, err := client.kernel.Object.DeleteMulti(ctx, opt)
 	if err != nil {
 		return nil, err
 	}

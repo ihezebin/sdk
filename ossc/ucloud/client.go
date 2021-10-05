@@ -5,18 +5,18 @@ import (
 	"io"
 )
 
-type Client interface {
-	Upload(file io.Reader, key string) (string, error)
-	Delete(key string) error
+type Client struct {
+	kernel *ufsdk.Config
+	config Config
 }
 
-type client struct {
-	config *ufsdk.Config
+func NewClient(options ...Option) *Client {
+	return NewClientWithConfig(newConfig(options...))
 }
 
-func NewClient(config Config) Client {
-	return &client{
-		config: &ufsdk.Config{
+func NewClientWithConfig(config Config) *Client {
+	return &Client{
+		kernel: &ufsdk.Config{
 			PublicKey:       config.PublicKey,
 			PrivateKey:      config.PrivateKey,
 			BucketName:      config.BucketName,
@@ -24,11 +24,16 @@ func NewClient(config Config) Client {
 			FileHost:        config.FileHost,
 			VerifyUploadMD5: config.VerifyUploadMD5,
 		},
+		config: config,
 	}
 }
 
-func (c *client) Upload(file io.Reader, key string) (string, error) {
-	req, err := ufsdk.NewFileRequest(c.config, nil)
+func (client *Client) Kernel() *ufsdk.Config {
+	return client.kernel
+}
+
+func (client *Client) Upload(file io.Reader, key string) (string, error) {
+	req, err := ufsdk.NewFileRequest(client.kernel, nil)
 	if err != nil {
 		return "", err
 	}
@@ -39,8 +44,8 @@ func (c *client) Upload(file io.Reader, key string) (string, error) {
 	return req.GetPublicURL(key), err
 }
 
-func (c *client) Delete(key string) error {
-	req, err := ufsdk.NewFileRequest(c.config, nil)
+func (client *Client) Delete(key string) error {
+	req, err := ufsdk.NewFileRequest(client.kernel, nil)
 	if err != nil {
 		return err
 	}

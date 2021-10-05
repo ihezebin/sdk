@@ -9,18 +9,17 @@ import (
 	"io/ioutil"
 )
 
-type Client interface {
-	Upload(file io.Reader, filename string) (string, error)
-	Delete(filename string) error
+type Client struct {
+	kernel *storage.FormUploader
+	token  string
+	config Config
 }
 
-type client struct {
-	uploader *storage.FormUploader
-	token    string
-	config   Config
+func NewClient(options ...Option) *Client {
+	return NewClientWithConfig(newConfig(options...))
 }
 
-func NewClient(config Config) Client {
+func NewClientWithConfig(config Config) *Client {
 	putPolicy := storage.PutPolicy{
 		Scope: config.Bucket,
 	}
@@ -31,39 +30,47 @@ func NewClient(config Config) Client {
 	cfg.UseHTTPS = config.UseHTTPS
 	// 上传是否使用CDN上传加速
 	cfg.UseCdnDomains = config.UseCdnDomains
-	return &client{
-		token:    putPolicy.UploadToken(qbox.NewMac(config.AccessKey, config.SecretKey)),
-		uploader: storage.NewFormUploader(&cfg),
-		config:   config,
+	return &Client{
+		token:  putPolicy.UploadToken(qbox.NewMac(config.AccessKey, config.SecretKey)),
+		kernel: storage.NewFormUploader(&cfg),
+		config: config,
 	}
 }
 
-func (c *client) Upload(file io.Reader, filename string) (string, error) {
+func (client *Client) Upload(file io.Reader, filename string) (string, error) {
 	ret := storage.PutRet{}
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		return "", err
 	}
-	err = c.uploader.Put(context.Background(), &ret, c.token, filename, bytes.NewReader(data), int64(len(data)), nil)
+	err = client.kernel.Put(context.Background(), &ret, client.token, filename, bytes.NewReader(data), int64(len(data)), nil)
 	if err != nil {
 		return "", err
 	}
-	return storage.MakePublicURL(c.config.Domain, filename), err
+	return storage.MakePublicURL(client.config.Domain, filename), err
 }
 
-func (c *client) Delete(filename string) error {
-	mac := qbox.NewMac(c.config.AccessKey, c.config.SecretKey)
+func (client *Client) Delete(filename string) error {
+	mac := qbox.NewMac(client.config.AccessKey, client.config.SecretKey)
 	cfg := storage.Config{
 		// 是否使用https域名进行资源管理
-		UseHTTPS: c.config.UseHTTPS,
+		UseHTTPS: client.config.UseHTTPS,
 	}
 	// 指定空间所在的区域，如果不指定将自动探测
 	// 如果没有特殊需求，默认不需要指定
-	cfg.Zone = zoneMap[c.config.Zone]
+	cfg.Zone = zoneMap[client.config.Zone]
 	bucketManager := storage.NewBucketManager(mac, &cfg)
-	err := bucketManager.Delete(c.config.Bucket, filename)
+	err := bucketManager.Delete(client.config.Bucket, filename)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (client *Client) Kernel() *storage.FormUploader {
+	return client.kernel
+}
+
+func (client *Client) Token() string {
+	return client.token
 }

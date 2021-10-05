@@ -24,7 +24,7 @@ func New() *Excel {
 	return &Excel{kernel: excelize.NewFile(), sizeCache: new(sync.Map)}
 }
 
-func OpenFile(filename string, opt ...Options) (*Excel, error) {
+func OpenFile(filename string, opt ...Option) (*Excel, error) {
 	file, err := excelize.OpenFile(filename, opt...)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func OpenFile(filename string, opt ...Options) (*Excel, error) {
 	return &Excel{kernel: file, sizeCache: new(sync.Map)}, nil
 }
 
-func OpenReader(r io.Reader, opt ...Options) (*Excel, error) {
+func OpenReader(r io.Reader, opt ...Option) (*Excel, error) {
 	file, err := excelize.OpenReader(r, opt...)
 	if err != nil {
 		return nil, err
@@ -84,13 +84,7 @@ func (e *Excel) getSheetSize(sheet string) (row int, column int, err error) {
 // Default Row limit is 8192. when exceed will set hasMore=true.
 // Default Column limit is 1000. when exceed will cause ErrTooManyColumn
 func (e *Excel) GetRows(index int, options ...ReadOption) ([][]string, bool, error) {
-	config := &ReadConfig{
-		MaxRow:    defaultMaxRow,
-		MaxColumn: defaultMaxColumn,
-	}
-	for _, option := range options {
-		option(config)
-	}
+	config := newReadConfig(options...)
 	rows, err := e.Rows(index)
 	if err != nil {
 		return nil, false, err
