@@ -14,7 +14,7 @@ import (
 
 func TestTencent(t *testing.T) {
 	ctx := context.Background()
-	client := tencent.NewClient(tencent.Config{
+	client := tencent.NewClientWithConfig(tencent.Config{
 		SecretID:  "AKIDjLkvsc8QVLxLUP5WjhRwCDzXrxoRpzua",
 		SecretKey: "UjjV2KNBl6D5j8LK5btwlMiqjOo01nKc",
 		BucketURL: "http://picture.whereabouts.icu",
@@ -39,7 +39,7 @@ func TestTencent(t *testing.T) {
 }
 
 func TestQiniu(t *testing.T) {
-	client := qiniu.NewClient(qiniu.Config{
+	client := qiniu.NewClientWithConfig(qiniu.Config{
 		Zone:      qiniu.ZoneHuanan,
 		AccessKey: "AccessKey",
 		SecretKey: "SecretKey",
@@ -60,7 +60,7 @@ func TestQiniu(t *testing.T) {
 }
 
 func TestUCloud(t *testing.T) {
-	client := ucloud.NewClient(ucloud.Config{
+	client := ucloud.NewClientWithConfig(ucloud.Config{
 		PublicKey:  "PublicKey",
 		PrivateKey: "PrivateKey",
 		FileHost:   "cn-bj.ufileos.com",
