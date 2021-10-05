@@ -25,6 +25,10 @@ func NewClientWithConfig(config Config) (*Client, error) {
 	return &Client{kernel: dialer, config: config}, nil
 }
 
+func (client *Client) Kernel() *gomail.Dialer {
+	return client.kernel
+}
+
 func (client *Client) Send(message *Message) error {
 	if message.Sender == "" {
 		message.Sender = client.config.Username
