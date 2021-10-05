@@ -9,7 +9,7 @@ import (
 )
 
 func TestTencentSms(t *testing.T) {
-	client, err := tencent.NewClient(tencent.Config{
+	client, err := tencent.NewClientWithConfig(tencent.Config{
 		SecretId:  "AKIDjLkv*******zXrxoRpzua",
 		SecretKey: "UjjV2KNBl6D*********qjOo01nKc",
 		Region:    "ap-guangzhou",
@@ -28,7 +28,7 @@ func TestTencentSms(t *testing.T) {
 }
 
 func TestAliyunSms(t *testing.T) {
-	client, err := aliyun.NewClient(aliyun.Config{
+	client, err := aliyun.NewClientWithConfig(aliyun.Config{
 		AccessKeyId:     "",
 		AccessKeySecret: "",
 	})

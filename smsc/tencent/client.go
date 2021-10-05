@@ -10,17 +10,17 @@ import (
 	sms "github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms/v20210111"
 )
 
-type Client interface {
-	SendSms(msg *Message, telephones ...string) ([]FailedInfo, error)
-}
-
-type client struct {
+type Client struct {
 	kernel *sms.Client
 	config Config
 }
 
-// NewClient 实例化一个认证客户端，入参需要传入腾讯云账户密钥对secretId，secretKey
-func NewClient(config Config) (Client, error) {
+func NewClient(options ...Option) (*Client, error) {
+	return NewClientWithConfig(newConfig(options...))
+}
+
+// NewClientWithConfig 实例化一个认证客户端，入参需要传入腾讯云账户密钥对secretId，secretKey
+func NewClientWithConfig(config Config) (*Client, error) {
 	if config.SecretKey == "" || config.SecretId == "" {
 		return nil, errors.New("create sms client must need secret_id and secret_key")
 	}
@@ -55,7 +55,11 @@ func NewClient(config Config) (Client, error) {
 		return nil, err
 	}
 
-	return &client{kernel: c, config: config}, nil
+	return &Client{kernel: c, config: config}, nil
+}
+
+func (client *Client) Kernel() *sms.Client {
+	return client.kernel
 }
 
 // FailedInfo 发送失败的短信信息
@@ -68,7 +72,7 @@ type FailedInfo struct {
 // msg: 短信消息体, 包含短信签名和模板等信息, 使用 NewMessage() 生成
 // telephones: 下发手机号码，采用 E.164 标准，+[国家或地区码][手机号]
 //	 * 示例如：+8613711112222， 其中前面有一个+号 ，86为国家码，13711112222为手机号，最多不要超过200个手机号
-func (c *client) SendSms(msg *Message, telephones ...string) ([]FailedInfo, error) {
+func (client *Client) SendSms(msg *Message, telephones ...string) ([]FailedInfo, error) {
 	/* 实例化一个请求对象，根据调用的接口和实际情况，可以进一步设置请求参数
 	 * 你可以直接查询SDK源码确定接口有哪些属性可以设置
 	 * 属性可能是基本类型，也可能引用了另一个数据结构
@@ -88,7 +92,7 @@ func (c *client) SendSms(msg *Message, telephones ...string) ([]FailedInfo, erro
 	request.PhoneNumberSet = common.StringPtrs(telephones)
 
 	// 调用接口，传入请求对象
-	response, err := c.kernel.SendSms(request)
+	response, err := client.kernel.SendSms(request)
 	// 处理异常
 	if _, ok := err.(*tencentErrors.TencentCloudSDKError); ok {
 		return nil, errors.Wrap(err, "an tencent sms api error has returned: %s")

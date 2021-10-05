@@ -28,3 +28,43 @@ type HttpProfile struct {
 	 * 则必须手动指定域名，例如sms的上海金融区域名： sms.ap-shanghai-fsi.tencentcloudapi.com */
 	Endpoint string `json:"endpoint"`
 }
+
+type Option func(config *Config)
+
+func newConfig(options ...Option) Config {
+	config := Config{}
+	for _, option := range options {
+		option(&config)
+	}
+	return config
+}
+
+func WithSecretId(secretId string) Option {
+	return func(config *Config) {
+		config.SecretId = secretId
+	}
+}
+
+func WithSecretKey(secretKey string) Option {
+	return func(config *Config) {
+		config.SecretKey = secretKey
+	}
+}
+
+func WithRegion(region string) Option {
+	return func(config *Config) {
+		config.Region = region
+	}
+}
+
+func WithHttpProfile(httpProfile HttpProfile) Option {
+	return func(config *Config) {
+		config.HttpProfile = &httpProfile
+	}
+}
+
+func WithSignMethod(signMethod string) Option {
+	return func(config *Config) {
+		config.SignMethod = signMethod
+	}
+}

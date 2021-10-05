@@ -7,17 +7,16 @@ import (
 	"strings"
 )
 
-type Client interface {
-	SendSms(msg *Message, telephones ...string) error
-}
-
-type client struct {
+type Client struct {
 	kernel *dysmsapi20170525.Client
 	config Config
 }
 
-func NewClient(config Config) (Client, error) {
+func NewClient(options ...Option) (*Client, error) {
+	return NewClientWithConfig(newConfig(options...))
+}
 
+func NewClientWithConfig(config Config) (*Client, error) {
 	if config.AccessKeyId == "" || config.AccessKeySecret == "" {
 		return nil, errors.New("create sms client must need access_key_id and access_key_secret")
 	}
@@ -34,7 +33,11 @@ func NewClient(config Config) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &client{kernel: c, config: config}, nil
+	return &Client{kernel: c, config: config}, nil
+}
+
+func (client *Client) Kernel() *dysmsapi20170525.Client {
+	return client.kernel
 }
 
 // FailedInfo 发送失败的短信信息
@@ -43,7 +46,7 @@ type FailedInfo struct {
 	Message   string `json:"message"`
 }
 
-func (c *client) SendSms(msg *Message, telephones ...string) error {
+func (client *Client) SendSms(msg *Message, telephones ...string) error {
 	phoneNumbers := strings.Join(telephones, ",")
 	request := &dysmsapi20170525.SendSmsRequest{
 		PhoneNumbers:  &phoneNumbers,
@@ -52,7 +55,7 @@ func (c *client) SendSms(msg *Message, telephones ...string) error {
 		TemplateParam: &msg.TemplateParamJson,
 	}
 	// 复制代码运行请自行打印 API 的返回值
-	response, err := c.kernel.SendSms(request)
+	response, err := client.kernel.SendSms(request)
 	_ = response
 	if err != nil {
 		return err
