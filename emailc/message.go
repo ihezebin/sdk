@@ -1,115 +1,122 @@
 package emailc
 
 import (
-	"errors"
-	"fmt"
-	"github.com/whereabouts/sdk/utils/mapper"
-	"github.com/whereabouts/sdk/utils/timer"
-	"strings"
-)
-
-const (
-	ContentTypeText = "text/plain;charset=UTF-8"
-	ContentTypeHtml = "text/html;charset=UTF-8"
+	"gopkg.in/gomail.v2"
+	"io"
+	"time"
 )
 
 type Message struct {
-	// From sender, default "whereabouts.icu"
-	From string `json:"From"`
-	// To receivers, can not be nil
-	To []string `json:"-"`
-	// CC send a duplicate to
-	CC []string `json:"-"`
-	// BCC blind carbon copy
-	BCC []string `json:"-"`
-	// Subject email title, default "test email"
-	Subject string `json:"Subject"`
-	// ContentType email type：text or html
-	ContentType string `json:"Content-Type"`
-	// Date send time, default now
-	Date string `json:"Date"`
-	// Body email content, default "hello world！this is a test mail！"
-	Body string `json:"-"`
+	// Sender 发件者邮箱地址
+	Sender string
+	// Receiver 收件者邮箱地址
+	Receiver []string
+	// Title 邮件标题
+	Title string
+	// Text 邮件文本内容, 设置后 Html 失效
+	Text string
+	// 邮件HTML富文本内容, 设置后 Text 失效
+	Html string
+	// Date 发件时间
+	Date time.Time
+	// CC 抄送人邮箱地址
+	CC []string
+	// BCC 密送人邮箱地址
+	BCC    []string
+	Attach []Attach
 }
 
-var defaultMessage = Message{
-	From:        "whereabouts.icu",
-	ContentType: ContentTypeHtml,
-	Date:        timer.Now(),
-	Subject:     "test email",
-	Body:        "hello world！this is a test mail！",
+type Attach struct {
+	// Name 附件文件名称
+	Name string
+	// File 附件文件Reader
+	File io.Reader
+}
+
+func NewAttach(name string, file io.Reader) Attach {
+	return Attach{Name: name, File: file}
 }
 
 func NewMessage() *Message {
-	return &defaultMessage
+	return &Message{
+		Date: time.Now(),
+	}
 }
 
-func handleMessage(client *client, message *Message) ([]byte, error) {
-	if len(message.To) == 0 {
-		return nil, errors.New("receiver has to be at least one person, use SetReceiver")
+func (msg *Message) WithSender(sender string) *Message {
+	msg.Sender = sender
+	return msg
+}
+
+func (msg *Message) WithReceiver(receiver ...string) *Message {
+	msg.Receiver = receiver
+	return msg
+}
+
+func (msg *Message) WithTitle(title string) *Message {
+	msg.Title = title
+	return msg
+}
+
+func (msg *Message) WithText(text string) *Message {
+	msg.Text = text
+	msg.Html = ""
+	return msg
+}
+
+func (msg *Message) WithHtml(html string) *Message {
+	msg.Html = html
+	msg.Text = ""
+	return msg
+}
+
+func (msg *Message) WithDate(date time.Time) *Message {
+	msg.Date = date
+	return msg
+}
+
+func (msg *Message) WithCC(cc ...string) *Message {
+	msg.CC = cc
+	return msg
+}
+
+func (msg *Message) WithBCC(bcc ...string) *Message {
+	msg.BCC = bcc
+	return msg
+}
+
+func (msg *Message) WithAttach(attach ...Attach) *Message {
+	msg.Attach = attach
+	return msg
+}
+
+func (msg *Message) toMessage() *gomail.Message {
+	message := gomail.NewMessage()
+	//message.Attach()
+	message.SetHeader("From", msg.Sender)
+	message.SetHeader("To", msg.Receiver...)
+	message.SetHeader("Subject", msg.Title)
+	message.SetHeader("Date", message.FormatDate(msg.Date))
+	if len(msg.CC) > 0 {
+		message.SetHeader("CC", msg.CC...)
+	}
+	if len(msg.BCC) > 0 {
+		message.SetHeader("BCC", msg.BCC...)
+	}
+	if msg.Text != "" {
+		message.SetBody("text/plain;charset=UTF-8", msg.Text)
+	} else {
+		message.SetBody("text/html;charset=UTF-8", msg.Html)
 	}
 
-	message.From = fmt.Sprintf("%s<%s>", message.From, client.config.Username)
-
-	msgM, err := mapper.Struct2Map(message)
-	if err != nil {
-		return nil, err
+	if len(msg.Attach) > 0 {
+		for _, attach := range msg.Attach {
+			message.Attach(attach.Name, gomail.SetCopyFunc(func(writer io.Writer) error {
+				_, err := io.Copy(writer, attach.File)
+				return err
+			}))
+		}
 	}
-	msgM["To"] = strings.Join(message.To, ";")
-	msgM["Cc"] = strings.Join(message.CC, ";")
-	msgM["Bcc"] = strings.Join(message.BCC, ";")
 
-	var msg string
-	for key, value := range msgM {
-		msg = fmt.Sprintf("%s%s:%s\r\n", msg, key, value)
-	}
-	msg = fmt.Sprintf("%s\r\n%s", msg, message.Body)
-
-	return []byte(msg), nil
-}
-
-func (message *Message) SetDate(date string) *Message {
-	message.Date = date
-	return message
-}
-
-func (message *Message) SetBody(body string) *Message {
-	message.Body = body
-	return message
-}
-
-// Deprecated: Use SetBody to instead.
-func (message *Message) SetContent(content string) *Message {
-	message.Body = content
-	return message
-}
-
-func (message *Message) SetContentType(contentType string) *Message {
-	message.ContentType = contentType
-	return message
-}
-
-func (message *Message) SetSubject(subject string) *Message {
-	message.Subject = subject
-	return message
-}
-
-func (message *Message) SetReceiver(to ...string) *Message {
-	message.To = to
-	return message
-}
-
-func (message *Message) SetSender(from string) *Message {
-	message.From = from
-	return message
-}
-
-func (message *Message) SetCC(cc ...string) *Message {
-	message.CC = cc
-	return message
-}
-
-func (message *Message) SetBCC(bcc ...string) *Message {
-	message.BCC = bcc
 	return message
 }

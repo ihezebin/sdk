@@ -3,31 +3,40 @@ package emailc
 import (
 	"fmt"
 	"github.com/whereabouts/sdk/logger"
+	"github.com/whereabouts/sdk/utils/timer"
+	"strings"
 	"testing"
 )
 
 //q1a2
 func TestEmail(t *testing.T) {
-	emailClient := NewClient(Config{
-		Username: "86744316@qq.com",
-		Password: "hsbpzk***gsjbec**c",
-		Host:     HostQQMail,
-		Port:     PortQQMail,
+	client, err := NewClientWithConfig(Config{
+		Username: "heds@whereabouts.icu",
+		Password: "dsdsd.",
+		Host:     HostExmail,
+		Port:     PortExmail,
 	})
-	//msg := NewMessage().SetReceiver("378129361@qq.com").SetContentType(ContentTypeText).SetBody("Hello World！This is a test mail！")
-	msg := NewMessage().SetReceiver("378129361@qq.com").
-		SetBody(`
+	if err != nil {
+		logger.Fatal(err)
+	}
+	now, err := timer.Parse("2006-01-02 15:04:05")
+	msg := NewMessage().
+		WithTitle("test").
+		WithReceiver("asdas@qq.com").
+		WithDate(now).
+		WithText(`
 			<html>
 			<body>
-				<h3 style="color:red">
+				<h3 style="color:white;background-color:skyblue">
 				"Hello World！This is a test mail！"
 				</h3>
 			</body>
 			</html>
-		`)
-	err := emailClient.Send(msg)
+		`).
+		WithAttach(NewAttach("test.txt", strings.NewReader("dsadsad")))
+	err = client.Send(msg)
 	if err != nil {
-		logger.Println("send mail err:", err)
+		logger.Fatal("send mail err:", err)
 	}
 	fmt.Println("send mail successfully")
 }

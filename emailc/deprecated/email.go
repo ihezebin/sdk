@@ -1,4 +1,4 @@
-package emailc
+package deprecated
 
 import (
 	"fmt"
