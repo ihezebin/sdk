@@ -108,7 +108,7 @@ func findCaller(skip int) (file, function string, line int, err error) {
 		if err != nil {
 			return file, function, line, err
 		}
-		if !strings.Contains(file, kernelPackageName) && !strings.Contains(file, loggerPackageName) {
+		if !strings.Contains(function, kernelPackageName) && !strings.Contains(function, loggerPackageName) {
 			break
 		}
 	}
