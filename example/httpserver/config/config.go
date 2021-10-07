@@ -6,9 +6,9 @@ import (
 
 // Config global config
 type Config struct {
-	Port    int    `json:"port"`
-	AppName string `json:"app_name"`
-	Mode    string `json:"mode"`
+	Port    int    `mapstructure:"port" json:"port"`
+	AppName string `mapstructure:"app_name" json:"app_name"`
+	Mode    string `mapstructure:"mode" json:"mode"`
 }
 
 var gConfig Config

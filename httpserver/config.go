@@ -10,9 +10,9 @@ const ModeRelease = gin.ReleaseMode
 const ModeTest = gin.TestMode
 
 type Config struct {
-	Mode        string `json:"mode"`
-	Name        string `json:"name"`
-	Port        int    `json:"port"`
+	Mode        string `mapstructure:"mode" json:"mode"`
+	Name        string `mapstructure:"name" json:"name"`
+	Port        int    `mapstructure:"port" json:"port"`
 	middlewares []middleware.Middleware
 }
 

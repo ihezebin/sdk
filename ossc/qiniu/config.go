@@ -17,17 +17,17 @@ const (
 )
 
 type Config struct {
-	AccessKey string `json:"access_key"`
-	SecretKey string `json:"secret_key"`
-	Bucket    string `json:"bucket"`
+	AccessKey string `mapstructure:"access_key" json:"access_key"`
+	SecretKey string `mapstructure:"secret_key" json:"secret_key"`
+	Bucket    string `mapstructure:"bucket" json:"bucket"`
 	// 空间对应机房
-	Zone string `json:"zone"`
+	Zone string `mapstructure:"zone" json:"zone"`
 	// 是否使用https域名
-	UseHTTPS bool `json:"use_https"`
+	UseHTTPS bool `mapstructure:"use_https" json:"use_https"`
 	// 上传是否使用CDN上传加速
-	UseCdnDomains bool `json:"use_cdn_domains"`
+	UseCdnDomains bool `mapstructure:"use_cdn_domains" json:"use_cdn_domains"`
 	// 域名地址,包含http://,通过查看外链可以看到,如:http://image-c4lms-qiniu.whereabouts.icu
-	Domain string `json:"domain"`
+	Domain string `mapstructure:"domain" json:"domain"`
 }
 
 type Option func(config *Config)

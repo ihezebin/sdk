@@ -19,20 +19,20 @@ var (
 )
 
 type Config struct {
-	Addrs          []string `json:"addrs"`
-	Database       string   `json:"database"`
-	Username       string   `json:"username"`
-	Password       string   `json:"password"`
-	Source         string   `json:"source"`
-	ReplicaSetName string   `json:"replica_set_name"`
+	Addrs          []string `mapstructure:"addrs" json:"addrs"`
+	Database       string   `mapstructure:"database" json:"database"`
+	Username       string   `mapstructure:"username" json:"username"`
+	Password       string   `mapstructure:"password" json:"password"`
+	Source         string   `mapstructure:"source" json:"source"`
+	ReplicaSetName string   `mapstructure:"replica_set_name" json:"replica_set_name"`
 	// Timeout the unit is seconds
-	Timeout   time.Duration `json:"timeout"`
-	Mode      mgo.Mode      `json:"mode"`
-	PoolLimit int           `json:"pool_limit"`
+	Timeout   time.Duration `mapstructure:"timeout" json:"timeout"`
+	Mode      mgo.Mode      `mapstructure:"mode" json:"mode"`
+	PoolLimit int           `mapstructure:"pool_limit" json:"pool_limit"`
 	// MaxIdleTime The maximum number of seconds to remain idle in the pool, default 20 minutes
-	MaxIdleTime time.Duration `json:"max_idle_time"`
-	AppName     string        `json:"app_name"`
+	MaxIdleTime time.Duration `mapstructure:"max_idle_time" json:"max_idle_time"`
+	AppName     string        `mapstructure:"app_name" json:"app_name"`
 	// Alias If it is empty, it will not be included in the client Map management
 	// 如果为空则不纳入clientMap管理
-	Alias string `json:"alias"`
+	Alias string `mapstructure:"alias" json:"alias"`
 }

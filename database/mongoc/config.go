@@ -9,22 +9,22 @@ const (
 )
 
 type Config struct {
-	Addrs          []string `json:"addrs"`
-	Auth           *Auth    `json:"auth"`
-	ReplicaSetName string   `json:"replica_set_name"`
+	Addrs          []string `mapstructure:"addrs" json:"addrs"`
+	Auth           *Auth    `mapstructure:"auth" json:"auth"`
+	ReplicaSetName string   `mapstructure:"replica_set_name" json:"replica_set_name"`
 	// Timeout the unit is seconds
-	Timeout time.Duration `json:"timeout"`
-	// Mode      mgo.Mode      `json:"mode"`
-	PoolLimit uint64 `json:"pool_limit"`
+	Timeout time.Duration `mapstructure:"timeout" json:"timeout"`
+	// Mode      mgo.Mode      `mapstructure:"mode"`
+	PoolLimit uint64 `mapstructure:"pool_limit" json:"pool_limit"`
 	// MaxIdleTime The maximum number of seconds to remain idle in the pool, default 20 minutes
-	MaxIdleTime time.Duration `json:"max_idle_time"`
-	AppName     string        `json:"app_name"`
-	//AutoTime    bool          `json:"auto_time"`
-	Alias string `json:"alias"`
+	MaxIdleTime time.Duration `mapstructure:"max_idle_time" json:"max_idle_time"`
+	AppName     string        `mapstructure:"app_name" json:"app_name"`
+	//AutoTime    bool          `mapstructure:"auto_time"`
+	Alias string `mapstructure:"alias" json:"alias"`
 }
 
 type Auth struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Source   string `json:"source"`
+	Username string `mapstructure:"username" json:"username"`
+	Password string `mapstructure:"password" json:"password"`
+	Source   string `mapstructure:"source" json:"source"`
 }

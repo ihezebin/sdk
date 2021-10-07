@@ -1,9 +1,9 @@
 package main
 
 type Config struct {
-	Port int    `json:"port"`
-	Name string `json:"name"`
-	Age  int    `json:"age"`
+	Port int    `mapstructure:"port" json:"port"`
+	Name string `mapstructure:"name" json:"name"`
+	Age  int    `mapstructure:"age" json:"age"`
 }
 
 var gConfig Config

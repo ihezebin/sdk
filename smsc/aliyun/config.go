@@ -2,11 +2,11 @@ package aliyun
 
 type Config struct {
 	// 您的AccessKey ID
-	AccessKeyId string `json:"access_key_id"`
+	AccessKeyId string `mapstructure:"access_key_id" json:"access_key_id"`
 	// 您的AccessKey Secret
-	AccessKeySecret string `json:"access_key_secret"`
+	AccessKeySecret string `mapstructure:"access_key_secret" json:"access_key_secret"`
 	// 访问的域名
-	Endpoint string `json:"endpoint"`
+	Endpoint string `mapstructure:"endpoint" json:"endpoint"`
 }
 
 type Option func(config *Config)

@@ -3,12 +3,12 @@ package httpclient
 import "time"
 
 type Config struct {
-	Host             string        `json:"host"`
-	Timeout          time.Duration `json:"timeout"`             // 单位:s
-	RetryCount       int           `json:"retry_count"`         // 重试次数
-	RetryWaitTime    time.Duration `json:"retry_wait_time"`     // 重试间隔等待时间, 单位:s
-	RetryMaxWaitTime time.Duration `json:"retry_max_wait_time"` // 重试间隔最大等待时间, 单位:s
-	Alias            string        `json:"alias"`
+	Host             string        `mapstructure:"host" json:"host"`
+	Timeout          time.Duration `mapstructure:"timeout" json:"timeout"`                         // 单位:s
+	RetryCount       int           `mapstructure:"retry_count" json:"retry_count"`                 // 重试次数
+	RetryWaitTime    time.Duration `mapstructure:"retry_wait_time" json:"retry_wait_time"`         // 重试间隔等待时间, 单位:s
+	RetryMaxWaitTime time.Duration `mapstructure:"retry_max_wait_time" json:"retry_max_wait_time"` // 重试间隔最大等待时间, 单位:s
+	Alias            string        `mapstructure:"alias" json:"alias"`
 }
 
 type Option func(*Config)

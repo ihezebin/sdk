@@ -1,9 +1,9 @@
 package tencent
 
 type Config struct {
-	SecretID  string `json:"secret_id"`
-	SecretKey string `json:"secret_key"`
-	BucketURL string `json:"bucket_url"`
+	SecretID  string `mapstructure:"secret_id" json:"secret_id"`
+	SecretKey string `mapstructure:"secret_key" json:"secret_key"`
+	BucketURL string `mapstructure:"bucket_url" json:"bucket_url"`
 }
 
 type Option func(config *Config)
