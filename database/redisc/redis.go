@@ -25,48 +25,52 @@ func (db *Cache) Client() Client {
 	return getGlobalClient()
 }
 
-func (db *Cache) handleModelKey(key string) string {
+func (db *Cache) WrapKey(key string) string {
 	return fmt.Sprintf("%s_%s", db.name, key)
 }
 
+func (db *Cache) Do(cmd string, args ...interface{}) Result {
+	return db.Client().Do(cmd, args...)
+}
+
 func (db *Cache) Get(key string) Result {
-	return db.Client().Do("GET", db.handleModelKey(key))
+	return db.Client().Do("GET", key)
 }
 
 func (db *Cache) Set(key string, val interface{}) Result {
-	return db.Client().Do("SET", db.handleModelKey(key), val)
+	return db.Client().Do("SET", key, val)
 }
 
 func (db *Cache) SetWithExpire(key string, val interface{}, seconds interface{}) Result {
-	return db.Client().Do("SETEX", db.handleModelKey(key), seconds, val)
+	return db.Client().Do("SETEX", key, seconds, val)
 }
 
 func (db *Cache) Incr(key string) Result {
-	return db.Client().Do("INCR", db.handleModelKey(key))
+	return db.Client().Do("INCR", key)
 }
 
 func (db *Cache) Smembers(key string) Result {
-	return db.Client().Do("SMEMBERS", db.handleModelKey(key))
+	return db.Client().Do("SMEMBERS", key)
 }
 
 func (db *Cache) Hset(key string, hkey string, value interface{}) Result {
-	return db.Client().Do("HSET", db.handleModelKey(key), hkey, value)
+	return db.Client().Do("HSET", key, hkey, value)
 }
 
 func (db *Cache) HGet(key string, hkey string) Result {
-	return db.Client().Do("HGET", db.handleModelKey(key), hkey)
+	return db.Client().Do("HGET", key, hkey)
 }
 
 func (db *Cache) Delete(key string) Result {
-	return db.Client().Do("DEL", db.handleModelKey(key))
+	return db.Client().Do("DEL", key)
 }
 
 func (db *Cache) Exists(key string) Result {
-	return db.Client().Do("EXISTS", db.handleModelKey(key))
+	return db.Client().Do("EXISTS", key)
 }
 
 func (db *Cache) Expire(key string, seconds interface{}) Result {
-	return db.Client().Do("EXPIRE", db.handleModelKey(key), seconds)
+	return db.Client().Do("EXPIRE", key, seconds)
 }
 
 func (db *Cache) Pipe(method func(c Conn) error) (result Result) {
