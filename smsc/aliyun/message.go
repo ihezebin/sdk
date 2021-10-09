@@ -6,11 +6,11 @@ import (
 
 type Message struct {
 	// SignName 短信签名名称，eg: "阿里云"
-	SignName string `json:"sign_name"`
+	SignName string `mapstructure:"sign_name" json:"sign_name"`
 	// TemplateCode 短信模板CODE
-	TemplateCode string `json:"template_code"`
+	TemplateCode string `mapstructure:"template_code" json:"template_code"`
 	// TemplateParam 短信模板变量对应的实际值，eg：{"code":"1234"}
-	TemplateParamJson string `json:"template_param_json"`
+	TemplateParamJson string `mapstructure:"template_param_json" json:"template_param_json"`
 }
 
 func NewMessage() *Message {
