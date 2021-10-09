@@ -18,11 +18,13 @@ func TestRedis(t *testing.T) {
 	}
 	defer c.Close()
 	model := NewBaseModel(c, "email")
-	res := model.Set("123@qq.com", "123321")
-	res = model.Set("123@qq.com", 123)
-	fmt.Println("res: ", res)
+	res := model.Set("123@qq.com", "123")
+	fmt.Println("res: ", res.String())
+	fmt.Println("res: ", model.SetIfNotExists("123@qq.com", 123))
 	res = model.Get("123@qq.com")
-	fmt.Println("res: ", res, res)
+	fmt.Println("res: ", res.String())
 	res = model.Get("1231231@qq.com")
-	fmt.Println("res: ", res)
+	fmt.Println("res: ", res.String())
+	res = model.IncrBy("123@qq.com", 2)
+	fmt.Println("res: ", res.Int())
 }
