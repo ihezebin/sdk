@@ -10,22 +10,11 @@ type Client interface {
 	Do(cmd string, args ...interface{}) Result
 }
 
-var globalClient Client
-
-func getGlobalClient() Client {
-	return globalClient
+func NewClient(options ...Option) (Client, error) {
+	return NewClientWithConfig(newConfig(options...))
 }
 
-func Init(config Config) (Client, error) {
-	c, err := NewClient(config)
-	if err != nil {
-		return nil, err
-	}
-	globalClient = c
-	return c, err
-}
-
-func NewClient(config Config) (Client, error) {
+func NewClientWithConfig(config Config) (Client, error) {
 	dialOption := make([]redis.DialOption, 0)
 	if config.Username != "" {
 		dialOption = append(dialOption, redis.DialUsername(config.Username))
@@ -53,7 +42,6 @@ func NewClient(config Config) (Client, error) {
 			},
 		},
 	}
-	globalClient = c
 	return c, err
 }
 

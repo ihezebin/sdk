@@ -28,10 +28,77 @@ type Config struct {
 	// the pool does not close connections based on age.
 	MaxConnLifetime time.Duration `mapstructure:"max_conn_lifetime" json:"max_conn_lifetime"`
 
+	// ClientName specifies a client name to be used by the Redis server connection.
 	ClientName string `mapstructure:"client_name" json:"client_name"`
 	Database   int    `mapstructure:"database" json:"database"`
 }
 
-//type Model interface {
-//	ModelName() string
-//}
+type Option func(config *Config)
+
+func newConfig(options ...Option) Config {
+	config := Config{}
+	for _, option := range options {
+		option(&config)
+	}
+	return config
+}
+
+func WithAddr(addr string) Option {
+	return func(config *Config) {
+		config.Addr = addr
+	}
+}
+
+func WithUsername(username string) Option {
+	return func(config *Config) {
+		config.Username = username
+	}
+}
+
+func WithPassword(password string) Option {
+	return func(config *Config) {
+		config.Password = password
+	}
+}
+
+func WithMaxIdle(maxIdle int) Option {
+	return func(config *Config) {
+		config.MaxIdle = maxIdle
+	}
+}
+
+func WithMaxActive(maxActive int) Option {
+	return func(config *Config) {
+		config.MaxActive = maxActive
+	}
+}
+
+func WithIdleTimeout(idleTimeout time.Duration) Option {
+	return func(config *Config) {
+		config.IdleTimeout = idleTimeout
+	}
+}
+
+func WithWait(wait bool) Option {
+	return func(config *Config) {
+		config.Wait = wait
+	}
+}
+
+func WithMaxConnLifetime(maxConnLifetime time.Duration) Option {
+	return func(config *Config) {
+		config.MaxConnLifetime = maxConnLifetime
+	}
+}
+
+func WithClientName(clientName string) Option {
+	return func(config *Config) {
+		config.ClientName = clientName
+	}
+}
+
+func WithDatabase(database int) Option {
+	return func(config *Config) {
+		config.Database = database
+	}
+}

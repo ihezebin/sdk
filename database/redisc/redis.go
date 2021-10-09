@@ -5,93 +5,122 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-type Cache struct {
-	name string
+type Model interface {
+	Name() string
 }
 
-//func (db *Redis) ModelName() string {
-//	return db.name
-//}
-
-func New(modelName string) *Cache {
-	return &Cache{name: modelName}
+type Base struct {
+	name   string
+	client Client
 }
 
-//func (db *Redis) Do(cmd string, args ...interface{}) Result {
-//	return db.Client().Do(cmd, args...)
-//}
-
-func (db *Cache) Client() Client {
-	return getGlobalClient()
+func NewBaseModel(client Client, name string) *Base {
+	return &Base{client: client, name: name}
 }
 
-func (db *Cache) WrapKey(key string) string {
-	return fmt.Sprintf("%s_%s", db.name, key)
+func (db *Base) Name() string {
+	return db.name
 }
 
-func (db *Cache) Do(cmd string, args ...interface{}) Result {
+func (db *Base) Client() Client {
+	return db.client
+}
+
+func (db *Base) Key(key string) string {
+	return fmt.Sprintf("%s_%s", db.Name(), key)
+}
+
+func (db *Base) Do(cmd string, args ...interface{}) Result {
 	return db.Client().Do(cmd, args...)
 }
 
-func (db *Cache) Get(key string) Result {
+func (db *Base) Get(key string) Result {
 	return db.Client().Do("GET", key)
 }
 
-func (db *Cache) Set(key string, val interface{}) Result {
+func (db *Base) Set(key string, val interface{}) Result {
 	return db.Client().Do("SET", key, val)
 }
 
-func (db *Cache) SetWithExpire(key string, val interface{}, seconds interface{}) Result {
+func (db *Base) SetIfNotExists(key string, val interface{}) Result {
+	return db.Client().Do("SETNX", key, val)
+}
+
+func (db *Base) SetWithExpire(key string, val interface{}, seconds interface{}) Result {
 	return db.Client().Do("SETEX", key, seconds, val)
 }
 
-func (db *Cache) Incr(key string) Result {
-	return db.Client().Do("INCR", key)
+func (db *Base) IncrBy(key string, num int) Result {
+	return db.Client().Do("INCRBY", key, num)
 }
 
-func (db *Cache) Smembers(key string) Result {
+func (db *Base) DecrBy(key string, num int) Result {
+	return db.Client().Do("DECRBY", key, num)
+}
+
+func (db *Base) LPush(key string, val interface{}) Result {
+	return db.Client().Do("LPUSH", key, val)
+}
+
+func (db *Base) RPush(key string, val interface{}) Result {
+	return db.Client().Do("RPUSH", key, val)
+}
+
+func (db *Base) LPop(key string) Result {
+	return db.Client().Do("LPOP", key)
+}
+
+func (db *Base) RPop(key string) Result {
+	return db.Client().Do("RPOP", key)
+}
+
+func (db *Base) LRange(key string, start int, end int) Result {
+	return db.Client().Do("LRANGE", key, start, end)
+}
+
+func (db *Base) SMembers(key string) Result {
 	return db.Client().Do("SMEMBERS", key)
 }
 
-func (db *Cache) Hset(key string, hkey string, value interface{}) Result {
-	return db.Client().Do("HSET", key, hkey, value)
+func (db *Base) HSet(key string, hKey string, value interface{}) Result {
+	return db.Client().Do("HSET", key, hKey, value)
 }
 
-func (db *Cache) HGet(key string, hkey string) Result {
-	return db.Client().Do("HGET", key, hkey)
+func (db *Base) HGet(key string, hKey string) Result {
+	return db.Client().Do("HGET", key, hKey)
 }
 
-func (db *Cache) Delete(key string) Result {
+func (db *Base) Delete(key string) Result {
 	return db.Client().Do("DEL", key)
 }
 
-func (db *Cache) Exists(key string) Result {
+func (db *Base) Exists(key string) Result {
 	return db.Client().Do("EXISTS", key)
 }
 
-func (db *Cache) Expire(key string, seconds interface{}) Result {
+func (db *Base) Expire(key string, seconds interface{}) Result {
 	return db.Client().Do("EXPIRE", key, seconds)
 }
 
-func (db *Cache) Pipe(method func(c Conn) error) (result Result) {
+func (db *Base) Pipe(method func(c Conn) error) (result Result) {
 	conn := Conn{db.Client().GetConn()}
-	defer conn.self.Close()
+	defer conn.kernel.Close()
 	err := method(conn)
 	if err != nil {
 		return Result{nil, err}
 	}
-	err = conn.self.Flush()
+	err = conn.kernel.Flush()
 	if err != nil {
 		return Result{nil, err}
 	}
-	result.reply, result.err = conn.self.Receive()
+	result.reply, result.err = conn.kernel.Receive()
 	return result
 }
 
 type Conn struct {
-	self redis.Conn
+	kernel redis.Conn
 }
 
 func (conn Conn) Send(command string, args ...interface{}) error {
-	return conn.self.Send(command, args...)
+	return conn.kernel.Send(command, args...)
 }
