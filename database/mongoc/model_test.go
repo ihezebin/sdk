@@ -2,10 +2,12 @@ package mongoc
 
 import (
 	"context"
+	"fmt"
 	"github.com/pkg/errors"
 	"github.com/whereabouts/sdk/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"regexp"
 	"testing"
 )
 
@@ -13,6 +15,30 @@ type User struct {
 	Id   primitive.ObjectID `json:"id" bson:"_id"`
 	Name string             `json:"name"`
 	Age  int                `json:"age"`
+}
+
+func TestRegex(t *testing.T) {
+	ctx := context.Background()
+	c, err := NewClient(ctx, Config{
+		Addrs: []string{"127.0.0.1:27017"},
+		Auth: &Auth{
+			Username: "root",
+			Password: "root",
+		},
+	})
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	model := c.NewBaseModel("test", "user")
+
+	users := make([]*User, 0)
+	err = model.Find(ctx, bson.M{"name": primitive.Regex{Pattern: regexp.QuoteMeta("A"), Options: "i"}}, &users)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	for _, user := range users {
+		fmt.Printf("%+v\n", user)
+	}
 }
 
 func TestMongoc(t *testing.T) {
