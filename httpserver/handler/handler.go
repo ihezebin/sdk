@@ -71,14 +71,14 @@ func newHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logger)
 
 		// handle request
 		var resultV []reflect.Value
-		if conf.withGinCtx {
+		if conf.withCtx {
 			resultV = mV.Call([]reflect.Value{reflect.ValueOf(ctx), req, reflect.ValueOf(c)})
 		} else {
 			resultV = mV.Call([]reflect.Value{reflect.ValueOf(ctx), req})
 		}
 
 		// do response
-		if conf.useResult {
+		if conf.withResult {
 			res = resultV[0].Interface().(*result.Result)
 			if res == nil {
 				res = result.New()
@@ -88,7 +88,7 @@ func newHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logger)
 		}
 
 		var resp, err interface{}
-		if conf.noResponse {
+		if conf.withoutResponse {
 			err = resultV[0].Interface()
 		} else {
 			resp, err = resultV[0].Interface(), resultV[1].Interface()
@@ -105,7 +105,7 @@ func newHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logger)
 			return
 		}
 
-		if conf.noResponse {
+		if conf.withoutResponse {
 			return
 		}
 
@@ -128,7 +128,7 @@ func checkMethod(method interface{}, conf config) (mV reflect.Value, reqT reflec
 	}
 
 	// check in params of method
-	if conf.withGinCtx {
+	if conf.withCtx {
 		if mT.NumIn() != 3 {
 			err = errors.Errorf("method(%T) must has 3 ins", method)
 			return
@@ -163,7 +163,7 @@ func checkMethod(method interface{}, conf config) (mV reflect.Value, reqT reflec
 	}
 
 	// check out params of method return
-	if conf.useResult {
+	if conf.withResult {
 		if mT.NumOut() != 1 {
 			err = errors.Errorf("method(%T) must has 1 out", method)
 			return
@@ -176,7 +176,7 @@ func checkMethod(method interface{}, conf config) (mV reflect.Value, reqT reflec
 	}
 
 	errOutIndex := 0
-	if conf.noResponse {
+	if conf.withoutResponse {
 		if mT.NumOut() != 1 {
 			err = errors.Errorf("method(%T) must has 1 out", method)
 			return

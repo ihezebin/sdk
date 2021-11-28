@@ -19,11 +19,11 @@ func (h *HelloHandler) Init(router gin.IRouter) {
 	helloGroup.GET("/", handler.New(h.Hello))
 	helloGroup.GET("/had_err", handler.New(h.HelloHadError))
 	helloGroup.GET("/use_err", handler.New(h.HelloUseErr))
-	helloGroup.GET("/with_gin_ctx", handler.NewWithOptions(h.HelloWithGinCtx, handler.WithGinContext()))
-	helloGroup.GET("/with_gin_ctx_and_no_response", handler.NewWithOptions(h.HelloWithGinCtxAndNoResponse, handler.WithGinContext(), handler.WithNoResponse()))
+	helloGroup.GET("/with_gin_ctx", handler.NewWithOptions(h.HelloWithGinCtx, handler.WithContext()))
+	helloGroup.GET("/with_gin_ctx_and_no_response", handler.NewWithOptions(h.HelloWithGinCtxAndNoResponse, handler.WithContext(), handler.WithoutResponse()))
 	helloGroup.GET("/with_result", handler.NewWithOptions(h.HelloWithResult, handler.WithResult()))
 	helloGroup.POST("/file", handler.New(h.HelloFile))
-	helloGroup.POST("/multiple_files", handler.NewWithOptions(h.HelloMultipleFiles, handler.WithGinContext()))
+	helloGroup.POST("/multiple_files", handler.NewWithOptions(h.HelloMultipleFiles, handler.WithContext()))
 	helloGroup.GET("/with_message", handler.NewWithOptions(h.HelloWithMessage, handler.WithResult()))
 }
 
