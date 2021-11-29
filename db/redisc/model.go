@@ -27,7 +27,7 @@ func (db *Base) Client() Client {
 }
 
 func (db *Base) Key(key string) string {
-	return fmt.Sprintf("%s_%s", db.Name(), key)
+	return fmt.Sprintf("%.%s", db.Name(), key)
 }
 
 func (db *Base) Do(cmd string, args ...interface{}) Result {
@@ -42,20 +42,20 @@ func (db *Base) Set(key string, val interface{}) Result {
 	return db.Client().Do("SET", key, val)
 }
 
-func (db *Base) SetIfNotExists(key string, val interface{}) bool {
-	return db.Client().Do("SETNX", key, val).Bool()
+func (db *Base) SetIfNotExists(key string, val interface{}) Result {
+	return db.Client().Do("SETNX", key, val)
 }
 
 func (db *Base) SetWithExpire(key string, val interface{}, seconds interface{}) Result {
 	return db.Client().Do("SETEX", key, seconds, val)
 }
 
-func (db *Base) IncrBy(key string, num int) int {
-	return db.Client().Do("INCRBY", key, num).Int()
+func (db *Base) IncrBy(key string, num int) Result {
+	return db.Client().Do("INCRBY", key, num)
 }
 
-func (db *Base) DecrBy(key string, num int) int {
-	return db.Client().Do("DECRBY", key, num).Int()
+func (db *Base) DecrBy(key string, num int) Result {
+	return db.Client().Do("DECRBY", key, num)
 }
 
 func (db *Base) LPush(key string, val interface{}) Result {

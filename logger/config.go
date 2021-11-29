@@ -39,7 +39,7 @@ type RotateFileConfig struct {
 	// RotateTime Log cutting interval
 	// 日志切割时间间隔
 	RotateTime time.Duration `mapstructure:"rotate_time" json:"rotate_time"`
-	// ExpireTime Maximum database time of log files
+	// ExpireTime Maximum db time of log files
 	// 日志文件最大保存时间
 	ExpireTime time.Duration `mapstructure:"expire_time" json:"expire_time"`
 }

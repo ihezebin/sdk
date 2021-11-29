@@ -1,4 +1,4 @@
-package httpclient
+package httpc
 
 import "time"
 

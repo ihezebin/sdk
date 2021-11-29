@@ -30,7 +30,7 @@ type Config struct {
 
 	// ClientName specifies a client name to be used by the Redis server connection.
 	ClientName string `mapstructure:"client_name" json:"client_name"`
-	Database   int    `mapstructure:"database" json:"database"`
+	Database   int    `mapstructure:"db" json:"db"`
 }
 
 type Option func(config *Config)

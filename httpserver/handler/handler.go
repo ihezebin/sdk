@@ -158,7 +158,7 @@ func checkMethod(method interface{}, conf config) (mV reflect.Value, reqT reflec
 	}
 	reqT = reqT.Elem()
 	if reqT.Kind() != reflect.Struct {
-		err = errors.Errorf("the second in of method(%T) must be a struct or map to bind param", method)
+		err = errors.Errorf("the second in of method(%T) must be a struct to bind param", method)
 		return
 	}
 

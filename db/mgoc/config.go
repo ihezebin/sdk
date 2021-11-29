@@ -20,7 +20,7 @@ var (
 
 type Config struct {
 	Addrs          []string `mapstructure:"addrs" json:"addrs"`
-	Database       string   `mapstructure:"database" json:"database"`
+	Database       string   `mapstructure:"db" json:"db"`
 	Username       string   `mapstructure:"username" json:"username"`
 	Password       string   `mapstructure:"password" json:"password"`
 	Source         string   `mapstructure:"source" json:"source"`

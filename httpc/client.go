@@ -1,10 +1,10 @@
-package httpclient
+package httpc
 
 import (
 	"context"
 	"github.com/go-resty/resty/v2"
 	"github.com/pkg/errors"
-	"github.com/whereabouts/sdk/httpclient/hook"
+	"github.com/whereabouts/sdk/httpc/hook"
 	"github.com/whereabouts/sdk/utils/stringer"
 	"net/http"
 	"net/url"
