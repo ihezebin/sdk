@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/whereabouts/sdk/httpserver/handler/result"
 	"github.com/whereabouts/sdk/logger"
+	"github.com/whereabouts/sdk/utils/mapper"
 	"net/http"
 	"reflect"
 )
@@ -63,9 +64,26 @@ func newHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logger)
 		// bind request param
 		req := reflect.New(reqT)
 		if bindErr := c.ShouldBind(req.Interface()); bindErr != nil {
-			res = result.Failed(bindErr)
-			c.JSON(http.StatusBadRequest, result.Error2Err(bindErr, result.CodeBoolFail))
+			res = result.Failed(bindErr).WithStatusCode(http.StatusBadRequest)
+			c.JSON(res.StatusCode(), res)
 			l.Errorf("method(%T) failed to bind: %v", method, bindErr)
+			return
+		}
+		// bind path param
+		reqM, convertErr := mapper.Struct2Map(req.Interface())
+		if convertErr != nil {
+			res = result.Failed(convertErr).WithStatusCode(http.StatusBadRequest)
+			c.JSON(res.StatusCode(), res)
+			l.Errorf("method(%T) failed to reconvert path param: %v", method, convertErr)
+			return
+		}
+		for _, param := range c.Params {
+			reqM[param.Key] = param.Value
+		}
+		if convertErr = mapper.Map2Struct(reqM, req.Interface()); convertErr != nil {
+			res = result.Failed(convertErr).WithStatusCode(http.StatusBadRequest)
+			c.JSON(res.StatusCode(), res)
+			l.Errorf("method(%T) failed to reconvert path param: %v", method, convertErr)
 			return
 		}
 

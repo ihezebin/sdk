@@ -62,10 +62,10 @@ func TestMongoc(t *testing.T) {
 }
 
 // 610ececb4fb2d58d008e7c58
-func TestAutoTime(t *testing.T) {
+func TestUpdateNotExist(t *testing.T) {
 	ctx := context.TODO()
 	c, err := NewClient(ctx, Config{
-		Addrs: []string{"127.0.0.1:27018"},
+		Addrs: []string{"127.0.0.1:27017"},
 		Auth: &Auth{
 			Username: "root",
 			Password: "root",
@@ -75,18 +75,11 @@ func TestAutoTime(t *testing.T) {
 		logger.Fatal(err.Error())
 	}
 	model := c.NewBaseModel("test", "user")
-	result, err := model.InsertOne(ctx, User{
-		Name: "Korbin",
-		Age:  18,
-	})
+	res, err := model.UpdateOne(ctx, bson.M{"id": "123"}, bson.M{"$set": bson.M{"gender": "male"}})
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	logger.Info(result.InsertedID)
-	_, err = model.UpdateId(ctx, "610ececb4fb2d58d008e7c58", bson.M{"$set": bson.M{"gender": "male"}})
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
+	fmt.Println(res)
 }
 
 func TestInsert(t *testing.T) {

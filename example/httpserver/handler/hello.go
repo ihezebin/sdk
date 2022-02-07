@@ -16,6 +16,7 @@ type HelloHandler struct {
 
 func (h *HelloHandler) Init(router gin.IRouter) {
 	helloGroup := router.Group("hello")
+	helloGroup.GET("/:name", handler.New(h.Hello))
 	helloGroup.GET("/", handler.New(h.Hello))
 	helloGroup.GET("/had_err", handler.New(h.HelloHadError))
 	helloGroup.GET("/use_err", handler.New(h.HelloUseErr))

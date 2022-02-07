@@ -50,21 +50,13 @@ func Struct2Map(v interface{}) (map[string]interface{}, error) {
 	if value.Kind() != reflect.Struct {
 		return nil, errors.New("the param is not a struct")
 	}
-	t := reflect.TypeOf(value.Interface())
+	marshal, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
 	var m = make(map[string]interface{})
-	for i := 0; i < value.NumField(); i++ {
-		key := t.Field(i).Tag.Get("bson")
-		if key == "" {
-			key = t.Field(i).Tag.Get("json")
-			if key == "" {
-				key = t.Field(i).Name
-			} else if key == "-" {
-				continue
-			}
-		} else if key == "-" {
-			continue
-		}
-		m[key] = value.Field(i).Interface()
+	if err = json.Unmarshal(marshal, &m); err != nil {
+		return nil, err
 	}
 	return m, nil
 }
