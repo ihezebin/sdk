@@ -27,7 +27,7 @@ func (db *Base) Client() Client {
 }
 
 func (db *Base) Key(key string) string {
-	return fmt.Sprintf("%.%s", db.Name(), key)
+	return fmt.Sprintf("%s.%s", db.Name(), key)
 }
 
 func (db *Base) Do(cmd string, args ...interface{}) Result {

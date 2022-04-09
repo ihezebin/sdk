@@ -28,7 +28,6 @@ func NewClientWithConfig(config Config) (Client, error) {
 	if config.Database != 0 {
 		dialOption = append(dialOption, redis.DialDatabase(config.Database))
 	}
-	var err error
 	c := &client{
 		config: config,
 		pool: &redis.Pool{
@@ -36,13 +35,19 @@ func NewClientWithConfig(config Config) (Client, error) {
 			MaxActive:   config.MaxActive,
 			IdleTimeout: config.IdleTimeout,
 			Dial: func() (redis.Conn, error) {
-				conn, er := redis.Dial(defaultNetwork, config.Addr, dialOption...)
-				err = er
-				return conn, er
+				return redis.Dial(defaultNetwork, config.Addr, dialOption...)
 			},
 		},
 	}
-	return c, err
+	// 测试是否连接成功
+	conn, err := c.pool.Dial()
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = conn.Close()
+	}()
+	return c, nil
 }
 
 type client struct {

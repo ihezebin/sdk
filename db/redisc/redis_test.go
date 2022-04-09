@@ -19,7 +19,7 @@ func TestRedis(t *testing.T) {
 	defer c.Close()
 	model := NewBaseModel(c, "email")
 	res := model.Set("123@qq.com", "123")
-	fmt.Println("res: ", res.String())
+	fmt.Println("res: ", res.Error())
 	fmt.Println("res: ", model.SetIfNotExists("123@qq.com", 123))
 	res = model.Get("123@qq.com")
 	fmt.Println("res: ", res.String())

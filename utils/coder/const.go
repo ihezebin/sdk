@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	TemplateBlend       = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	TemplateBlend       = "1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!@#$%^&*_+=-"
 	TemplateDigit       = "1234567890"
 	TemplateLetterLower = "abcdefghijklmnopqrstuvwxyz"
 	TemplateLetterUpper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
