@@ -8,8 +8,19 @@ import (
 	"testing"
 )
 
-//q1a2
-func TestEmail(t *testing.T) {
+func TestInitEmail(t *testing.T) {
+	_, err := NewClientWithConfig(Config{
+		Username: "hezebin@whereabouts.icu",
+		Password: "HZB183318a.",
+		Host:     HostExmail,
+		Port:     PortExmail,
+	})
+	if err != nil {
+		logger.Fatal(err)
+	}
+}
+
+func TestSendEmail(t *testing.T) {
 	client, err := NewClientWithConfig(Config{
 		Username: "heds@whereabouts.icu",
 		Password: "dsdsd.",

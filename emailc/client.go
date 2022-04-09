@@ -16,12 +16,12 @@ func NewClient(options ...Option) (*Client, error) {
 func NewClientWithConfig(config Config) (*Client, error) {
 	dialer := gomail.NewDialer(config.Host, config.Port, config.Username, config.Password)
 	closer, err := dialer.Dial()
-	defer func() {
-		_ = closer.Close()
-	}()
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = closer.Close()
+	}()
 	return &Client{kernel: dialer, config: config}, nil
 }
 
