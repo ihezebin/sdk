@@ -1,6 +1,7 @@
 package emailc
 
 import (
+	"fmt"
 	"gopkg.in/gomail.v2"
 )
 
@@ -30,8 +31,11 @@ func (client *Client) Kernel() *gomail.Dialer {
 }
 
 func (client *Client) Send(message *Message) error {
+	username := client.config.Username
 	if message.Sender == "" {
-		message.Sender = client.config.Username
+		message.Sender = username
+	} else {
+		message.Sender = fmt.Sprintf("%s<%s>", message.Sender, username)
 	}
 	msg := message.toMessage()
 	return client.kernel.DialAndSend(msg)
