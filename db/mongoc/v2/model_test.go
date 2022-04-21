@@ -1,4 +1,4 @@
-package mongoc
+package v2
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"github.com/whereabouts/sdk/logger"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 	"regexp"
 	"testing"
 )
@@ -30,10 +29,10 @@ func TestRegex(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewModel(c, "test", "user")
+	model := c.NewBaseModel("test", "user")
 
 	users := make([]*User, 0)
-	err = m.FindOneWithResult(ctx, bson.M{"name": primitive.Regex{Pattern: regexp.QuoteMeta("A"), Options: "i"}}, &users)
+	err = model.Find(ctx, bson.M{"name": primitive.Regex{Pattern: regexp.QuoteMeta("A"), Options: "i"}}, &users)
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -54,8 +53,8 @@ func TestMongoc(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewModel(c, "test", "user")
-	result, err := m.UpdateOne(ctx, bson.M{"id": "60ed5a48e00ed00b91b25000"}, bson.M{"$set": bson.M{"age": 666}})
+	base := c.NewBaseModel("test", "user")
+	result, err := base.UpdateId(ctx, "60ed5a48e00ed00b91b25000", bson.M{"$set": bson.M{"age": 666}})
 	if err != nil {
 		logger.Error(err)
 	}
@@ -75,8 +74,8 @@ func TestUpdateNotExist(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewModel(c, "test", "user")
-	res, err := m.UpdateOne(ctx, bson.M{"id": "123"}, bson.M{"$set": bson.M{"gender": "male"}})
+	model := c.NewBaseModel("test", "user")
+	res, err := model.UpdateOne(ctx, bson.M{"id": "123"}, bson.M{"$set": bson.M{"gender": "male"}})
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
@@ -94,7 +93,7 @@ func TestInsert(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	result, err := NewModel(c, "test", "user").InsertOne(context.TODO(), map[string]interface{}{
+	result, err := c.NewBaseModel("test", "user").InsertOne(context.TODO(), map[string]interface{}{
 		"_id":  primitive.NewObjectID().Hex(),
 		"name": "Korbin",
 		"age":  18,
@@ -125,10 +124,10 @@ func TestTransaction(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewModel(c, "test", "user")
+	model := c.NewBaseModel("test", "user")
 	id := "610e657d6c5f1f389720218c"
 	user := User{}
-	err = m.FindOneWithResult(ctx, bson.M{"id": id}, &user)
+	err = model.FindId(ctx, id, &user)
 	if err != nil {
 		logger.Errorf("find user err: %s", err.Error())
 		return
@@ -136,14 +135,14 @@ func TestTransaction(t *testing.T) {
 	logger.Infof("before transaction: %+v", user)
 
 	// failed
-	_, err = m.DoWithTransaction(ctx, func(ctx context.Context, c *mongo.Collection) (interface{}, error) {
-		updateResult, err := c.UpdateOne(ctx, bson.M{"id": id}, bson.M{"name": "Hezebin1"})
+	_, err = model.DoWithTransaction(ctx, func(ctx context.Context, model *Base) (interface{}, error) {
+		updateResult, err := model.UpdateId(ctx, id, bson.M{"name": "Hezebin1"})
 		if err != nil {
 			return updateResult, nil
 		}
 		return nil, errors.New("If the returned err is not nil, The transaction will be rolled back")
 	})
-	err = m.FindOneWithResult(ctx, bson.M{"id": id}, &user)
+	err = model.FindId(ctx, id, &user)
 	if err != nil {
 		logger.Errorf("find user err: %s", err.Error())
 		return
@@ -151,13 +150,13 @@ func TestTransaction(t *testing.T) {
 	logger.Infof("after failed transaction: %+v", user)
 
 	// successful
-	_, err = m.DoWithTransaction(ctx, func(ctx context.Context, c *mongo.Collection) (interface{}, error) {
-		return c.UpdateOne(ctx, bson.M{"id": id}, bson.M{"$set": bson.M{"name": "Hezebin2"}})
+	_, err = model.DoWithTransaction(ctx, func(ctx context.Context, model *Base) (interface{}, error) {
+		return model.UpdateId(ctx, id, bson.M{"$set": bson.M{"name": "Hezebin2"}})
 	})
 	if err != nil {
 		logger.Errorf("update user err: %s", err.Error())
 	}
-	err = m.FindOneWithResult(ctx, bson.M{"id": id}, &user)
+	err = model.FindId(ctx, id, &user)
 	if err != nil {
 		logger.Errorf("find user err: %s", err.Error())
 		return

@@ -1,30 +1,40 @@
 package redisc
 
 import (
+	"context"
 	"fmt"
-	"github.com/whereabouts/sdk/logger"
+	"github.com/go-redis/redis/v8"
 	"testing"
 )
 
+var ctx = context.Background()
+
 func TestRedis(t *testing.T) {
-	c, err := NewClientWithConfig(Config{
-		Addr:      ":6379",
-		Password:  "root",
-		MaxIdle:   10,
-		MaxActive: 50,
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "root", // no password set
+		DB:       0,      // use default DB
 	})
+
+	err := rdb.Set(ctx, "key", "value", 0).Err()
 	if err != nil {
-		logger.Fatal(err)
+		panic(err)
 	}
-	defer c.Close()
-	model := NewBaseModel(c, "email")
-	res := model.Set("123@qq.com", "123")
-	fmt.Println("res: ", res.Error())
-	fmt.Println("res: ", model.SetIfNotExists("123@qq.com", 123))
-	res = model.Get("123@qq.com")
-	fmt.Println("res: ", res.String())
-	res = model.Get("1231231@qq.com")
-	fmt.Println("res: ", res.String())
-	res = model.IncrBy("123@qq.com", 2)
-	fmt.Println("res: ", res.Int())
+
+	val, err := rdb.Get(ctx, "key").Result()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("key", val)
+
+	val2, err := rdb.Get(ctx, "key2").Result()
+	if err == redis.Nil {
+		fmt.Println("key2 does not exist")
+	} else if err != nil {
+		panic(err)
+	} else {
+		fmt.Println("key2", val2)
+	}
+	// Output: key value
+	// key2 does not exist
 }

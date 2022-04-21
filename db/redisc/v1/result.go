@@ -1,4 +1,4 @@
-package redisc
+package v1
 
 import (
 	"errors"

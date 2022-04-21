@@ -2,53 +2,48 @@ package mongoc
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"github.com/whereabouts/sdk/utils/stringer"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"time"
 )
 
-type Client interface {
-	Kernel() *mongo.Client
-	Close(ctx context.Context) error
-	Config() Config
-	Do(ctx context.Context, model Model, exec Exec) (interface{}, error)
-	DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error)
-	DoWithSession(ctx context.Context, model Model, exec SessionExec) error
-	NewBaseModel(database string, collection string) *Base
+type wrapClient = mongo.Client
+
+type Client struct {
+	*wrapClient
+	config Config
 }
+
+//type Client interface {
+//	Kernel() *mongo.Client
+//	Close(ctx context.Context) error
+//	Config() Config
+//	Do(ctx context.Context, model Model, exec Exec) (interface{}, error)
+//	DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error)
+//	DoWithSession(ctx context.Context, model Model, exec SessionExec) error
+//	NewModel(database string, collection string) Model
+//}
 
 // NewClient If only one db is used, it is recommended to use: NewGlobalClient
 // 若只使用到了一个库，推荐使用: NewGlobalClient
-func NewClient(ctx context.Context, config Config) (Client, error) {
-
-	// Determine whether a client with the same alias already exists
-	if stringer.NotEmpty(config.Alias) && ClientManager().Has(config.Alias) {
-		return nil, errors.Errorf("there is already a client with alias %s, you can choose to use another alias", config.Alias)
-	}
+func NewClient(ctx context.Context, config Config) (*Client, error) {
 	opts := convertConfig2Options(config)
-
-	return NewClientWithOptions(ctx, opts, config.Alias)
+	return NewClientWithOptions(ctx, opts)
 }
 
 // NewClientWithURI uri format: mongodb://username:password@example1.com,example2.com,example3.com/?replicaSet=test&w=majority&wtimeoutMS=5000
-// Alias is used to specify the client alias. When used, the client can be obtained from the clientMap of the manger through the alias, and ClientManager().Get(alias) can be called
-// alias用于指定client别名，使用时可以通过该别名从manger的clientMap中获取client, 调用 ClientManager().Get(alias)
-func NewClientWithURI(ctx context.Context, uri string, alias string) (Client, error) {
-	return NewClientWithOptions(ctx, *options.Client().ApplyURI(uri), alias)
+func NewClientWithURI(ctx context.Context, uri string) (*Client, error) {
+	return NewClientWithOptions(ctx, *options.Client().ApplyURI(uri))
 }
 
-func NewClientWithOptions(ctx context.Context, options options.ClientOptions, alias string) (Client, error) {
-	kernel, err := mongo.Connect(ctx, &options)
+func NewClientWithOptions(ctx context.Context, options options.ClientOptions) (*Client, error) {
+	client, err := mongo.Connect(ctx, &options)
 	if err != nil {
 		return nil, err
 	}
 
-	err = kernel.Ping(ctx, nil)
-	if err != nil {
+	if err = client.Ping(ctx, nil); err != nil {
 		return nil, err
 	}
 
@@ -59,7 +54,6 @@ func NewClientWithOptions(ctx context.Context, options options.ClientOptions, al
 			Password: options.Auth.Password,
 			Source:   options.Auth.AuthSource,
 		},
-		Alias: alias,
 	}
 
 	if options.ReplicaSet != nil {
@@ -78,51 +72,43 @@ func NewClientWithOptions(ctx context.Context, options options.ClientOptions, al
 		config.AppName = *options.AppName
 	}
 
-	c := &client{kernel: kernel, config: config}
-
-	// if alias is not empty, add client to the clientMap
-	if stringer.NotEmpty(config.Alias) {
-		ClientManager().Add(c.config.Alias, c)
-	}
+	c := &Client{wrapClient: client, config: config}
 
 	return c, nil
 }
 
-type client struct {
-	kernel *mongo.Client
-	config Config
-}
+var gClient *Client
 
-func (c *client) NewBaseModel(database string, collection string) *Base {
-	return NewBaseModel(c, database, collection)
-}
-
-func (c *client) Kernel() *mongo.Client {
-	return c.kernel
-}
-
-func (c *client) Close(ctx context.Context) error {
-	if stringer.NotEmpty(c.Config().Alias) {
-		ClientManager().Delete(c.Config().Alias)
+// NewGlobalClient If there is only one Mongo, you can select the global client
+func NewGlobalClient(ctx context.Context, config Config) (*Client, error) {
+	var err error
+	if gClient, err = NewClient(ctx, config); err != nil {
+		return nil, err
 	}
-	return c.Kernel().Disconnect(ctx)
+	return gClient, nil
 }
 
-func (c *client) Config() Config {
+func GetGlobalClient() *Client {
+	return gClient
+}
+
+func (c *Client) Kernel() *mongo.Client {
+	return c.wrapClient
+}
+
+func (c *Client) Config() Config {
 	return c.config
 }
 
 type Exec = func(ctx context.Context, collection *mongo.Collection) (interface{}, error)
 
-func (c *client) Do(ctx context.Context, model Model, exec Exec) (interface{}, error) {
+func (c *Client) Do(ctx context.Context, model Model, exec Exec) (interface{}, error) {
 	return exec(ctx, c.Kernel().Database(model.Database()).Collection(model.Collection()))
 }
 
-type ModelExec = func(ctx context.Context, model *Base) (interface{}, error)
-
 // DoWithTransaction Execute the transaction, if the return err is nil, the transaction is automatically committed, otherwise it is rolled back
 // 执行事务, 如果返回err为nil，则事务自动提交, 否则回滚
-func (c *client) DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error) {
+func (c *Client) DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error) {
 	// Specify the DefaultReadConcern option so any transactions started through
 	// the session will have read concern majority.
 	// The DefaultReadPreference and DefaultWriteConcern options aren't
@@ -138,7 +124,8 @@ func (c *client) DoWithTransaction(ctx context.Context, model Model, exec Exec) 
 	return session.WithTransaction(ctx, func(sessCtx mongo.SessionContext) (interface{}, error) {
 		// Use sessCtx as the Context parameter for InsertOne and FindOne so
 		// both operations are run in a transaction.
-		return exec(sessCtx, c.Kernel().Database(model.Database()).Collection(model.Collection()))
+		collection := c.Kernel().Database(model.Database()).Collection(model.Collection())
+		return exec(sessCtx, collection)
 	}, txnOpts)
 }
 
@@ -147,7 +134,7 @@ type SessionExec = func(sessionCtx mongo.SessionContext, collection *mongo.Colle
 // DoWithSession To open a transaction in the form of Seesion,
 // you need to manually commit the transaction by sessionContext.CommitTransaction(ctx) or rollback the transaction by sessionContext.CommitTransaction(ctx)
 // 以Seesion形式开启事务, 需要手动sessionContext.CommitTransaction(ctx)提交事务或sessionContext.CommitTransaction(ctx)回滚事务
-func (c *client) DoWithSession(ctx context.Context, model Model, exec SessionExec) error {
+func (c *Client) DoWithSession(ctx context.Context, model Model, exec SessionExec) error {
 	sessionOpts := options.Session().SetDefaultReadConcern(readconcern.Majority())
 	session, err := c.Kernel().StartSession(sessionOpts)
 	if err != nil {
@@ -158,53 +145,7 @@ func (c *client) DoWithSession(ctx context.Context, model Model, exec SessionExe
 		if err = session.StartTransaction(); err != nil {
 			return err
 		}
-		return exec(sessionContext, c.Kernel().Database(model.Database()).Collection(model.Collection()))
+		collection := c.Kernel().Database(model.Database()).Collection(model.Collection())
+		return exec(sessionContext, collection)
 	})
-}
-
-func convertConfig2Options(config Config) options.ClientOptions {
-	opts := options.Client()
-	opts.SetHosts(config.Addrs)
-	if config.Auth != nil {
-		source := defaultSource
-		if stringer.NotEmpty(config.Auth.Source) {
-			source = config.Auth.Source
-		}
-		opts.SetAuth(options.Credential{
-			Username:   config.Auth.Username,
-			Password:   config.Auth.Password,
-			AuthSource: source,
-		})
-	}
-	if stringer.NotEmpty(config.ReplicaSetName) {
-		opts.SetReplicaSet(config.ReplicaSetName)
-	}
-	poolLimit := defaultPoolLimit
-	if config.PoolLimit != 0 {
-		poolLimit = config.PoolLimit
-	}
-	opts.SetMaxPoolSize(poolLimit)
-
-	maxIdleTime := defaultMaxIdleTime
-	if config.MaxIdleTime != time.Duration(0) {
-		maxIdleTime = config.MaxIdleTime * time.Second
-	}
-	opts.SetMaxConnIdleTime(maxIdleTime)
-	if config.MaxIdleTime != time.Duration(0) {
-		opts.SetSocketTimeout(config.Timeout * time.Second)
-	}
-	return *opts
-}
-
-// NewGlobalClient If there is only one Mongo, you can select the global client
-func NewGlobalClient(ctx context.Context, config Config) (Client, error) {
-	var err error
-	gClient, err = NewClient(ctx, config)
-	return gClient, err
-}
-
-var gClient Client
-
-func GetGlobalClient() Client {
-	return gClient
 }

@@ -1,4 +1,4 @@
-package mongoc
+package v2
 
 // Deprecated
 //func (model *Base) handleAutoTimeUpdate(update interface{}) (interface{}, error) {

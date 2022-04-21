@@ -1,4 +1,4 @@
-package mgoc
+package v1
 
 import (
 	"context"
@@ -39,7 +39,7 @@ func (db *Base) Client() Client {
 	return db.client
 }
 
-// Do it is used for you to use the nativer mgoc interface according to your own needs,
+// Do it is used for you to use the nativer v1 interface according to your own needs,
 // Use when you can't find the method you want in this package
 func (db *Base) Do(ctx context.Context, f func(c *mgo.Collection) error) error {
 	return db.Client().Do(ctx, db, f)
