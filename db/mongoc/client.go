@@ -12,7 +12,6 @@ type wrapClient = mongo.Client
 
 type Client struct {
 	*wrapClient
-	config Config
 }
 
 //type Client interface {
@@ -27,18 +26,18 @@ type Client struct {
 
 // NewClient If only one db is used, it is recommended to use: NewGlobalClient
 // 若只使用到了一个库，推荐使用: NewGlobalClient
-func NewClient(ctx context.Context, config Config) (*Client, error) {
-	opts := convertConfig2Options(config)
-	return NewClientWithOptions(ctx, opts)
+func NewClient(ctx context.Context, config *Config) (*Client, error) {
+	options := config.Convert2Options()
+	return NewClientWithOptions(ctx, options)
 }
 
 // NewClientWithURI uri format: mongodb://username:password@example1.com,example2.com,example3.com/?replicaSet=test&w=majority&wtimeoutMS=5000
 func NewClientWithURI(ctx context.Context, uri string) (*Client, error) {
-	return NewClientWithOptions(ctx, *options.Client().ApplyURI(uri))
+	return NewClientWithOptions(ctx, options.Client().ApplyURI(uri))
 }
 
-func NewClientWithOptions(ctx context.Context, options options.ClientOptions) (*Client, error) {
-	client, err := mongo.Connect(ctx, &options)
+func NewClientWithOptions(ctx context.Context, opts ...*options.ClientOptions) (*Client, error) {
+	client, err := mongo.Connect(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -47,40 +46,13 @@ func NewClientWithOptions(ctx context.Context, options options.ClientOptions) (*
 		return nil, err
 	}
 
-	config := Config{
-		Addrs: options.Hosts,
-		Auth: &Auth{
-			Username: options.Auth.Username,
-			Password: options.Auth.Password,
-			Source:   options.Auth.AuthSource,
-		},
-	}
-
-	if options.ReplicaSet != nil {
-		config.ReplicaSetName = *options.ReplicaSet
-	}
-	if options.SocketTimeout != nil {
-		config.Timeout = *options.SocketTimeout
-	}
-	if options.MaxPoolSize != nil {
-		config.PoolLimit = *options.MaxPoolSize
-	}
-	if options.MaxConnIdleTime != nil {
-		config.MaxIdleTime = *options.MaxConnIdleTime
-	}
-	if options.AppName != nil {
-		config.AppName = *options.AppName
-	}
-
-	c := &Client{wrapClient: client, config: config}
-
-	return c, nil
+	return &Client{wrapClient: client}, nil
 }
 
 var gClient *Client
 
 // NewGlobalClient If there is only one Mongo, you can select the global client
-func NewGlobalClient(ctx context.Context, config Config) (*Client, error) {
+func NewGlobalClient(ctx context.Context, config *Config) (*Client, error) {
 	var err error
 	if gClient, err = NewClient(ctx, config); err != nil {
 		return nil, err
@@ -94,10 +66,6 @@ func GetGlobalClient() *Client {
 
 func (c *Client) Kernel() *mongo.Client {
 	return c.wrapClient
-}
-
-func (c *Client) Config() Config {
-	return c.config
 }
 
 type Exec = func(ctx context.Context, collection *mongo.Collection) (interface{}, error)

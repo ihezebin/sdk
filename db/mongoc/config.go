@@ -31,41 +31,41 @@ type Auth struct {
 	Source   string `mapstructure:"source" json:"source"`
 }
 
-func convertConfig2Options(config Config) options.ClientOptions {
+func (c *Config) Convert2Options() *options.ClientOptions {
 	opts := options.Client()
-	opts.SetHosts(config.Addrs)
-	if config.Auth != nil {
+	opts.SetHosts(c.Addrs)
+	if c.Auth != nil {
 		source := defaultSource
-		if stringer.NotEmpty(config.Auth.Source) {
-			source = config.Auth.Source
+		if stringer.NotEmpty(c.Auth.Source) {
+			source = c.Auth.Source
 		}
 		opts.SetAuth(options.Credential{
-			Username:   config.Auth.Username,
-			Password:   config.Auth.Password,
+			Username:   c.Auth.Username,
+			Password:   c.Auth.Password,
 			AuthSource: source,
 		})
 	}
-	if stringer.NotEmpty(config.ReplicaSetName) {
-		opts.SetReplicaSet(config.ReplicaSetName)
+	if stringer.NotEmpty(c.ReplicaSetName) {
+		opts.SetReplicaSet(c.ReplicaSetName)
 	}
 	poolLimit := defaultPoolLimit
-	if config.PoolLimit != 0 {
-		poolLimit = config.PoolLimit
+	if c.PoolLimit != 0 {
+		poolLimit = c.PoolLimit
 	}
 	opts.SetMaxPoolSize(poolLimit)
 
 	maxIdleTime := defaultMaxIdleTime
-	if config.MaxIdleTime != time.Duration(0) {
-		maxIdleTime = config.MaxIdleTime * time.Second
+	if c.MaxIdleTime != time.Duration(0) {
+		maxIdleTime = c.MaxIdleTime * time.Second
 	}
 	opts.SetMaxConnIdleTime(maxIdleTime)
-	if config.MaxIdleTime != time.Duration(0) {
-		opts.SetSocketTimeout(config.Timeout * time.Second)
+	if c.MaxIdleTime != time.Duration(0) {
+		opts.SetSocketTimeout(c.Timeout * time.Second)
 	}
 
-	if stringer.NotEmpty(config.AppName) {
-		opts.SetAppName(config.AppName)
+	if stringer.NotEmpty(c.AppName) {
+		opts.SetAppName(c.AppName)
 	}
 
-	return *opts
+	return opts
 }
