@@ -1,51 +1,97 @@
 package redisc
 
 import (
+	"github.com/go-redis/redis/v8"
+	"github.com/whereabouts/sdk/utils/stringer"
 	"time"
 )
 
-const (
-	defaultNetwork = "tcp"
-)
-
 type Config struct {
-	Addr     string `mapstructure:"addr" json:"addr"`
-	Username string `mapstructure:"username" json:"username"`
-	Password string `mapstructure:"password" json:"password"`
-	// Maximum number of idle connections in the pool.
-	MaxIdle int `mapstructure:"max_idle" json:"max_idle"`
-	// Maximum number of connections allocated by the pool at a given time.
-	// When zero, there is no limit on the number of connections in the pool.
-	MaxActive int `mapstructure:"max_active" json:"max_active"`
-	// Close connections after remaining idle for this duration. If the value
-	// is zero, then idle connections are not closed. Applications should set
-	// the timeout to a value less than the server's timeout.
-	IdleTimeout time.Duration `mapstructure:"idle_timeout" json:"idle_timeout"`
-	// If Wait is true and the pool is at the MaxActive limit, then Get() waits
-	// for a connection to be returned to the pool before returning.
-	Wait bool `mapstructure:"wait" json:"wait"`
-	// Close connections older than this duration. If the value is zero, then
-	// the pool does not close connections based on age.
-	MaxConnLifetime time.Duration `mapstructure:"max_conn_lifetime" json:"max_conn_lifetime"`
+	Addrs    []string `mapstructure:"addrs" json:"addrs"`
+	Username string   `mapstructure:"username" json:"username"`
+	Password string   `mapstructure:"password" json:"password"`
+	Database int      `mapstructure:"db" json:"db"`
 
-	// ClientName specifies a client name to be used by the Redis server connection.
-	ClientName string `mapstructure:"client_name" json:"client_name"`
-	Database   int    `mapstructure:"db" json:"db"`
+	// 连接超时秒数
+	// Default is 5 seconds.
+	DialTimeout int `mapstructure:"dial_timeout" json:"dial_timeout"`
+	// Timeout for socket reads. If reached, commands will fail
+	// with a timeout instead of blocking. Use value -1 for no timeout and 0 for default.
+	// Default is 3 seconds.
+	ReadTimeout int `mapstructure:"read_timeout" json:"read_timeout"`
+	// Timeout for socket writes. If reached, commands will fail
+	// with a timeout instead of blocking.
+	// Default is ReadTimeout.
+	WriteTimeout int `mapstructure:"write_timeout" json:"write_timeout"`
+
+	// 连接池容最大量
+	// Default is 10 connections per every available CPU as reported by runtime.GOMAXPROCS.
+	PoolSize int `mapstructure:"pool_size" json:"pool_size"`
+	// 连接池保持连接状态的最小可用连接数
+	// because new connection is slow.
+	MinIdleConns int `mapstructure:"min_idle_conns" json:"min_idle_conns"`
+	// 连接池全部连接都被占用时的超时时间（秒）
+	// Default is ReadTimeout + 1 second.
+	PoolTimeout int `mapstructure:"pool_timeout" json:"pool_timeout"`
+	// 关闭空闲连接的时间（秒）
+	// Should be less than server's timeout.
+	// Default is 5 minutes. -1 disables idle timeout check.
+	IdleTimeout int `mapstructure:"idle_timeout" json:"idle_timeout"`
+}
+
+func (c *Config) Convert2Otions() *redis.UniversalOptions {
+	options := &redis.UniversalOptions{}
+
+	if len(c.Addrs) > 0 {
+		options.Addrs = c.Addrs
+	}
+	if stringer.NotEmpty(c.Username) {
+		options.Username = c.Username
+	}
+	if stringer.NotEmpty(c.Password) {
+		options.Password = c.Password
+	}
+	if c.Database != 0 {
+		options.DB = c.Database
+	}
+	if c.DialTimeout != 0 {
+		options.DialTimeout = time.Duration(c.DialTimeout) * time.Second
+	}
+	if c.ReadTimeout != 0 {
+		options.ReadTimeout = time.Duration(c.ReadTimeout) * time.Second
+	}
+	if c.WriteTimeout != 0 {
+		options.WriteTimeout = time.Duration(c.WriteTimeout) * time.Second
+	}
+	if c.PoolSize != 0 {
+		options.PoolSize = c.PoolSize
+	}
+	if c.MinIdleConns != 0 {
+		options.MinIdleConns = c.MinIdleConns
+	}
+	if c.PoolTimeout != 0 {
+		options.PoolTimeout = time.Duration(c.PoolTimeout) * time.Second
+	}
+	if c.IdleTimeout != 0 {
+		options.IdleTimeout = time.Duration(c.IdleTimeout) * time.Second
+	}
+
+	return options
 }
 
 type Option func(config *Config)
 
-func newConfig(options ...Option) Config {
-	config := Config{}
+func newConfig(options ...Option) *Config {
+	config := &Config{}
 	for _, option := range options {
-		option(&config)
+		option(config)
 	}
 	return config
 }
 
-func WithAddr(addr string) Option {
+func WithAddrs(addrs ...string) Option {
 	return func(config *Config) {
-		config.Addr = addr
+		config.Addrs = addrs
 	}
 }
 
@@ -61,44 +107,50 @@ func WithPassword(password string) Option {
 	}
 }
 
-func WithMaxIdle(maxIdle int) Option {
-	return func(config *Config) {
-		config.MaxIdle = maxIdle
-	}
-}
-
-func WithMaxActive(maxActive int) Option {
-	return func(config *Config) {
-		config.MaxActive = maxActive
-	}
-}
-
-func WithIdleTimeout(idleTimeout time.Duration) Option {
-	return func(config *Config) {
-		config.IdleTimeout = idleTimeout
-	}
-}
-
-func WithWait(wait bool) Option {
-	return func(config *Config) {
-		config.Wait = wait
-	}
-}
-
-func WithMaxConnLifetime(maxConnLifetime time.Duration) Option {
-	return func(config *Config) {
-		config.MaxConnLifetime = maxConnLifetime
-	}
-}
-
-func WithClientName(clientName string) Option {
-	return func(config *Config) {
-		config.ClientName = clientName
-	}
-}
-
 func WithDatabase(database int) Option {
 	return func(config *Config) {
 		config.Database = database
+	}
+}
+
+func WithDialTimeout(dialTimeout int) Option {
+	return func(config *Config) {
+		config.DialTimeout = dialTimeout
+	}
+}
+
+func WithReadTimeout(readTimeout int) Option {
+	return func(config *Config) {
+		config.ReadTimeout = readTimeout
+	}
+}
+
+func WithWriteTimeout(writeTimeout int) Option {
+	return func(config *Config) {
+		config.WriteTimeout = writeTimeout
+	}
+}
+
+func WithPoolSize(poolSize int) Option {
+	return func(config *Config) {
+		config.PoolSize = poolSize
+	}
+}
+
+func WithMinIdleConns(minIdleConns int) Option {
+	return func(config *Config) {
+		config.MinIdleConns = minIdleConns
+	}
+}
+
+func WithPoolTimeout(poolTimeout int) Option {
+	return func(config *Config) {
+		config.PoolTimeout = poolTimeout
+	}
+}
+
+func WithIdleTimeout(idleTimeout int) Option {
+	return func(config *Config) {
+		config.IdleTimeout = idleTimeout
 	}
 }

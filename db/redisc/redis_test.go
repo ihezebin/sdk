@@ -10,13 +10,16 @@ import (
 var ctx = context.Background()
 
 func TestRedis(t *testing.T) {
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+	rdb, err := NewClient(ctx, &Config{
+		Addrs:    []string{"localhost:6379"},
 		Password: "root", // no password set
-		DB:       0,      // use default DB
+		Database: 0,      // use default DB
 	})
+	if err != nil {
+		panic(err)
+	}
 
-	err := rdb.Set(ctx, "key", "value", 0).Err()
+	err = rdb.Set(ctx, "key", "value", 0).Err()
 	if err != nil {
 		panic(err)
 	}
