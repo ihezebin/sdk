@@ -8,7 +8,7 @@ import (
 type Model interface {
 	warpCmd
 	Name() string
-	Key() string
+	Key(ext ...string) string
 }
 
 type warpCmd = redis.Cmdable
