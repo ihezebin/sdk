@@ -10,7 +10,7 @@ import (
 var ctx = context.Background()
 
 func TestRedis(t *testing.T) {
-	rdb, err := NewClient(ctx, &Config{
+	rdb, err := NewClient(ctx, Config{
 		Addrs:    []string{"localhost:6379"},
 		Password: "root", // no password set
 		Database: 0,      // use default DB

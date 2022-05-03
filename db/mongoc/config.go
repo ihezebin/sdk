@@ -31,10 +31,7 @@ type Auth struct {
 	Source   string `mapstructure:"source" json:"source"`
 }
 
-func (c *Config) Convert2Options() *options.ClientOptions {
-	if c == nil {
-		return options.Client()
-	}
+func (c Config) Convert2Options() *options.ClientOptions {
 	opts := options.Client()
 	opts.SetHosts(c.Addrs)
 	if c.Auth != nil {

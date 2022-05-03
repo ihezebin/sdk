@@ -39,11 +39,8 @@ type Config struct {
 	IdleTimeout int `mapstructure:"idle_timeout" json:"idle_timeout"`
 }
 
-func (c *Config) Convert2Otions() *redis.UniversalOptions {
+func (c Config) Convert2Otions() *redis.UniversalOptions {
 	options := &redis.UniversalOptions{}
-	if c == nil {
-		return options
-	}
 
 	if len(c.Addrs) > 0 {
 		options.Addrs = c.Addrs
@@ -84,10 +81,10 @@ func (c *Config) Convert2Otions() *redis.UniversalOptions {
 
 type Option func(config *Config)
 
-func newConfig(options ...Option) *Config {
-	config := &Config{}
+func newConfig(options ...Option) Config {
+	config := Config{}
 	for _, option := range options {
-		option(config)
+		option(&config)
 	}
 	return config
 }

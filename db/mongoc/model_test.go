@@ -22,7 +22,7 @@ type User struct {
 
 func TestRegex(t *testing.T) {
 	ctx := context.Background()
-	c, err := NewClient(ctx, &Config{
+	c, err := NewClient(ctx, Config{
 		Addrs: []string{"127.0.0.1:27017"},
 		Auth: &Auth{
 			Username: "root",
@@ -46,7 +46,7 @@ func TestRegex(t *testing.T) {
 
 func TestMongoc(t *testing.T) {
 	ctx := context.Background()
-	c, err := NewClient(ctx, &Config{
+	c, err := NewClient(ctx, Config{
 		Addrs: []string{"127.0.0.1:27017"},
 		Auth: &Auth{
 			Username: "root",
@@ -83,7 +83,7 @@ func TestMongoc(t *testing.T) {
 // 610ececb4fb2d58d008e7c58
 func TestUpdateNotExist(t *testing.T) {
 	ctx := context.TODO()
-	c, err := NewClient(ctx, &Config{
+	c, err := NewClient(ctx, Config{
 		Addrs: []string{"127.0.0.1:27017"},
 		Auth: &Auth{
 			Username: "root",
@@ -102,7 +102,7 @@ func TestUpdateNotExist(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
-	c, err := NewClient(context.Background(), &Config{
+	c, err := NewClient(context.Background(), Config{
 		Addrs: []string{"127.0.0.1:27017"},
 		Auth: &Auth{
 			Username: "root",
@@ -132,7 +132,7 @@ func TestInsert(t *testing.T) {
 //PASS
 func TestTransaction(t *testing.T) {
 	ctx := context.Background()
-	c, err := NewClient(ctx, &Config{
+	c, err := NewClient(ctx, Config{
 		Addrs: []string{"127.0.0.1:27018"},
 		Auth: &Auth{
 			Username: "root",
@@ -185,7 +185,7 @@ func TestTransaction(t *testing.T) {
 
 func TestAutoTime(t *testing.T) {
 	ctx := context.Background()
-	c, err := NewClient(ctx, &Config{
+	c, err := NewClient(ctx, Config{
 		Addrs: []string{"127.0.0.1:27017"},
 		Auth: &Auth{
 			Username: "root",
@@ -222,7 +222,7 @@ func TestAutoTime(t *testing.T) {
 
 func TestSoftDelete(t *testing.T) {
 	ctx := context.Background()
-	c, err := NewClient(ctx, &Config{
+	c, err := NewClient(ctx, Config{
 		Addrs: []string{"127.0.0.1:27017"},
 		Auth: &Auth{
 			Username: "root",

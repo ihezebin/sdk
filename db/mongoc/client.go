@@ -2,7 +2,6 @@ package mongoc
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
@@ -15,22 +14,9 @@ type Client struct {
 	*wrapClient
 }
 
-//type Client interface {
-//	Kernel() *mongo.Client
-//	Close(ctx context.Context) error
-//	Config() Config
-//	Do(ctx context.Context, model Model, exec Exec) (interface{}, error)
-//	DoWithTransaction(ctx context.Context, model Model, exec Exec) (interface{}, error)
-//	DoWithSession(ctx context.Context, model Model, exec SessionExec) error
-//	NewModel(database string, collection string) Model
-//}
-
 // NewClient If only one db is used, it is recommended to use: NewGlobalClient
 // 若只使用到了一个库，推荐使用: NewGlobalClient
-func NewClient(ctx context.Context, config *Config) (*Client, error) {
-	if config == nil {
-		return nil, errors.New("mongoc config can not be nil")
-	}
+func NewClient(ctx context.Context, config Config) (*Client, error) {
 	opts := config.Convert2Options()
 	return NewClientWithOptions(ctx, opts)
 }
@@ -56,10 +42,7 @@ func NewClientWithOptions(ctx context.Context, opts ...*options.ClientOptions) (
 var gClient *Client
 
 // NewGlobalClient If there is only one Mongo, you can select the global client
-func NewGlobalClient(ctx context.Context, config *Config) (*Client, error) {
-	if config == nil {
-		return nil, errors.New("mongoc config can not be nil")
-	}
+func NewGlobalClient(ctx context.Context, config Config) (*Client, error) {
 	var err error
 	if gClient, err = NewClient(ctx, config); err != nil {
 		return nil, err
