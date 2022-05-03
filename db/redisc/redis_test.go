@@ -41,3 +41,23 @@ func TestRedis(t *testing.T) {
 	// Output: key value
 	// key2 does not exist
 }
+
+func TestModel(t *testing.T) {
+	rdb, err := NewClient(ctx, Config{
+		Addrs:    []string{"localhost:6379"},
+		Password: "root", // no password set
+		Database: 0,      // use default DB
+	})
+	if err != nil {
+		panic(err)
+	}
+	m := NewModel(rdb, "test")
+	if err = m.Set(ctx, "test", "model", 0).Err(); err != nil {
+		panic(err)
+	}
+	res := m.Get(ctx, "test")
+	if res.Err() != nil {
+		panic(err)
+	}
+	fmt.Println(res.String())
+}

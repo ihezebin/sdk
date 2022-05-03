@@ -6,6 +6,7 @@ import (
 )
 
 type Model interface {
+	warpCmd
 	Name() string
 	Key() string
 }
