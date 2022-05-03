@@ -2,6 +2,7 @@ package mongoc
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
@@ -27,6 +28,9 @@ type Client struct {
 // NewClient If only one db is used, it is recommended to use: NewGlobalClient
 // 若只使用到了一个库，推荐使用: NewGlobalClient
 func NewClient(ctx context.Context, config *Config) (*Client, error) {
+	if config == nil {
+		return nil, errors.New("mongoc config can not be nil")
+	}
 	opts := config.Convert2Options()
 	return NewClientWithOptions(ctx, opts)
 }
@@ -53,6 +57,9 @@ var gClient *Client
 
 // NewGlobalClient If there is only one Mongo, you can select the global client
 func NewGlobalClient(ctx context.Context, config *Config) (*Client, error) {
+	if config == nil {
+		return nil, errors.New("mongoc config can not be nil")
+	}
 	var err error
 	if gClient, err = NewClient(ctx, config); err != nil {
 		return nil, err

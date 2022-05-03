@@ -41,6 +41,9 @@ type Config struct {
 
 func (c *Config) Convert2Otions() *redis.UniversalOptions {
 	options := &redis.UniversalOptions{}
+	if c == nil {
+		return options
+	}
 
 	if len(c.Addrs) > 0 {
 		options.Addrs = c.Addrs
