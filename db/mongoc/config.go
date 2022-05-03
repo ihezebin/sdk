@@ -32,6 +32,9 @@ type Auth struct {
 }
 
 func (c *Config) Convert2Options() *options.ClientOptions {
+	if c == nil {
+		return options.Client()
+	}
 	opts := options.Client()
 	opts.SetHosts(c.Addrs)
 	if c.Auth != nil {
