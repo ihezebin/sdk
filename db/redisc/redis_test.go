@@ -61,3 +61,23 @@ func TestModel(t *testing.T) {
 	}
 	fmt.Println(res.String())
 }
+
+func TestMGet(t *testing.T) {
+	rdb, err := NewClient(ctx, Config{
+		Addrs:    []string{"localhost:6379"},
+		Password: "root", // no password set
+		Database: 0,      // use default DB
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	res := rdb.MGet(ctx, "a", "b", "d", "e", "c")
+	if res.Err() != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(res.Result())
+	// Output: key value
+	// key2 does not exist
+}
