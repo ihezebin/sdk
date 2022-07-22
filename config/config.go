@@ -1,140 +1,85 @@
 package config
 
 import (
-	"bytes"
+	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"github.com/whereabouts/sdk/cli"
 	"github.com/whereabouts/sdk/utils/stringer"
 	"io"
-	"io/ioutil"
-	"os"
 	"path/filepath"
-	"reflect"
 	"runtime"
+	"strings"
 )
 
-var defaultConfigPath = "./config.json"
+const defaultTagName = "json"
+const defaultConfigType = "json"
 
 func New() *Configurator {
-	return &Configurator{viper.New()}
-}
-
-var gConfigurator = New()
-
-func Load(file interface{}, config interface{}) error {
-	return gConfigurator.Load(file, config)
-}
-
-func LoadWithDefault(config interface{}) error {
-	return gConfigurator.LoadWithDefault(config)
-}
-
-func LoadWithCli(key, value string, config interface{}) error {
-	return gConfigurator.LoadWithCli(key, value, config)
-}
-
-func LoadWithEnv(key string, config interface{}) error {
-	return gConfigurator.LoadWithEnv(key, config)
-}
-
-//func LoadWithURI(uri string, config interface{}) error {
-//	return gConfigurator.LoadWithURI(uri, config)
-//}
-
-func SetDefaultConfigPath(path string) {
-	defaultConfigPath = path
+	kernel := viper.New()
+	kernel.SetConfigType(defaultConfigType)
+	return &Configurator{
+		kernel:  kernel,
+		tagName: defaultTagName,
+	}
 }
 
 type Configurator struct {
-	kernel *viper.Viper
+	kernel  *viper.Viper
+	tagName string
 }
 
 func (c *Configurator) Kernel() *viper.Viper {
 	return c.kernel
 }
 
-func (c *Configurator) Load(file interface{}, config interface{}) error {
-	switch file.(type) {
-	case string:
-		return c.loadFilePath(file.(string), config)
-	case io.Reader:
-		return c.loadFileReader(file.(io.Reader), config)
-	case []byte:
-		return c.loadFileReader(bytes.NewReader(file.([]byte)), config)
-	default:
-		return errors.Errorf("unsupported config file type: %v", reflect.TypeOf(file))
-	}
+func (c *Configurator) SetTagName(tagName string) *Configurator {
+	c.tagName = tagName
+	return c
 }
 
-func (c *Configurator) LoadWithDefault(config interface{}) error {
-	return c.loadFilePath(defaultConfigPath, config)
+func (c *Configurator) SetConfigType(configType string) *Configurator {
+	c.Kernel().SetConfigType(configType)
+	return c
 }
 
-func (c *Configurator) LoadWithCli(key, value string, config interface{}) error {
-	cli.WithFlagString(key, value, "config file path")
-	cliV, err := cli.Run()
-	if err != nil {
-		return err
+// LoadWithReader need point out the configType, default is json, can use SetConfigType to change
+func (c *Configurator) LoadWithReader(reader io.Reader, config interface{}) error {
+	if err := c.Kernel().ReadConfig(reader); err != nil {
+		return errors.Wrap(err, "read config err")
 	}
-	return c.loadFilePath(cliV.String(key), config)
+	if err := c.unmarshal(config); err != nil {
+		return errors.Wrap(err, "failed to unmarshal config")
+	}
+	return nil
 }
 
-func (c *Configurator) LoadWithEnv(key string, config interface{}) error {
-	return c.loadFilePath(os.Getenv(key), config)
-}
-
-//func (c *Configurator) LoadWithURI(path string, config interface{}) error {
-//	return nil
-//}
-
-func (c *Configurator) loadFileReader(reader io.Reader, config interface{}) error {
-	data, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return errors.Wrap(err, "failed to read config reader data")
-	}
-	for _, configType := range viper.SupportedExts {
-		c.Kernel().SetConfigType(configType)
-		if err = c.Kernel().ReadConfig(bytes.NewReader(data)); err != nil {
-			continue
-		} else {
-			err = c.Kernel().Unmarshal(config)
-			if err != nil {
-				return errors.Wrap(err, "failed to unmarshal config")
-			}
-			// check if zero value
-			configV := reflect.ValueOf(config)
-			for configV.Kind() == reflect.Ptr {
-				configV = configV.Elem()
-			}
-			if configV.IsZero() {
-				continue
-			}
-			return nil
-		}
-	}
-	return errors.New("failed to load config reader, the data format does not match these: [json, toml, yaml, yml, properties, props, prop, hcl, dotenv, env, ini]")
-}
-
-func (c *Configurator) loadFilePath(path string, config interface{}) error {
-	skip := 3
-	if c == gConfigurator {
-		skip = 4
-	}
-	c.Kernel().SetConfigFile(c.handleRelativePath(path, skip))
+func (c *Configurator) LoadWithFilePath(path string, config interface{}) error {
+	c.Kernel().SetConfigFile(c.handleRelativePath(path))
 	if err := c.Kernel().ReadInConfig(); err != nil {
 		return errors.Wrap(err, "failed to load config file path")
 	}
-	err := c.Kernel().Unmarshal(config)
+	err := c.unmarshal(config)
 	if err != nil {
 		return errors.Wrap(err, "failed to unmarshal config")
 	}
 	return nil
 }
 
-func (c *Configurator) handleRelativePath(path string, skip int) string {
-	if stringer.NotEmpty(path) && stringer.Equals(path[:1], ".") {
+func (c *Configurator) unmarshal(output interface{}) error {
+	return c.Kernel().Unmarshal(output, func(d *mapstructure.DecoderConfig) {
+		d.TagName = c.tagName
+	})
+}
+
+func (c *Configurator) handleRelativePath(path string) string {
+	skip := 2
+	if c == gConfigurator {
+		skip = 3
+	}
+	if stringer.NotEmpty(path) && strings.Index(path, ".") == 0 {
 		_, currentPath, _, _ := runtime.Caller(skip)
+		fmt.Println(currentPath)
 		path = filepath.Join(filepath.Dir(currentPath), path)
 	}
 	return path
