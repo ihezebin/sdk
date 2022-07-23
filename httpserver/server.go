@@ -22,7 +22,6 @@ type Server interface {
 	Close(ctx context.Context) error
 	OnShutdown(shutdownHook hook.ShutdownHook) Server
 	OnBeforeRun(hook.RunHook) Server
-	Routes(routes Router) Server
 }
 
 type server struct {
@@ -46,13 +45,6 @@ func NewServerWithConfig(config Config) Server {
 	engine.Use(config.middlewares...)
 	s.Handler = engine
 	s.Addr = fmt.Sprintf(":%d", config.Port)
-	return s
-}
-
-type Router func(engine *gin.Engine)
-
-func (s *server) Routes(routes Router) Server {
-	routes(s.Kernel())
 	return s
 }
 

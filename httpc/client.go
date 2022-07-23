@@ -7,7 +7,6 @@ import (
 	"github.com/whereabouts/sdk/httpc/hook"
 	"github.com/whereabouts/sdk/utils/stringer"
 	"net/http"
-	"net/url"
 	"runtime"
 	"time"
 )
@@ -17,9 +16,6 @@ type Client interface {
 	OnBeforeRequest(hooks ...hook.RequestHook) Client
 	OnAfterResponse(hooks ...hook.ResponseHook) Client
 	NewRequest(ctx context.Context) *resty.Request
-	PostJSON(ctx context.Context, path string, values interface{}, headers http.Header, ret interface{}) error
-	PostForm(ctx context.Context, path string, values url.Values, headers http.Header, ret interface{}) error
-	Get(ctx context.Context, path string, values url.Values, headers http.Header, ret interface{}) error
 }
 
 type client struct {
@@ -86,96 +82,6 @@ func (c *client) NewRequest(ctx context.Context) *resty.Request {
 	// do something with ctx
 	// Todo here
 	return c.kernel.NewRequest().SetContext(ctx)
-}
-
-func (c *client) PostJSON(ctx context.Context, path string, values interface{}, headers http.Header, ret interface{}) error {
-	r := c.NewRequest(ctx)
-
-	if headers != nil {
-		r.Header = headers
-	}
-	// do something with ctx
-	// Todo here
-	r.SetHeader("Content-Type", "application/json")
-
-	if values != nil {
-		r.SetBody(values)
-	}
-
-	if ret != nil {
-		r.SetResult(ret)
-	}
-
-	resp, err := r.Post(path)
-
-	if err != nil {
-		return errors.Errorf("PostJSON:{%s} param:%+v err: %v", r.URL, values, err)
-	}
-	httpStatusCode := resp.StatusCode()
-	if httpStatusCode < http.StatusOK || httpStatusCode >= http.StatusMultipleChoices {
-		return errors.Errorf("PostJSON:{%s} param:%+v failed: %v", resp.Request.URL, values, httpStatusCode)
-	}
-
-	return nil
-}
-
-func (c *client) PostForm(ctx context.Context, path string, values url.Values, headers http.Header, ret interface{}) error {
-	r := c.NewRequest(ctx)
-
-	if headers != nil {
-		r.Header = headers
-	}
-	// do something with ctx
-	// Todo here
-	r.SetHeader("Content-Type", "application/x-www-form-urlencoded")
-
-	if values != nil {
-		r.FormData = values
-	}
-
-	if ret != nil {
-		r.SetResult(ret)
-	}
-
-	resp, err := r.Post(path)
-
-	if err != nil {
-		return errors.Errorf("PostForm:{%s} param:%+v err: %v", r.URL, values, err)
-	}
-	httpStatusCode := resp.StatusCode()
-	if httpStatusCode < http.StatusOK || httpStatusCode >= http.StatusMultipleChoices {
-		return errors.Errorf("PostForm:{%s} param:%+v failed: %v", resp.Request.URL, values, httpStatusCode)
-	}
-
-	return nil
-}
-
-func (c *client) Get(ctx context.Context, path string, values url.Values, headers http.Header, ret interface{}) error {
-	r := c.NewRequest(ctx)
-
-	if headers != nil {
-		r.Header = headers
-	}
-	// do something with ctx
-	// Todo here
-
-	if values != nil {
-		r.QueryParam = values
-	}
-
-	if ret != nil {
-		r.SetResult(ret)
-	}
-
-	resp, err := r.Get(path)
-	if err != nil {
-		return errors.Errorf("Get:{%s} param:%+v err: %v", r.URL, r.QueryParam, err)
-	}
-	httpStatusCode := resp.StatusCode()
-	if httpStatusCode < http.StatusOK || httpStatusCode >= http.StatusMultipleChoices {
-		return errors.Errorf("Get:{%s} param:%+v failed: %v", resp.Request.URL, values, httpStatusCode)
-	}
-	return nil
 }
 
 // NewGlobalClient If there is only one http client, you can select the global client
