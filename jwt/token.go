@@ -3,8 +3,8 @@ package jwt
 import (
 	"encoding/json"
 	"github.com/pkg/errors"
-	"github.com/whereabouts/sdk/jwt/alg"
-	"github.com/whereabouts/sdk/utils/stringer"
+	"github.com/ihezebin/sdk/jwt/alg"
+	"github.com/ihezebin/sdk/utils/stringer"
 	"time"
 )
 

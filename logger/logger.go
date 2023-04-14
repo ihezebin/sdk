@@ -3,12 +3,12 @@ package logger
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk/logger/field"
-	"github.com/whereabouts/sdk/logger/format"
-	"github.com/whereabouts/sdk/logger/hook"
-	"github.com/whereabouts/sdk/logger/level"
-	"github.com/whereabouts/sdk/logger/writer"
-	"github.com/whereabouts/sdk/utils/stringer"
+	"github.com/ihezebin/sdk/logger/field"
+	"github.com/ihezebin/sdk/logger/format"
+	"github.com/ihezebin/sdk/logger/hook"
+	"github.com/ihezebin/sdk/logger/level"
+	"github.com/ihezebin/sdk/logger/writer"
+	"github.com/ihezebin/sdk/utils/stringer"
 	"io"
 	"os"
 )

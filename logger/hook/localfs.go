@@ -3,8 +3,8 @@ package hook
 import (
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk/logger/format"
-	"github.com/whereabouts/sdk/logger/level"
+	"github.com/ihezebin/sdk/logger/format"
+	"github.com/ihezebin/sdk/logger/level"
 	"io"
 	"os"
 	"path/filepath"

@@ -1,4 +1,4 @@
-module github.com/whereabouts/sdk
+module github.com/ihezebin/sdk
 
 go 1.15
 

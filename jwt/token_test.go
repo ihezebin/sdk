@@ -2,9 +2,9 @@ package jwt
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk/jwt/alg"
-	"github.com/whereabouts/sdk/logger"
-	"github.com/whereabouts/sdk/utils/timer"
+	"github.com/ihezebin/sdk/jwt/alg"
+	"github.com/ihezebin/sdk/logger"
+	"github.com/ihezebin/sdk/utils/timer"
 	"testing"
 	"time"
 )

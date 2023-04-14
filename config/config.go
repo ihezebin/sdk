@@ -2,18 +2,32 @@ package config
 
 import (
 	"fmt"
+	"github.com/ihezebin/sdk/utils/stringer"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
-	"github.com/whereabouts/sdk/utils/stringer"
 	"io"
 	"path/filepath"
 	"runtime"
 	"strings"
 )
 
-const defaultTagName = "json"
-const defaultConfigType = "json"
+const defaultTagName = ConfigTypeJson
+const defaultConfigType = ConfigTypeJson
+
+const (
+	ConfigTypeJson       = "json"
+	ConfigTypeToml       = "toml"
+	ConfigTypeYaml       = "yaml"
+	ConfigTypeYml        = "yml"
+	ConfigTypeProperties = "properties"
+	ConfigTypeProps      = "props"
+	ConfigTypeProp       = "prop"
+	ConfigTypeHcl        = "hcl"
+	ConfigTypeDotenv     = "dotenv"
+	ConfigTypeEnv        = "env"
+	ConfigTypeIni        = "ini"
+)
 
 func New() *Configurator {
 	kernel := viper.New()

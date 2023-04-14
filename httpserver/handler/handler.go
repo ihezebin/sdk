@@ -2,11 +2,12 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/ihezebin/sdk/httpserver/handler/result"
+	"github.com/ihezebin/sdk/logger"
+	"github.com/ihezebin/sdk/utils/mapper"
 	"github.com/pkg/errors"
-	"github.com/whereabouts/sdk/httpserver/handler/result"
-	"github.com/whereabouts/sdk/logger"
-	"github.com/whereabouts/sdk/utils/mapper"
 	"net/http"
 	"reflect"
 )
@@ -64,35 +65,40 @@ func newHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logger)
 		// bind request param
 		req := reflect.New(reqT)
 		if bindErr := c.ShouldBind(req.Interface()); bindErr != nil {
-			res = result.Failed(bindErr).WithStatusCode(http.StatusBadRequest)
+			res = result.FailedWithErr(bindErr).WithStatusCode(http.StatusBadRequest)
 			c.JSON(res.StatusCode(), res)
-			l.Errorf("method(%T) failed to bind: %v", method, bindErr)
+			l.WithError(bindErr).Errorf("method(%T) failed to bind", method)
 			return
 		}
 		// bind path param
 		reqM, convertErr := mapper.Struct2Map(req.Interface())
 		if convertErr != nil {
-			res = result.Failed(convertErr).WithStatusCode(http.StatusBadRequest)
+			res = result.FailedWithErr(convertErr).WithStatusCode(http.StatusBadRequest)
 			c.JSON(res.StatusCode(), res)
-			l.Errorf("method(%T) failed to reconvert path param: %v", method, convertErr)
+			l.WithError(convertErr).Errorf("method(%T) failed to reconvert path param", method)
 			return
 		}
 		for _, param := range c.Params {
 			reqM[param.Key] = param.Value
 		}
 		if convertErr = mapper.Map2Struct(reqM, req.Interface()); convertErr != nil {
-			res = result.Failed(convertErr).WithStatusCode(http.StatusBadRequest)
+			res = result.FailedWithErr(convertErr).WithStatusCode(http.StatusBadRequest)
 			c.JSON(res.StatusCode(), res)
-			l.Errorf("method(%T) failed to reconvert path param: %v", method, convertErr)
+			l.WithError(convertErr).Errorf("method(%T) failed to reconvert path param", method)
 			return
 		}
 
 		// handle request
 		var resultV []reflect.Value
 		if conf.withCtx {
-			resultV = mV.Call([]reflect.Value{reflect.ValueOf(ctx), req, reflect.ValueOf(c)})
+			resultV = mV.Call([]reflect.Value{reflect.ValueOf(c), req})
 		} else {
 			resultV = mV.Call([]reflect.Value{reflect.ValueOf(ctx), req})
+		}
+
+		// just call, and do nothing
+		if conf.disableRet {
+			return
 		}
 
 		// do response
@@ -106,24 +112,21 @@ func newHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logger)
 		}
 
 		var resp, err interface{}
-		if conf.withoutResponse {
+		if conf.disableRet {
 			err = resultV[0].Interface()
 		} else {
 			resp, err = resultV[0].Interface(), resultV[1].Interface()
 		}
+
 		// response contains err
 		if err != nil {
 			switch e := err.(type) {
 			case *result.Err:
-				res = result.Failed(e).WithCode(e.Code).WithStatusCode(e.StatusCode())
+				res = result.FailedWithErr(e).WithStatusCode(e.StatusCode())
 			case error:
-				res = result.Failed(e)
+				res = result.FailedWithErr(e)
 			}
 			c.JSON(res.StatusCode(), res)
-			return
-		}
-
-		if conf.withoutResponse {
 			return
 		}
 
@@ -146,27 +149,25 @@ func checkMethod(method interface{}, conf config) (mV reflect.Value, reqT reflec
 	}
 
 	// check in params of method
-	if conf.withCtx {
-		if mT.NumIn() != 3 {
-			err = errors.Errorf("method(%T) must has 3 ins", method)
-			return
-		}
-		ginCtxT := mT.In(2)
-		if ginCtxT != ginContextType {
-			err = errors.Errorf("the third in of method(%T) must be *gin.Context", method)
-			return
-		}
-	} else {
-		if mT.NumIn() != 2 {
-			err = errors.Errorf("method(%T) must has 2 ins", method)
-			return
-		}
+	if mT.NumIn() != 2 {
+		err = errors.Errorf("method(%T) must has 2 ins", method)
+		return
 	}
 
 	ctxT := mT.In(0)
-	if ctxT != contextType {
-		err = errors.Errorf("the first in of method(%T) must be context.Context", method)
-		return
+	switch conf.withCtx {
+	case true:
+		if ctxT != ginContextType {
+			err = errors.Errorf("the first in of method(%T) must be *gin.Context when withCtx is true", method)
+			return
+		}
+	default:
+		fmt.Println(ctxT, contextType)
+		fmt.Println()
+		if ctxT != contextType {
+			err = errors.Errorf("the first in of method(%T) must be context.Context", method)
+			return
+		}
 	}
 
 	reqT = mT.In(1)
@@ -194,19 +195,18 @@ func checkMethod(method interface{}, conf config) (mV reflect.Value, reqT reflec
 	}
 
 	errOutIndex := 0
-	if conf.withoutResponse {
-		if mT.NumOut() != 1 {
-			err = errors.Errorf("method(%T) must has 1 out", method)
-			return
+	if conf.disableRet {
+		if mT.NumOut() != 0 {
+			err = errors.Errorf("method(%T) must has no out", method)
 		}
-	} else {
-		if mT.NumOut() != 2 {
-			err = errors.Errorf("method(%T) must has 2 out", method)
-			return
-		}
-		errOutIndex = 1
+		return
 	}
 
+	if mT.NumOut() != 2 {
+		err = errors.Errorf("method(%T) must has 2 out. one is response struct, another is error", method)
+		return
+	}
+	errOutIndex = 1
 	errT := mT.Out(errOutIndex)
 	if errT != errorType && errT != errType {
 		err = errors.Errorf("the first out of method(%T) must be *result.Err or error", method)

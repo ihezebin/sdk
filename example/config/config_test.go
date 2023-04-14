@@ -2,8 +2,8 @@ package main
 
 import (
 	"bytes"
-	"github.com/whereabouts/sdk/config"
-	"github.com/whereabouts/sdk/logger"
+	"github.com/ihezebin/sdk/config"
+	"github.com/ihezebin/sdk/logger"
 	"os"
 	"testing"
 )

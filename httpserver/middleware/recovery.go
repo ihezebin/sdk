@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/whereabouts/sdk/logger"
+	"github.com/ihezebin/sdk/logger"
 	"net/http"
 	"runtime/debug"
 )

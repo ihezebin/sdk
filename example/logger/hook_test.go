@@ -1,11 +1,11 @@
 package logger
 
 import (
-	"github.com/whereabouts/sdk/logger"
-	"github.com/whereabouts/sdk/logger/field"
-	"github.com/whereabouts/sdk/logger/hook"
-	"github.com/whereabouts/sdk/logger/level"
-	"github.com/whereabouts/sdk/logger/writer"
+	"github.com/ihezebin/sdk/logger"
+	"github.com/ihezebin/sdk/logger/field"
+	"github.com/ihezebin/sdk/logger/hook"
+	"github.com/ihezebin/sdk/logger/level"
+	"github.com/ihezebin/sdk/logger/writer"
 	"testing"
 )
 

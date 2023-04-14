@@ -2,10 +2,10 @@ package logger
 
 import (
 	"context"
-	"github.com/whereabouts/sdk/logger/field"
-	"github.com/whereabouts/sdk/logger/format"
-	"github.com/whereabouts/sdk/logger/hook"
-	"github.com/whereabouts/sdk/logger/level"
+	"github.com/ihezebin/sdk/logger/field"
+	"github.com/ihezebin/sdk/logger/format"
+	"github.com/ihezebin/sdk/logger/hook"
+	"github.com/ihezebin/sdk/logger/level"
 	"io"
 )
 

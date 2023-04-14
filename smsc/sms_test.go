@@ -1,10 +1,10 @@
 package smsc
 
 import (
-	"github.com/whereabouts/sdk/logger"
-	"github.com/whereabouts/sdk/smsc/aliyun"
-	"github.com/whereabouts/sdk/smsc/tencent"
-	"github.com/whereabouts/sdk/utils/common"
+	"github.com/ihezebin/sdk/logger"
+	"github.com/ihezebin/sdk/smsc/aliyun"
+	"github.com/ihezebin/sdk/smsc/tencent"
+	"github.com/ihezebin/sdk/utils/common"
 	"testing"
 )
 

@@ -2,11 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/whereabouts/sdk/example/httpserver/config"
-	"github.com/whereabouts/sdk/example/httpserver/server"
-	"github.com/whereabouts/sdk/httpserver"
-	"github.com/whereabouts/sdk/httpserver/middleware"
-	"github.com/whereabouts/sdk/logger"
+	"github.com/ihezebin/sdk/example/httpserver/config"
+	"github.com/ihezebin/sdk/example/httpserver/server"
+	"github.com/ihezebin/sdk/httpserver"
+	"github.com/ihezebin/sdk/httpserver/middleware"
+	"github.com/ihezebin/sdk/logger"
 )
 
 func main() {

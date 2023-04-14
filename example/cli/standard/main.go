@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk/cli"
+	"github.com/ihezebin/sdk/cli"
 )
 
 func main() {

@@ -2,8 +2,8 @@ package cli
 
 import (
 	"github.com/urfave/cli"
-	"github.com/whereabouts/sdk/cli/command"
-	"github.com/whereabouts/sdk/cli/flag"
+	"github.com/ihezebin/sdk/cli/command"
+	"github.com/ihezebin/sdk/cli/flag"
 	"os"
 	"sort"
 	"time"

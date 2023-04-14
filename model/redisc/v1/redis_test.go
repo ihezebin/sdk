@@ -2,7 +2,7 @@ package v1
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk/logger"
+	"github.com/ihezebin/sdk/logger"
 	"testing"
 )
 

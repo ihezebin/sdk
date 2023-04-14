@@ -1,9 +1,9 @@
 package handler
 
 type config struct {
-	withCtx         bool
-	withoutResponse bool
-	withResult      bool
+	withCtx    bool
+	withResult bool
+	disableRet bool
 }
 
 type Option func(config *config)
@@ -30,11 +30,11 @@ func WithContext() Option {
 	}
 }
 
-// WithoutResponse handler do not deal with the response, but deal with the error.
-// you need do it by yourself, and sometimes use both "no response" and "ginCtx"
+// DisableReturn handler return nothing, which means it will not automatically respond to a response or error.
+// sometimes use both "disableRet" and "ginCtx"
 //
 // example:
-// func HelloWithGinCtxAndNoResponse(ctx context.Context, req *proto.HelloHandlerReq, c *gin.Context) error {
+// func HelloWithGinCtxAndNoResponse(ctx *gin.Context, req *proto.HelloHandlerReq) {
 //	 var err error
 //	 if err != nil {
 //		 return err
@@ -42,11 +42,10 @@ func WithContext() Option {
 //	 resp := proto.HelloHandlerResp{}
 //	 resp.Welcome = fmt.Sprintf("hello, %s! the uri is %s", req.Name, c.Request.RequestURI)
 //	 c.JSON(http.StatusOK, resp)
-//	 return nil
 // }
-func WithoutResponse() Option {
+func DisableReturn() Option {
 	return func(conf *config) {
-		conf.withoutResponse = true
+		conf.disableRet = true
 	}
 }
 

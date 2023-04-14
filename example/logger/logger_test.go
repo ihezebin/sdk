@@ -1,9 +1,9 @@
 package logger
 
 import (
-	"github.com/whereabouts/sdk/logger"
-	"github.com/whereabouts/sdk/logger/format"
-	"github.com/whereabouts/sdk/logger/level"
+	"github.com/ihezebin/sdk/logger"
+	"github.com/ihezebin/sdk/logger/format"
+	"github.com/ihezebin/sdk/logger/level"
 	"testing"
 )
 

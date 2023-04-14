@@ -2,7 +2,7 @@ package cli
 
 import (
 	"github.com/urfave/cli"
-	"github.com/whereabouts/sdk/utils/stringer"
+	"github.com/ihezebin/sdk/utils/stringer"
 	"io"
 	"reflect"
 	"time"

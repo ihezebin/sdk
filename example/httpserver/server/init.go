@@ -1,7 +1,7 @@
 package server
 
 import (
-	"github.com/whereabouts/sdk/logger"
+	"github.com/ihezebin/sdk/logger"
 )
 
 func Init() {

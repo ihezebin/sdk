@@ -1,14 +1,14 @@
 package result
 
 import (
+	"fmt"
 	"github.com/pkg/errors"
 	"net/http"
 )
 
 type Err struct {
 	statusCode int
-	Code       interface{} `json:"code"`
-	Message    string      `json:"message"`
+	Message    string `json:"message"`
 }
 
 func (err *Err) Error() string {
@@ -27,22 +27,27 @@ func (err *Err) StatusCode() int {
 	return err.statusCode
 }
 
-func Error(code interface{}, msg string) *Err {
+func Error(msg string) *Err {
 	return &Err{
-		Code:    code,
 		Message: msg,
 	}
 }
 
-func WrapError(err error, code interface{}, msg string) *Err {
-	return Error2Err(errors.Wrap(err, msg), code)
+func Errorf(format string, args ...interface{}) *Err {
+	return &Err{
+		Message: fmt.Sprintf(format, args...),
+	}
+}
+
+func WrapError(err error, msg string) *Err {
+	return Error2Err(errors.Wrap(err, msg))
 }
 
 func WrapErrorf(err error, code interface{}, format string, args ...interface{}) *Err {
-	return Error2Err(errors.Wrapf(err, format, args...), code)
+	return Error2Err(errors.Wrapf(err, format, args...))
 }
 
-func Error2Err(err error, code interface{}) *Err {
+func Error2Err(err error) *Err {
 	if err == nil {
 		return nil
 	}
@@ -50,5 +55,5 @@ func Error2Err(err error, code interface{}) *Err {
 	if e, ok := err.(*Err); ok {
 		return e
 	}
-	return Error(code, err.Error())
+	return Error(err.Error())
 }

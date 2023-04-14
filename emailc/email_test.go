@@ -2,7 +2,7 @@ package emailc
 
 import (
 	"fmt"
-	"github.com/whereabouts/sdk/logger"
+	"github.com/ihezebin/sdk/logger"
 	"testing"
 	"time"
 )
@@ -44,7 +44,7 @@ func TestSendEmail(t *testing.T) {
 			</body>
 			</html>
 		`)
-		//WithAttach(NewAttach("test.txt", strings.NewReader("dsadsad")) )
+	//WithAttach(NewAttach("test.txt", strings.NewReader("dsadsad")) )
 	err = client.Send(msg)
 	if err != nil {
 		logger.Fatal("send mail err:", err)

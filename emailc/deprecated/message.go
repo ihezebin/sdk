@@ -3,8 +3,8 @@ package deprecated
 import (
 	"errors"
 	"fmt"
-	"github.com/whereabouts/sdk/utils/mapper"
-	"github.com/whereabouts/sdk/utils/timer"
+	"github.com/ihezebin/sdk/utils/mapper"
+	"github.com/ihezebin/sdk/utils/timer"
 	"strings"
 )
 

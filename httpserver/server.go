@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/ihezebin/sdk/httpserver/hook"
+	"github.com/ihezebin/sdk/httpserver/middleware"
+	"github.com/ihezebin/sdk/logger"
 	"github.com/pkg/errors"
-	"github.com/whereabouts/sdk/httpserver/hook"
-	"github.com/whereabouts/sdk/httpserver/middleware"
-	"github.com/whereabouts/sdk/logger"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,6 +22,7 @@ type Server interface {
 	Close(ctx context.Context) error
 	OnShutdown(shutdownHook hook.ShutdownHook) Server
 	OnBeforeRun(hook.RunHook) Server
+	Routes(routes Router) Server
 }
 
 type server struct {
@@ -67,7 +68,7 @@ func (s *server) Run(ctx context.Context) error {
 		logger.Infof("http server is starting in port:%d", s.config.Port)
 		if err := s.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
-				logger.Printf("http server ListenAndServe err:%v\n", err)
+				logger.WithError(err).Error("http server ListenAndServe err")
 				ch <- sigErr
 			}
 			logger.Println("http server closed")
@@ -103,6 +104,13 @@ func (s *server) Kernel() *gin.Engine {
 	return s.Handler.(*gin.Engine)
 }
 
+type Router func(engine *gin.Engine)
+
+func (s *server) Routes(routes Router) Server {
+	routes(s.Kernel())
+	return s
+}
+
 type signalErr string
 
 const sigErr = signalErr("httpserver err signal")
@@ -110,6 +118,7 @@ const sigErr = signalErr("httpserver err signal")
 func (s signalErr) Signal() {
 
 }
+
 func (s signalErr) String() string {
 	return "listen and serve err"
 }

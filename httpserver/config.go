@@ -2,7 +2,7 @@ package httpserver
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/whereabouts/sdk/httpserver/middleware"
+	"github.com/ihezebin/sdk/httpserver/middleware"
 )
 
 const ModeDebug = gin.DebugMode

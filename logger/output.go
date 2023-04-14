@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/whereabouts/sdk/logger/writer"
+	"github.com/ihezebin/sdk/logger/writer"
 	"io"
 	"time"
 )

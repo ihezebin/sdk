@@ -1,8 +1,8 @@
 package logger
 
 import (
-	"github.com/whereabouts/sdk/logger"
-	"github.com/whereabouts/sdk/logger/writer"
+	"github.com/ihezebin/sdk/logger"
+	"github.com/ihezebin/sdk/logger/writer"
 	"testing"
 	"time"
 )

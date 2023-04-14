@@ -1,7 +1,7 @@
 package mongoc
 
 import (
-	"github.com/whereabouts/sdk/utils/stringer"
+	"github.com/ihezebin/sdk/utils/stringer"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )

@@ -2,7 +2,7 @@ package redisc
 
 import (
 	"github.com/go-redis/redis/v8"
-	"github.com/whereabouts/sdk/utils/stringer"
+	"github.com/ihezebin/sdk/utils/stringer"
 	"time"
 )
 

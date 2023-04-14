@@ -2,7 +2,7 @@ package format
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk/utils/timer"
+	"github.com/ihezebin/sdk/utils/timer"
 )
 
 func JSONFormatter() Formatter {

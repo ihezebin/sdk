@@ -2,7 +2,7 @@ package command
 
 import (
 	"github.com/urfave/cli"
-	"github.com/whereabouts/sdk/cli/flag"
+	"github.com/ihezebin/sdk/cli/flag"
 	"time"
 )
 

@@ -3,8 +3,8 @@ package logger
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk/logger/field"
-	"github.com/whereabouts/sdk/logger/level"
+	"github.com/ihezebin/sdk/logger/field"
+	"github.com/ihezebin/sdk/logger/level"
 )
 
 type Entry struct {

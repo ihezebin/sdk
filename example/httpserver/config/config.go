@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/whereabouts/sdk/config"
+	"github.com/ihezebin/sdk/config"
 )
 
 // Config global config
@@ -18,5 +18,5 @@ func GetConfig() *Config {
 }
 
 func Load() error {
-	return config.LoadWithDefault(&gConfig)
+	return config.LoadWithFilePath("./config.json", &gConfig)
 }

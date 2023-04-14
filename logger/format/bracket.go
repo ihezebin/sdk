@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"github.com/whereabouts/sdk/logger/field"
-	"github.com/whereabouts/sdk/utils/timer"
+	"github.com/ihezebin/sdk/logger/field"
+	"github.com/ihezebin/sdk/utils/timer"
 	"strings"
 )
 

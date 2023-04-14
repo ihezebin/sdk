@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/whereabouts/sdk/cli"
-	"github.com/whereabouts/sdk/cli/command"
-	"github.com/whereabouts/sdk/cli/flag"
-	"github.com/whereabouts/sdk/logger"
+	"github.com/ihezebin/sdk/cli"
+	"github.com/ihezebin/sdk/cli/command"
+	"github.com/ihezebin/sdk/cli/flag"
+	"github.com/ihezebin/sdk/logger"
 )
 
 func main() {
