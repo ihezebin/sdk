@@ -18,5 +18,5 @@ func GetConfig() *Config {
 }
 
 func Load() error {
-	return config.LoadWithFilePath("./config.json", &gConfig)
+	return config.NewWithFilePath("./config.toml").Load(&gConfig)
 }

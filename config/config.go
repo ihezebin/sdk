@@ -12,35 +12,47 @@ import (
 	"strings"
 )
 
-const defaultTagName = ConfigTypeJson
-const defaultConfigType = ConfigTypeJson
+const defaultTagName = "json"
+
+type ConfigType string
 
 const (
-	ConfigTypeJson       = "json"
-	ConfigTypeToml       = "toml"
-	ConfigTypeYaml       = "yaml"
-	ConfigTypeYml        = "yml"
-	ConfigTypeProperties = "properties"
-	ConfigTypeProps      = "props"
-	ConfigTypeProp       = "prop"
-	ConfigTypeHcl        = "hcl"
-	ConfigTypeDotenv     = "dotenv"
-	ConfigTypeEnv        = "env"
-	ConfigTypeIni        = "ini"
+	ConfigTypeJson       ConfigType = "json"
+	ConfigTypeToml       ConfigType = "toml"
+	ConfigTypeYaml       ConfigType = "yaml"
+	ConfigTypeYml        ConfigType = "yml"
+	ConfigTypeProperties ConfigType = "properties"
+	ConfigTypeProps      ConfigType = "props"
+	ConfigTypeProp       ConfigType = "prop"
+	ConfigTypeHcl        ConfigType = "hcl"
+	ConfigTypeDotenv     ConfigType = "dotenv"
+	ConfigTypeEnv        ConfigType = "env"
+	ConfigTypeIni        ConfigType = "ini"
 )
 
-func New() *Configurator {
+type Configurator struct {
+	kernel     *viper.Viper
+	tagName    string
+	configType ConfigType
+	reader     io.Reader
+}
+
+func NewWithFilePath(path string) *Configurator {
 	kernel := viper.New()
-	kernel.SetConfigType(defaultConfigType)
+	kernel.SetConfigFile(handleRelativePath(path))
 	return &Configurator{
 		kernel:  kernel,
 		tagName: defaultTagName,
 	}
 }
 
-type Configurator struct {
-	kernel  *viper.Viper
-	tagName string
+func NewWithReader(reader io.Reader) *Configurator {
+	kernel := viper.New()
+	return &Configurator{
+		kernel:  kernel,
+		tagName: defaultTagName,
+		reader:  reader,
+	}
 }
 
 func (c *Configurator) Kernel() *viper.Viper {
@@ -52,49 +64,37 @@ func (c *Configurator) SetTagName(tagName string) *Configurator {
 	return c
 }
 
-func (c *Configurator) SetConfigType(configType string) *Configurator {
-	c.Kernel().SetConfigType(configType)
+func (c *Configurator) SetConfigType(configType ConfigType) *Configurator {
+	c.configType = configType
 	return c
 }
 
-// LoadWithReader need point out the configType, default is json, can use SetConfigType to change
-func (c *Configurator) LoadWithReader(reader io.Reader, config interface{}) error {
-	if err := c.Kernel().ReadConfig(reader); err != nil {
-		return errors.Wrap(err, "read config err")
+func (c *Configurator) Load(config interface{}) error {
+	c.kernel.SetConfigType(string(c.configType))
+	if c.kernel.ConfigFileUsed() != "" {
+		if err := c.kernel.ReadInConfig(); err != nil {
+			return errors.Wrap(err, "failed to load config file path")
+		}
 	}
-	if err := c.unmarshal(config); err != nil {
-		return errors.Wrap(err, "failed to unmarshal config")
+	if c.reader != nil {
+		if err := c.kernel.MergeConfig(c.reader); err != nil {
+			return errors.Wrap(err, "failed to load config reader")
+		}
 	}
-	return nil
-}
 
-func (c *Configurator) LoadWithFilePath(path string, config interface{}) error {
-	c.Kernel().SetConfigFile(c.handleRelativePath(path))
-	if err := c.Kernel().ReadInConfig(); err != nil {
-		return errors.Wrap(err, "failed to load config file path")
-	}
-	err := c.unmarshal(config)
-	if err != nil {
-		return errors.Wrap(err, "failed to unmarshal config")
-	}
-	return nil
-}
-
-func (c *Configurator) unmarshal(output interface{}) error {
-	return c.Kernel().Unmarshal(output, func(d *mapstructure.DecoderConfig) {
+	return c.Kernel().Unmarshal(config, func(d *mapstructure.DecoderConfig) {
 		d.TagName = c.tagName
 	})
 }
 
-func (c *Configurator) handleRelativePath(path string) string {
-	skip := 2
-	if c == gConfigurator {
-		skip = 3
-	}
+func handleRelativePath(path string) string {
+	// handle relative path
 	if stringer.NotEmpty(path) && strings.Index(path, ".") == 0 {
+		skip := 2
 		_, currentPath, _, _ := runtime.Caller(skip)
 		fmt.Println(currentPath)
 		path = filepath.Join(filepath.Dir(currentPath), path)
 	}
+	// absolute path
 	return path
 }
