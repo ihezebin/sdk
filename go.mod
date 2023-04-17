@@ -24,7 +24,7 @@ require (
 	github.com/tencentcloud/tencentcloud-sdk-go/tencentcloud/sms v1.0.264
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.31
 	github.com/ufilesdk-dev/ufile-gosdk v1.0.1
-	github.com/urfave/cli v1.22.5
+	github.com/urfave/cli v1.22.12
 	github.com/xuri/excelize/v2 v2.4.1
 	go.mongodb.org/mongo-driver v1.7.0
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect

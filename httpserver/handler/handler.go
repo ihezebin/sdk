@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/ihezebin/sdk/httpserver/handler/result"
 	"github.com/ihezebin/sdk/logger"
@@ -162,8 +161,6 @@ func checkMethod(method interface{}, conf config) (mV reflect.Value, reqT reflec
 			return
 		}
 	default:
-		fmt.Println(ctxT, contextType)
-		fmt.Println()
 		if ctxT != contextType {
 			err = errors.Errorf("the first in of method(%T) must be context.Context", method)
 			return
