@@ -32,7 +32,7 @@ func TestRegex(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewBaseModel(c, "test", "user")
+	m := NewModelBase(c, "test", "user")
 
 	users := make([]*User, 0)
 	err = m.FindMany(ctx, bson.M{"name": primitive.Regex{Pattern: regexp.QuoteMeta("A"), Options: "i"}}, &users)
@@ -56,7 +56,7 @@ func TestMongoc(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewBaseModel(c, "test", "user")
+	m := NewModelBase(c, "test", "user")
 	_, err = m.InsertOne(ctx, User{Name: "test", Age: 18})
 	if err != nil {
 		logger.Fatal(err.Error())
@@ -93,7 +93,7 @@ func TestUpdateNotExist(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewBaseModel(c, "test", "user")
+	m := NewModelBase(c, "test", "user")
 	res, err := m.UpdateOne(ctx, bson.M{"id": "123"}, bson.M{"$set": bson.M{"gender": "male"}})
 	if err != nil {
 		logger.Fatal(err.Error())
@@ -112,7 +112,7 @@ func TestInsert(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	result, err := NewBaseModel(c, "test", "user").InsertOne(context.TODO(), map[string]interface{}{
+	result, err := NewModelBase(c, "test", "user").InsertOne(context.TODO(), map[string]interface{}{
 		"_id":  primitive.NewObjectID().Hex(),
 		"name": "Korbin",
 		"age":  18,
@@ -143,7 +143,7 @@ func TestTransaction(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewBaseModel(c, "test", "user")
+	m := NewModelBase(c, "test", "user")
 	id := "610e657d6c5f1f389720218c"
 	user := User{}
 	err = m.FindOne(ctx, bson.M{"id": id}, &user)
@@ -195,7 +195,7 @@ func TestAutoTime(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewAutoTimeModel(c, "test", "user")
+	m := NewModelAutoTime(c, "test", "user")
 	_, err = m.InsertOne(ctx, User{Name: "auto_time", Age: 18})
 	if err != nil {
 		logger.Fatal(err.Error())
@@ -232,7 +232,7 @@ func TestSoftDelete(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err.Error())
 	}
-	m := NewAutoTimeModel(c, "test", "user").SetSoftDelete(true)
+	m := NewModelAutoTime(c, "test", "user").SetSoftDelete(true)
 	_, err = m.InsertOne(ctx, User{Name: "soft_delete", Age: 18})
 	if err != nil {
 		logger.Fatal(err.Error())

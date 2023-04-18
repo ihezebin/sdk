@@ -24,7 +24,7 @@ type Model interface {
 	Do(ctx context.Context, exec func(ctx context.Context, model Model) (interface{}, error)) (interface{}, error)
 	DoWithTransaction(ctx context.Context, exec func(ctx context.Context, model Model) (interface{}, error)) (interface{}, error)
 	DoWithSession(ctx context.Context, exec func(sessionCtx mongo.SessionContext, model Model) error) error
-	FindWithCursor(ctx context.Context, filter interface{}, results interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error)
+	FindCursor(ctx context.Context, filter interface{}, opts ...*options.FindOptions) (*mongo.Cursor, error)
 }
 
 //type Exec = func(ctx context.Context, model Model) (interface{}, error)
