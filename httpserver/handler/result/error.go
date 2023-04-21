@@ -9,6 +9,7 @@ import (
 type Err struct {
 	statusCode int
 	Message    string `json:"message"`
+	Code       bool   `json:"code"`
 }
 
 func (err *Err) Error() string {
@@ -17,6 +18,12 @@ func (err *Err) Error() string {
 
 func (err *Err) WithStatusCode(statusCode int) *Err {
 	err.statusCode = statusCode
+	return err
+}
+
+// WithCode allow to set code succeed, that will return a data as {code: true, massage: 'error message'}
+func (err *Err) WithCode(code bool) *Err {
+	err.Code = code
 	return err
 }
 

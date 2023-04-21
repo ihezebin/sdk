@@ -24,6 +24,11 @@ func (res *Result) WithStatusCode(statusCode int) *Result {
 	return res
 }
 
+func (res *Result) WithCode(code bool) *Result {
+	res.Code = code
+	return res
+}
+
 func (res *Result) WithMessage(msg string) *Result {
 	res.Message = msg
 	return res

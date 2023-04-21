@@ -121,7 +121,7 @@ func newHandlerFuncWithLogger(method interface{}, conf config, l *logger.Logger)
 		if err != nil {
 			switch e := err.(type) {
 			case *result.Err:
-				res = result.FailedWithErr(e).WithStatusCode(e.StatusCode())
+				res = result.FailedWithErr(e).WithStatusCode(e.StatusCode()).WithCode(e.Code)
 			case error:
 				res = result.FailedWithErr(e)
 			}
