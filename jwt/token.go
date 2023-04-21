@@ -2,12 +2,16 @@ package jwt
 
 import (
 	"encoding/json"
-	"github.com/pkg/errors"
 	"github.com/ihezebin/sdk/jwt/alg"
 	"github.com/ihezebin/sdk/utils/stringer"
+	"github.com/pkg/errors"
 	"time"
 )
 
+// Token jwt 由三部分组成: header, payload, signature
+// header 存储一些元数据, 如算法类型
+// payload 存储一些声明, 如用户id, 过期时间等
+// signature 由 header, payload, secret 加密后生成, 用于验证 token 的合法性
 type Token struct {
 	Raw       string
 	Header    map[string]string
@@ -20,15 +24,16 @@ func Default() *Token {
 	return NewWithClaims(alg.HSA256())
 }
 
+// New 指定算法创建一个Token, alg.HSA256 是默认算法
 func New(algorithm alg.Algorithm) *Token {
 	return NewWithClaims(algorithm)
 }
 
 func NewWithClaims(algorithm alg.Algorithm, claims ...Claim) *Token {
-	alg.RegisterAlg(algorithm)
+	alg.RegisterAlg(algorithm) // 注册自定义算法, 内置算法已默认注册
 	return &Token{
 		Header: map[string]string{
-			"typ": "JWT",
+			"typ": "jwt",
 			"alg": algorithm.Name(),
 		},
 		Payload:   newPayload(claims...),
@@ -74,6 +79,7 @@ func (token *Token) String(secret string) (string, error) {
 // Valid Verify that the token is valid by comparing the signature generated after
 // the header and payload are encrypted with the same algorithm and key with the original signature.
 // 校验token是否有效, 通过将header和payload以同样的算法和密钥加密后生成的signature与原signature对比实现
+// 仅校验是否伪造, 不校验是否过期
 func (token *Token) Valid(secret string) error {
 	// check algorithm
 	if token.Algorithm == nil {
@@ -107,8 +113,14 @@ func (token *Token) Valid(secret string) error {
 	return nil
 }
 
+// Expired Check if the token has expired
+// 检查token是否过期, 未设置过 Payload.Duration 或 Payload.Expire 的允许永不过期
 func (token *Token) Expired() bool {
-	return token.Payload.Expire.Before(time.Now())
+	expireTime := token.Payload.Expire
+	if expireTime.IsZero() {
+		return false
+	}
+	return expireTime.Before(time.Now())
 }
 
 // Refresh Reset the expiration time based on the current time according to the duration of the token

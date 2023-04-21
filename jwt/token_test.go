@@ -30,6 +30,17 @@ func TestJWT(t *testing.T) {
 	fmt.Println(token.Payload.Purpose)
 }
 
+func TestNoExpired(t *testing.T) {
+	jwt := Default().SetOwner("hezebin")
+	sign, err := jwt.Sign(secret)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	fmt.Println(sign)
+	fmt.Println(jwt.Valid(secret) == nil)
+	fmt.Println(jwt.Expired())
+}
+
 func TestValidAndParse(t *testing.T) {
 	token := NewWithClaims(
 		alg.HSA256(),
